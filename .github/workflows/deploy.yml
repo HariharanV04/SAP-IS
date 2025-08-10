@@ -13,147 +13,143 @@ on:
         default: 'all'
         type: choice
         options:
-          - all
-          - main_api
-          - mule_api
-          - boomi_api
-          - gemma_api
-          - frontend
+        - all
+        - main_api
+        - mule_api
+        - boomi_api
+        - frontend
 
 env:
   CF_API: https://api.cf.eu10-005.hana.ondemand.com
   CF_ORG: ${{ secrets.CF_ORG }}
   CF_SPACE: ${{ secrets.CF_SPACE }}
-  DEPLOY_TARGET: ${{ github.event.inputs.deploy_target || 'all' }}
 
 jobs:
+  # Temporarily skip test job for faster deployment
+  # test:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - uses: actions/checkout@v4
+  #
+  #   - name: Set up Python
+  #     uses: actions/setup-python@v4
+  #     with:
+  #       python-version: '3.9'
+  #
+  #   - name: Set up Node.js
+  #     uses: actions/setup-node@v4
+  #     with:
+  #       node-version: '18'
+  #
+  #   - name: Install Python dependencies
+  #     run: |
+  #       python -m pip install --upgrade pip
+  #       pip install requests flask python-dotenv
+  #
+  #   - name: Install Frontend dependencies
+  #     run: |
+  #       cd IFA-Project/frontend
+  #       rm -rf node_modules package-lock.json
+  #       npm cache clean --force
+  #       # Remove Windows-specific rollup package for Linux CI
+  #       npm uninstall @rollup/rollup-win32-x64-msvc || true
+  #       # Install Linux-specific rollup package
+  #       npm install @rollup/rollup-linux-x64-gnu --save-optional
+  #       npm install
+  #       # Ensure terser is installed for production builds
+  #       npm install terser --save-dev
+  #
+  #   - name: Build Frontend
+  #     run: |
+  #       cd IFA-Project/frontend
+  #       NODE_ENV=production npm run build
+  #
+  #   - name: Run Python tests
+  #     run: |
+  #       echo "Running Python API tests..."
+  #       # Add your Python tests here
+
   deploy:
+    # needs: test  # Temporarily skip tests for faster deployment
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     environment: production
-
+    
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Install CF CLI
-        run: |
-          wget -qO- https://packages.cloudfoundry.org/stable?release=linux64-binary | tar -xz
-          sudo mv cf /usr/local/bin/cf
-          cf version
-
-      - name: Login to Cloud Foundry
-        env:
-          CF_USERNAME: ${{ secrets.CF_USERNAME }}
-          CF_PASSWORD: ${{ secrets.CF_PASSWORD }}
-        run: |
-          cf login -a "$CF_API" -u "$CF_USERNAME" -p "$CF_PASSWORD" -o "$CF_ORG" -s "$CF_SPACE"
-
-      # Build Frontend-Pro with Vite env (compile-time)
-      - name: Build Frontend Pro (Vite)
-        if: env.DEPLOY_TARGET == 'all' || env.DEPLOY_TARGET == 'frontend'
-        working-directory: IFA-Project/frontend-pro
-        env:
-          VITE_MAIN_API_PROTOCOL: ${{ secrets.MAIN_API_PROTOCOL }}
-          VITE_MAIN_API_HOST: ${{ secrets.MAIN_API_HOST }}
-          VITE_IFLOW_API_PROTOCOL: ${{ secrets.IFLOW_API_PROTOCOL }}
-          VITE_IFLOW_API_HOST: ${{ secrets.IFLOW_API_HOST }}
-          VITE_BOOMI_API_URL: ${{ secrets.BOOMI_API_URL }}
-          VITE_IFLOW_API_URL: ${{ secrets.IFLOW_API_URL }}
-          VITE_GEMMA3_API_URL: ${{ secrets.GEMMA3_API_URL }}
-          VITE_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-        run: |
-          npm ci
-          npm run build
-
-      # Push Main API
-      - name: Push Main API
-        if: env.DEPLOY_TARGET == 'all' || env.DEPLOY_TARGET == 'main_api'
-        working-directory: app
-        run: cf push it-resonance-main-api -f manifest.yml
-
-      # Push BoomiToIS API
-      - name: Push BoomiToIS API
-        if: env.DEPLOY_TARGET == 'all' || env.DEPLOY_TARGET == 'boomi_api'
-        working-directory: BoomiToIS-API
-        run: cf push boomi-to-is-api -f manifest.yml
-
-      # Push MuleToIS API
-      - name: Push MuleToIS API
-        if: env.DEPLOY_TARGET == 'all' || env.DEPLOY_TARGET == 'mule_api'
-        working-directory: MuleToIS-API
-        run: cf push mule-to-is-api -f manifest.yml
-
-      # Push Gemma3 API (optional)
-      - name: Push Gemma3 API
-        if: env.DEPLOY_TARGET == 'all' || env.DEPLOY_TARGET == 'gemma_api'
-        working-directory: MuleToIS-API-Gemma3
-        run: cf push mulesoft-iflow-api-gemma3 -f manifest.yml
-
-      # Push Frontend-Pro (Staticfile buildpack) using built dist/
-      - name: Push Frontend Pro
-        if: env.DEPLOY_TARGET == 'all' || env.DEPLOY_TARGET == 'frontend'
-        working-directory: IFA-Project/frontend-pro
-        run: cf push ifa-frontend-pro -p dist -b staticfile_buildpack
-
-      # Set runtime env across apps via Python helper (uses Secrets)
-      - name: Apply CF runtime env and restage
-        env:
-          # Common
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-
-          # Main API (runtime)
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          SUPABASE_ENABLE_DOCUMENTS: 'false'
-          BOOMI_API_URL: ${{ secrets.BOOMI_API_URL }}
-          MULE_API_URL: ${{ secrets.MULE_API_URL }}
-          GEMMA3_API_URL: ${{ secrets.GEMMA3_API_URL }}
-          DATABASE_ENABLED: 'true'
-
-          # Boomi/Mule/Gemma (runtime)
-          MAIN_API_URL: ${{ secrets.MAIN_API_URL }}
-          SAP_BTP_TENANT_URL: ${{ secrets.SAP_BTP_TENANT_URL }}
-          SAP_BTP_CLIENT_ID: ${{ secrets.SAP_BTP_CLIENT_ID }}
-          SAP_BTP_CLIENT_SECRET: ${{ secrets.SAP_BTP_CLIENT_SECRET }}
-          SAP_BTP_OAUTH_URL: ${{ secrets.SAP_BTP_OAUTH_URL }}
-          SAP_BTP_DEFAULT_PACKAGE: ${{ secrets.SAP_BTP_DEFAULT_PACKAGE }}
-        run: |
-          python ci-cd-deployment/scripts/set_cf_credentials.py --restage
-
-      # Verify deployments
-      - name: Verify API health
-        if: env.DEPLOY_TARGET == 'all' || env.DEPLOY_TARGET == 'main_api'
-        run: curl -f "${{ secrets.MAIN_API_URL }}/api/health"
-
-      - name: Verify Mule API health
-        if: env.DEPLOY_TARGET == 'all' || env.DEPLOY_TARGET == 'mule_api'
-        run: curl -f "${{ secrets.MULE_API_URL }}/health"
-
-      - name: Verify Boomi API health
-        if: env.DEPLOY_TARGET == 'all' || env.DEPLOY_TARGET == 'boomi_api'
-        run: curl -f "${{ secrets.BOOMI_API_URL }}/health"
-
-      - name: Success notification
-        if: success()
-        run: |
-          echo "✅ Deployment successful."
-          echo "Frontend Pro deployed (if selected). APIs restaged with runtime env."
-
-      - name: Failure notification
-        if: failure()
-        run: |
-          echo "❌ Deployment failed. Check logs above."
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+    
+    - name: Install CF CLI
+      run: |
+        wget -q -O - https://packages.cloudfoundry.org/debian/cli.cloudfoundry.org.key | sudo apt-key add -
+        echo "deb https://packages.cloudfoundry.org/debian stable main" | sudo tee /etc/apt/sources.list.d/cloudfoundry-cli.list
+        sudo apt-get update
+        sudo apt-get install cf8-cli
+    
+    - name: Login to Cloud Foundry
+      run: |
+        # Try password authentication first
+        cf login -a $CF_API -u ${{ secrets.CF_USERNAME }} -p ${{ secrets.CF_PASSWORD }} -o $CF_ORG -s $CF_SPACE || {
+          echo "Password authentication failed, trying alternative methods..."
+          echo "Note: This account may require SSO authentication"
+          echo "For CI/CD, you may need to use a service account or API key"
+          exit 1
+        }
+    
+    - name: Install deployment dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests
+    - name: Build Frontend
+      run: |
+        cd IFA-Project/frontend
+        rm -f package-lock.json
+        # Remove Windows-specific rollup package for Linux CI
+        npm uninstall @rollup/rollup-win32-x64-msvc || true
+        # Install Linux-specific rollup package
+        npm install @rollup/rollup-linux-x64-gnu --save-optional
+        npm install
+        # Ensure terser is installed for production builds
+        npm install terser --save-dev
+        NODE_ENV=production npm run build
+    
+    - name: Deploy Applications
+      run: |
+        if [ "${{ github.event.inputs.deploy_target }}" = "" ] || [ "${{ github.event.inputs.deploy_target }}" = "all" ]; then
+          echo "Deploying all applications..."
+          python ci-cd-deployment/deploy.py deploy-all
+        else
+          echo "Deploying ${{ github.event.inputs.deploy_target }}..."
+          python ci-cd-deployment/deploy.py deploy --app ${{ github.event.inputs.deploy_target }}
+        fi
+    - name: Verify Deployment
+      run: |
+        echo "Verifying deployment..."
+        python ci-cd-deployment/deploy.py status
+        
+        echo "Testing API health endpoints..."
+        curl -f https://it-resonance-main-api.cfapps.eu10-005.hana.ondemand.com/api/health || exit 1
+        curl -f https://mule-to-is-api.cfapps.eu10-005.hana.ondemand.com/api/health || exit 1
+        curl -f https://boomi-to-is-api.cfapps.eu10-005.hana.ondemand.com/api/health || exit 1
+    
+    - name: Notify on Success
+      if: success()
+      run: |
+        echo "✅ Deployment successful!"
+        echo "Frontend: https://ifa-frontend.cfapps.eu10-005.hana.ondemand.com"
+        echo "APIs are healthy and responding"
+    
+    - name: Notify on Failure
+      if: failure()
+      run: |
+        echo "❌ Deployment failed!"
+        echo "Check the logs above for details"
