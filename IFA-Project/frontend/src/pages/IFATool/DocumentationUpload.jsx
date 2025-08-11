@@ -9,6 +9,7 @@ import { ArrowLeft, FileText, Zap } from "lucide-react"
 
 // Get environment variables for polling configuration
 const DISABLE_AUTO_POLLING = import.meta.env.VITE_DISABLE_AUTO_POLLING === 'true'
+const DISABLE_AUTO_IFLOW_GENERATION = import.meta.env.VITE_DISABLE_AUTO_IFLOW_GENERATION === 'true'
 const MAX_POLL_COUNT = parseInt(import.meta.env.VITE_MAX_POLL_COUNT || '30')
 const POLL_INTERVAL_MS = parseInt(import.meta.env.VITE_POLL_INTERVAL_MS || '5000')
 
@@ -59,11 +60,15 @@ const DocumentationUpload = ({ onBack }) => {
         setCurrentStep('uploaded')
         toast.success('Documentation uploaded successfully!')
         
-        // Auto-generate iFlow if ready
-        if (result.ready_for_iflow_generation) {
+        // Auto-generate iFlow if ready and auto-generation is enabled
+        if (result.ready_for_iflow_generation && !DISABLE_AUTO_IFLOW_GENERATION) {
+          console.log('Auto-triggering iFlow generation in 1 second...')
           setTimeout(() => {
             handleGenerateIflow(result.job_id)
           }, 1000)
+        } else if (result.ready_for_iflow_generation && DISABLE_AUTO_IFLOW_GENERATION) {
+          console.log('Auto iFlow generation is disabled. User must manually trigger generation.')
+          toast.success('Documentation ready! Click "Generate iFlow" to continue.')
         }
       }
     } catch (error) {

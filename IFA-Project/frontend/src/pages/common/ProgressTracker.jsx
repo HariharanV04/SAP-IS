@@ -13,6 +13,7 @@ const ProgressTracker = ({
   deploymentDetails
 }) => {
   const [elapsedTime, setElapsedTime] = useState("0s")
+  const [maxProgressReached, setMaxProgressReached] = useState(0)
 
   useEffect(() => {
     let interval = null
@@ -198,7 +199,65 @@ const ProgressTracker = ({
     }
   }
 
-  const percentage = getProgressPercentage()
+  // Calculate raw percentage from current status
+  const rawPercentage = getProgressPercentage()
+
+  // MILESTONE PROTECTION: Define key milestones that should never be regressed from
+  const getMilestoneProtection = (currentPercentage, maxReached) => {
+    // Key milestones that should be protected
+    const milestones = {
+      85: "iFlow Generation Complete", // Never go back to AI enhancing after iFlow is generated
+      75: "iFlow Generation Started",  // Never go back to documentation after iFlow generation starts
+      50: "Documentation Ready"        // Never go back to upload after documentation is ready
+    }
+
+    // Find the highest milestone we've reached
+    let protectedLevel = Math.max(currentPercentage, maxReached)
+
+    // Apply milestone protection - once we reach a milestone, never go below it
+    for (const [milestone, description] of Object.entries(milestones)) {
+      const milestoneValue = parseInt(milestone)
+      if (maxReached >= milestoneValue && currentPercentage < milestoneValue) {
+        console.log(`🚫 MILESTONE PROTECTION: Preventing regression below ${milestoneValue}% (${description})`)
+        protectedLevel = Math.max(protectedLevel, milestoneValue)
+      }
+    }
+
+    return protectedLevel
+  }
+
+  // PROGRESS PROTECTION: Prevent progress bar from going backwards
+  const protectedPercentage = getMilestoneProtection(rawPercentage, maxProgressReached)
+
+  // Reset max progress when a new job starts (status goes back to early stages)
+  useEffect(() => {
+    if (status === "queued" || (status === "processing" && processingStep === "file_analysis")) {
+      console.log(`🔄 Progress protection: Resetting for new job (status: ${status}, step: ${processingStep})`)
+      setMaxProgressReached(0)
+    }
+  }, [status, processingStep])
+
+  // Update max progress if we've moved forward
+  useEffect(() => {
+    if (rawPercentage > maxProgressReached) {
+      console.log(`🔒 Progress protection: ${maxProgressReached}% → ${rawPercentage}% (moving forward)`)
+      setMaxProgressReached(rawPercentage)
+    } else if (rawPercentage < maxProgressReached) {
+      // Determine what stage we're protecting from
+      let protectionReason = "general regression"
+      if (maxProgressReached >= 85 && rawPercentage < 85) {
+        protectionReason = "regression from iFlow Generation Complete back to AI enhancing"
+      } else if (maxProgressReached >= 75 && rawPercentage < 75) {
+        protectionReason = "regression from iFlow Generation back to documentation processing"
+      } else if (maxProgressReached >= 50 && rawPercentage < 50) {
+        protectionReason = "regression from Documentation Ready back to upload stage"
+      }
+
+      console.log(`🛡️ MILESTONE PROTECTION: Preventing ${protectionReason} (${maxProgressReached}% → ${rawPercentage}%)`)
+    }
+  }, [rawPercentage, maxProgressReached])
+
+  const percentage = protectedPercentage
   const progressText = getProgressText()
   const progressBarColor = getProgressBarColor()
 
@@ -224,9 +283,16 @@ const ProgressTracker = ({
         <h3 className="text-md font-medium text-gray-800">
           {isDocumentationWorkflow ? "Processing Status" : "Generation Progress"}
         </h3>
-        <div className="flex items-center text-gray-500 text-xs">
-          <Clock className="h-3 w-3 mr-1" />
-          <span>{elapsedTime}</span>
+        <div className="flex items-center text-gray-500 text-xs space-x-3">
+          <div className="flex items-center">
+            <Clock className="h-3 w-3 mr-1" />
+            <span>{elapsedTime}</span>
+          </div>
+          {rawPercentage < maxProgressReached && (
+            <div className="flex items-center text-blue-600" title="Progress protection active - preventing regression">
+              <span className="text-xs">🛡️ Protected</span>
+            </div>
+          )}
         </div>
       </div>
 

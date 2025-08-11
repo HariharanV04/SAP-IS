@@ -155,8 +155,10 @@ export const generateDocs = async (formData, signal) => {
     }
 }
 
+
+
 // Update getJobStatus to use axios
-export const getJobStatus = async jobId => {
+export const getJobStatus = async (jobId, jobInfo = null) => {
     try {
         const response = await api.get(`/jobs/${jobId}`)
         return response.data
@@ -165,6 +167,8 @@ export const getJobStatus = async jobId => {
         throw error
     }
 }
+
+
 
 // Update getAllJobs to use axios
 export const getAllJobs = async () => {
@@ -176,6 +180,8 @@ export const getAllJobs = async () => {
         throw error
     }
 }
+
+
 
 // Delete a job and its associated files
 export const deleteJob = async jobId => {
@@ -201,6 +207,8 @@ export const getDocumentation = async (jobId, fileType) => {
     }
 }
 
+
+
 // Generate iFlow match for a job
 export const generateIflowMatch = async jobId => {
     try {
@@ -224,6 +232,8 @@ export const generateIflowMatch = async jobId => {
     }
 }
 
+
+
 // Get iFlow match status
 export const getIflowMatchStatus = async jobId => {
     try {
@@ -246,6 +256,8 @@ export const getIflowMatchStatus = async jobId => {
         throw error
     }
 }
+
+
 
 // Get iFlow match file
 export const getIflowMatchFile = async (jobId, fileType) => {
@@ -271,6 +283,8 @@ export const getIflowMatchFile = async (jobId, fileType) => {
         throw error
     }
 }
+
+
 
 // Create a dedicated API instance for the iFlow API
 import axios from 'axios'
@@ -634,6 +648,8 @@ export const downloadGeneratedIflow = async (jobId, platform = 'mulesoft') => {
     }
 }
 
+
+
 // Download iFlow debug file
 export const downloadIflowDebugFile = async (jobId, fileName, platform = 'mulesoft') => {
     try {
@@ -661,6 +677,8 @@ export const downloadIflowDebugFile = async (jobId, fileName, platform = 'muleso
         throw error
     }
 }
+
+
 
 // Deploy iFlow to SAP Integration Suite
 export const deployIflowToSap = async (jobId, packageId, description, platform = 'mulesoft') => {
@@ -690,6 +708,8 @@ export const deployIflowToSap = async (jobId, packageId, description, platform =
         throw error
     }
 }
+
+
 
 // Deploy iFlow directly to SAP Integration Suite using the direct deployment approach
 export const directDeployIflowToSap = async (jobId, packageId, iflowId, iflowName, platform = 'mulesoft') => {
@@ -722,6 +742,8 @@ export const directDeployIflowToSap = async (jobId, packageId, iflowId, iflowNam
     }
 }
 
+
+
 // Update deployment status in Main API
 export const updateDeploymentStatus = async (jobId, deploymentStatus, deploymentMessage = '', deploymentDetails = {}) => {
     try {
@@ -744,3 +766,91 @@ export const updateDeploymentStatus = async (jobId, deploymentStatus, deployment
         throw error
     }
 }
+
+
+
+// NEW: Unified Deploy iFlow - uses the WORKING direct deployment for both platforms
+export const unifiedDeployIflowToSap = async (jobId, packageId, iflowId, iflowName, platform = 'mulesoft') => {
+    try {
+        console.log(`🚀 Unified deploying iFlow for job: ${jobId} to SAP Integration Suite using platform: ${platform}`);
+        console.log(`Using DIRECT deployment method that works for both platforms`);
+        console.log(`Parameters: packageId=${packageId}, iflowId=${iflowId}, iflowName=${iflowName}`);
+
+        // First attempt: Use the proven direct-deploy endpoint
+        const result = await directDeployIflowToSap(jobId, packageId, iflowId, iflowName, platform);
+        
+        console.log("✅ Unified iFlow deployment successful (direct method):", result);
+        return result;
+        
+    } catch (error) {
+        console.error("❌ Direct deployment failed:", error)
+        
+        // For MuleSoft platform, try additional fallback methods
+        if (platform === 'mulesoft') {
+            try {
+                console.log("🔄 Fallback 1: Trying unified-deploy endpoint for MuleToIS...");
+                const apiInstance = getIflowApiInstance(platform);
+                const response = await apiInstance.post(`/jobs/${jobId}/unified-deploy`, {
+                    package_id: packageId,
+                    iflow_id: iflowId,
+                    iflow_name: iflowName
+                });
+                
+                console.log("✅ Fallback unified deployment successful:", response.data);
+                return response.data;
+                
+            } catch (fallbackError1) {
+                console.error("❌ Unified-deploy fallback failed:", fallbackError1);
+                
+                // Final fallback: Try deploy-latest-iflow endpoint
+                try {
+                    console.log("🔄 Fallback 2: Trying deploy-latest-iflow endpoint...");
+                    const apiInstance = getIflowApiInstance(platform);
+                    const response = await apiInstance.post('/deploy-latest-iflow', {
+                        package_id: packageId
+                    });
+                    
+                    console.log("✅ Latest iFlow deployment successful:", response.data);
+                    return response.data;
+                    
+                } catch (fallbackError2) {
+                    console.error("❌ All fallback methods failed:", fallbackError2);
+                    throw new Error(`All deployment methods failed. Original error: ${error.message}`);
+                }
+            }
+        }
+        
+        // For Boomi platform or if all MuleSoft fallbacks fail
+        throw error;
+    }
+}
+
+// NEW: Deploy Latest iFlow - deploys the most recent ZIP file found
+export const deployLatestIflow = async (packageId, platform = 'mulesoft') => {
+    try {
+        console.log(`🚀 Deploying latest iFlow to SAP Integration Suite using platform: ${platform}`);
+        console.log(`Package ID: ${packageId}`);
+
+        // Get the appropriate API instance based on platform
+        const apiInstance = getIflowApiInstance(platform);
+        const response = await apiInstance.post('/deploy-latest-iflow', {
+            package_id: packageId
+        });
+
+        console.log("Latest iFlow deployment response:", response.data);
+        return response.data;
+    } catch (error) {
+        console.error("Error deploying latest iFlow to SAP:", error)
+        // Add more detailed error logging
+        if (error.response) {
+            console.error("Response error data:", error.response.data)
+            console.error("Response error status:", error.response.status)
+        } else if (error.request) {
+            console.error("No response received:", error.request)
+        } else {
+            console.error("Error message:", error.message)
+        }
+        throw error
+    }
+}
+

@@ -151,6 +151,37 @@ def save_jobs(jobs_dict):
     except Exception as e:
         logging.error(f"Error saving jobs file: {str(e)}")
 
+# Protected job update function
+def update_job_protected(job_id, updates):
+    """Update job with protection against status regression"""
+    if job_id in jobs:
+        current_job = jobs[job_id]
+        current_status = current_job.get('status')
+
+        # If job is completed, protect against status regression
+        if current_status == 'completed':
+            protected_updates = {}
+
+            for key, value in updates.items():
+                if key == 'status' and value != 'completed':
+                    print(f"🛡️ MuleToIS-API PROTECTION: Preventing status regression for job {job_id}: {current_status} → {value}")
+                    continue  # Skip this update
+                elif key == 'message' and 'processing' in str(value).lower():
+                    print(f"🛡️ MuleToIS-API PROTECTION: Preventing message regression for job {job_id}")
+                    continue  # Skip this update
+                else:
+                    protected_updates[key] = value
+
+            if protected_updates:
+                jobs[job_id].update(protected_updates)
+                save_jobs(jobs)
+            else:
+                print(f"🛡️ MuleToIS-API PROTECTION: All updates blocked for completed job {job_id}")
+        else:
+            # Normal update for non-completed jobs
+            jobs[job_id].update(updates)
+            save_jobs(jobs)
+
 # In-memory job storage (initialized from file and periodically saved to file)
 jobs = load_jobs()
 
@@ -335,18 +366,16 @@ def process_iflow_generation(job_id, markdown_content, iflow_name=None):
         os.makedirs(job_result_dir, exist_ok=True)
 
         # Update job status
-        jobs[job_id].update({
+        update_job_protected(job_id, {
             'status': 'processing',
             'message': 'Initializing iFlow generator...'
         })
-        save_jobs(jobs)  # Save job data to file
 
         # Update job status
-        jobs[job_id].update({
+        update_job_protected(job_id, {
             'status': 'processing',
             'message': 'Analyzing markdown and generating iFlow...'
         })
-        save_jobs(jobs)  # Save job data to file
 
         # Generate the iFlow
         if iflow_name is None:
@@ -371,7 +400,7 @@ def process_iflow_generation(job_id, markdown_content, iflow_name=None):
                 relative_debug_path = os.path.relpath(debug_path, os.path.dirname(os.path.abspath(__file__)))
                 debug_files[debug_file] = relative_debug_path
 
-            jobs[job_id].update({
+            update_job_protected(job_id, {
                 'status': 'completed',
                 'message': 'iFlow generation completed successfully!',
                 'files': {
@@ -380,21 +409,18 @@ def process_iflow_generation(job_id, markdown_content, iflow_name=None):
                 },
                 'iflow_name': iflow_name
             })
-            save_jobs(jobs)  # Save job data to file
         else:
-            jobs[job_id].update({
+            update_job_protected(job_id, {
                 'status': 'failed',
                 'message': result["message"]
             })
-            save_jobs(jobs)  # Save job data to file
 
     except Exception as e:
         logger.error(f"Error generating iFlow: {str(e)}")
-        jobs[job_id].update({
+        update_job_protected(job_id, {
             'status': 'failed',
             'message': f'Error generating iFlow: {str(e)}'
         })
-        save_jobs(jobs)  # Save job data to file
 
 @app.route('/api/jobs/<job_id>', methods=['GET', 'OPTIONS'])
 @app.route('/api/iflow-generation/<job_id>', methods=['GET', 'OPTIONS'])
@@ -941,6 +967,126 @@ def direct_deploy_to_sap(job_id):
             'message': f'Error deploying iFlow: {str(e)}'
         }), 500
 
+@app.route('/api/jobs/<job_id>/unified-deploy', methods=['POST', 'OPTIONS'])
+@app.route('/api/iflow-generation/<job_id>/unified-deploy', methods=['POST', 'OPTIONS'])
+def unified_deploy_to_sap(job_id):
+    """
+    Deploy the generated iFlow using unified deployment logic that handles job ID mapping issues
+    This endpoint uses the robust file finding logic from BoomiToIS to solve deployment problems
+    
+    Request body:
+    {
+        "package_id": "MyPackage", // Optional, will use default if not provided
+        "iflow_id": "MyIFlowId",   // Optional, will use auto-generated ID if not provided
+        "iflow_name": "My iFlow"   // Optional, will use filename if not provided
+    }
+
+    Returns:
+    {
+        "status": "success" | "error",
+        "message": "Description of the result",
+        "iflow_id": "MyIFlowId",
+        "package_id": "MyPackage",
+        "iflow_name": "My iFlow",
+        "file_deployed": "filename.zip"
+    }
+    """
+    # Handle OPTIONS request for CORS preflight
+    if request.method == 'OPTIONS':
+        response = jsonify({'status': 'ok'})
+        response.headers.set('Access-Control-Allow-Origin', cors_origin)
+        response.headers.set('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+        response.headers.set('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+        response.headers.set('Access-Control-Allow-Credentials', 'true')
+        return response, 200
+
+    try:
+        # Import the unified deployment module
+        from unified_deployment import UnifiedIflowDeployment
+        
+        # Get request data
+        data = request.json or {}
+        
+        # Get parameters from request or use defaults
+        package_id = data.get('package_id', 'ConversionPackages')
+        iflow_id = data.get('iflow_id')
+        iflow_name = data.get('iflow_name')
+        
+        logger.info(f"🚀 Starting unified deployment for job {job_id}")
+        logger.info(f"Parameters: package_id={package_id}, iflow_id={iflow_id}, iflow_name={iflow_name}")
+        
+        # Initialize unified deployment
+        unified_deployment = UnifiedIflowDeployment()
+        
+        # Deploy using unified logic - this handles job ID mapping issues automatically
+        result = unified_deployment.deploy_any_available_iflow(
+            job_id=job_id,
+            package_id=package_id,
+            iflow_id=iflow_id,
+            iflow_name=iflow_name
+        )
+        
+        logger.info(f"Unified deployment result: {result}")
+        
+        if result['status'] == 'success':
+            return jsonify(result), 200
+        else:
+            return jsonify(result), 400
+            
+    except Exception as e:
+        logger.error(f"Error in unified deployment: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': f'Error in unified deployment: {str(e)}'
+        }), 500
+
+@app.route('/api/deploy-latest-iflow', methods=['POST', 'OPTIONS'])
+def deploy_latest_iflow_endpoint():
+    """
+    Deploy the most recent iFlow file found - simplest deployment option
+    This endpoint doesn't require a job ID and just deploys whatever is the newest ZIP file
+    
+    Request body:
+    {
+        "package_id": "MyPackage"  // Optional, will use default if not provided
+    }
+    """
+    # Handle OPTIONS request for CORS preflight
+    if request.method == 'OPTIONS':
+        response = jsonify({'status': 'ok'})
+        response.headers.set('Access-Control-Allow-Origin', cors_origin)
+        response.headers.set('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+        response.headers.set('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+        response.headers.set('Access-Control-Allow-Credentials', 'true')
+        return response, 200
+
+    try:
+        # Import the unified deployment module
+        from unified_deployment import deploy_latest_iflow
+        
+        # Get request data
+        data = request.json or {}
+        package_id = data.get('package_id', 'ConversionPackages')
+        
+        logger.info(f"🚀 Deploying latest iFlow to package: {package_id}")
+        
+        # Deploy the latest iFlow
+        result = deploy_latest_iflow(package_id=package_id)
+        
+        logger.info(f"Latest iFlow deployment result: {result}")
+        
+        if result['status'] == 'success':
+            return jsonify(result), 200
+        else:
+            return jsonify(result), 400
+            
+    except Exception as e:
+        logger.error(f"Error deploying latest iFlow: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': f'Error deploying latest iFlow: {str(e)}'
+        }), 500
+
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5002))  # Changed from 5001 to 5002 to match startup script
+    port = int(os.environ.get('PORT', 5001))  # MuleToIS API runs on port 5001
     app.run(host='0.0.0.0', port=port, debug=True)

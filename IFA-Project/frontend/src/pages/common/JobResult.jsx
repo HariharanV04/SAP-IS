@@ -27,6 +27,7 @@ import {
   downloadGeneratedIflow,
   deployIflowToSap,
   directDeployIflowToSap,
+  unifiedDeployIflowToSap,
   updateDeploymentStatus,
   deleteJob
 } from "@services/api"
@@ -45,6 +46,9 @@ const JobResult = ({ jobInfo, onNewJob, onJobUpdate }) => {
   const [iflowMatchMessage, setIflowMatchMessage] = useState(null)
   const [iflowMatchFiles, setIflowMatchFiles] = useState(null)
   const [isGeneratingIflow, setIsGeneratingIflow] = useState(false)
+
+  // Debouncing to prevent rapid multiple clicks
+  const [lastClickTime, setLastClickTime] = useState(0)
   const [isIflowGenerated, setIsIflowGenerated] = useState(false)
   const [isDeploying, setIsDeploying] = useState(false)
   const [isDeployed, setIsDeployed] = useState(false)
@@ -88,26 +92,49 @@ const JobResult = ({ jobInfo, onNewJob, onJobUpdate }) => {
     }
   }
 
-  // Function to generate iFlow match
+  // Function to generate iFlow match - ISOLATED from main job status
   const handleGenerateIflowMatch = async () => {
+    // DEBOUNCING: Prevent rapid multiple clicks
+    const now = Date.now();
+    if (now - lastClickTime < 1000) { // 1 second debounce
+      console.log("🚫 Click ignored - too soon after last click");
+      return;
+    }
+    setLastClickTime(now);
+
+    // IMMEDIATELY disable button to prevent multiple clicks
+    if (isGeneratingIflowMatch) {
+      console.log("🚫 SAP equivalent search already in progress, ignoring click");
+      return;
+    }
+
+    setIsGeneratingIflowMatch(true);
+    setIflowMatchStatus("processing");
+    setIflowMatchMessage("Starting SAP Integration Suite equivalent search...");
+
     try {
-      setIsGeneratingIflowMatch(true)
-      setIflowMatchStatus("processing")
-      setIflowMatchMessage(
-        "Starting SAP Integration Suite equivalent search..."
-      )
+      // Clear any existing iFlow match interval first
+      if (iflowMatchInterval) {
+        console.log("Clearing existing iFlow match interval");
+        clearInterval(iflowMatchInterval);
+        setIflowMatchInterval(null);
+      }
+
+      console.log("🔍 Starting SAP equivalent search - ISOLATED mode (no main job interference)");
+      console.log("🔍 Current main job status:", jobInfo.status);
 
       const result = await generateIflowMatch(jobInfo.id)
       toast.success("SAP Integration Suite equivalent search started")
 
       // Check if auto-polling is disabled in production
       if (DISABLE_AUTO_POLLING) {
-        console.log("Auto-polling is disabled by environment configuration. Making a single status check.");
+        console.log("Auto-polling is disabled for SAP equivalent search. Making a single status check.");
 
-        // Make a single status check after a short delay
+        // Make a single status check after a short delay - ISOLATED
         setTimeout(async () => {
           try {
             const statusResult = await getIflowMatchStatus(jobInfo.id);
+            console.log("SAP equivalent search status check (no polling):", statusResult);
             setIflowMatchStatus(statusResult.status);
             setIflowMatchMessage(statusResult.message);
 
@@ -129,20 +156,25 @@ const JobResult = ({ jobInfo, onNewJob, onJobUpdate }) => {
         return;
       }
 
-      // Start polling for status
+      // Start polling for status - ISOLATED from main job status
       const intervalId = setInterval(async () => {
         try {
+          // Use ONLY the iFlow match status API, not the main job status
           const statusResult = await getIflowMatchStatus(jobInfo.id)
+          console.log("🔍 SAP equivalent search status (isolated, no main job update):", statusResult)
+
           setIflowMatchStatus(statusResult.status)
           setIflowMatchMessage(statusResult.message)
 
           if (statusResult.status === "completed") {
             setIflowMatchFiles(statusResult.files || null)
             clearInterval(intervalId)
+            setIflowMatchInterval(null)
             setIsGeneratingIflowMatch(false)
             toast.success("SAP Integration Suite equivalent search completed!")
           } else if (statusResult.status === "failed") {
             clearInterval(intervalId)
+            setIflowMatchInterval(null)
             setIsGeneratingIflowMatch(false)
             toast.error(
               `SAP Integration Suite equivalent search failed: ${statusResult.message}`
@@ -150,12 +182,17 @@ const JobResult = ({ jobInfo, onNewJob, onJobUpdate }) => {
           }
         } catch (error) {
           console.error("Error polling iFlow match status:", error)
+          // Don't let SAP search errors affect main progress
         }
       }, POLL_INTERVAL_MS) // Use configured polling interval
+
+      // Store the interval ID for cleanup
+      setIflowMatchInterval(intervalId)
 
       // Clean up interval after 5 minutes (safety)
       setTimeout(() => {
         clearInterval(intervalId)
+        setIflowMatchInterval(null)
         if (iflowMatchStatus === "processing") {
           setIflowMatchStatus("unknown")
           setIflowMatchMessage(
@@ -180,6 +217,7 @@ const JobResult = ({ jobInfo, onNewJob, onJobUpdate }) => {
   const [iflowGenerationMessage, setIflowGenerationMessage] = useState(null)
   const [iflowGenerationFiles, setIflowGenerationFiles] = useState(null)
   const [statusCheckInterval, setStatusCheckInterval] = useState(null)
+  const [iflowMatchInterval, setIflowMatchInterval] = useState(null)
 
   // Set default custom iFlow name when iflowJobId becomes available
   useEffect(() => {
@@ -199,10 +237,32 @@ const JobResult = ({ jobInfo, onNewJob, onJobUpdate }) => {
         console.log("Cleaning up status check interval on unmount");
         clearInterval(statusCheckInterval);
       }
+      if (iflowMatchInterval) {
+        console.log("Cleaning up iFlow match interval on unmount");
+        clearInterval(iflowMatchInterval);
+      }
     };
-  }, [statusCheckInterval]);
+  }, [statusCheckInterval, iflowMatchInterval]);
 
   const handleGenerateIflow = async () => {
+    // DEBOUNCING: Prevent rapid multiple clicks
+    const now = Date.now();
+    if (now - lastClickTime < 1000) { // 1 second debounce
+      console.log("🚫 Click ignored - too soon after last click");
+      return;
+    }
+    setLastClickTime(now);
+
+    // IMMEDIATELY disable button to prevent multiple clicks
+    if (isGeneratingIflow) {
+      console.log("🚫 iFlow generation already in progress, ignoring click");
+      return;
+    }
+
+    setIsGeneratingIflow(true);
+    setIflowGenerationStatus("processing");
+    setIflowGenerationMessage("Starting SAP API/iFlow generation...");
+
     try {
       // Clear any existing interval first
       if (statusCheckInterval) {
@@ -210,10 +270,6 @@ const JobResult = ({ jobInfo, onNewJob, onJobUpdate }) => {
         clearInterval(statusCheckInterval);
         setStatusCheckInterval(null);
       }
-
-      setIsGeneratingIflow(true)
-      setIflowGenerationStatus("processing")
-      setIflowGenerationMessage("Starting SAP API/iFlow generation...")
 
       console.log(`Generating iFlow for job ${jobInfo.id}...`)
       console.log(`Platform detected: ${jobInfo.platform || 'mulesoft'}`)
@@ -278,8 +334,9 @@ const JobResult = ({ jobInfo, onNewJob, onJobUpdate }) => {
               // Update main job info if it has changed
               if (statusToCheck.status !== jobInfo.status) {
                 console.log(`Main job status updated from ${jobInfo.status} to ${statusToCheck.status}`);
-                // Trigger parent component update if available
-                if (typeof onJobUpdate === 'function') {
+                // Only update parent if this is NOT a SAP equivalent search operation
+                // to prevent interference with main progress tracking
+                if (typeof onJobUpdate === 'function' && !isGeneratingIflowMatch) {
                   onJobUpdate(statusToCheck);
                 }
               }
@@ -481,10 +538,10 @@ const JobResult = ({ jobInfo, onNewJob, onJobUpdate }) => {
       console.log(`  - iFlow ID: ${iflowId}`)
       console.log(`  - Package: ${packageId}`)
       console.log(`  - Platform: ${jobInfo.platform || 'mulesoft'}`)
-      console.log(`Using direct deployment with iflowId=${iflowId}, iflowName=${iflowName}, packageId=${packageId}, platform=${jobInfo.platform || 'mulesoft'}`)
-      const result = await directDeployIflowToSap(deployJobId, packageId, iflowId, iflowName, jobInfo.platform || 'mulesoft')
+      console.log(`Using unified deployment with iflowId=${iflowId}, iflowName=${iflowName}, packageId=${packageId}, platform=${jobInfo.platform || 'mulesoft'}`)
+      const result = await unifiedDeployIflowToSap(deployJobId, packageId, iflowId, iflowName, jobInfo.platform || 'mulesoft')
 
-      console.log("Direct deployment response:", result)
+      console.log("Unified deployment response:", result)
       console.log(`📦 DEPLOYMENT RESULT STATUS: ${result.status}`)
 
       if (result.status === 'success') {

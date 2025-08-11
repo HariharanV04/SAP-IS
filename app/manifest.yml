@@ -13,8 +13,8 @@ applications:
   env:
     FLASK_ENV: production
     FLASK_DEBUG: false
-    ANTHROPIC_API_KEY: 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
-    GITHUB_TOKEN: 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
+    ANTHROPIC_API_KEY: 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
+    GITHUB_TOKEN: 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
     IFLOW_API_URL: https://mule-to-is-api.cfapps.eu10-005.hana.ondemand.com
     BOOMI_API_URL: https://boomi-to-is-api.cfapps.eu10-005.hana.ondemand.com
     CORS_ORIGIN: https://ifa-frontend.cfapps.eu10-005.hana.ondemand.com

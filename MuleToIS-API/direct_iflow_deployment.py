@@ -34,11 +34,11 @@ class DirectIflowDeployment:
         # Load environment variables if not provided
         load_dotenv()
         
-        # Set credentials from parameters or environment variables
-        self.client_id = client_id or os.getenv('SAP_BTP_CLIENT_ID')
-        self.client_secret = client_secret or os.getenv('SAP_BTP_CLIENT_SECRET')
-        self.token_url = token_url or os.getenv('SAP_BTP_OAUTH_URL')
-        self.base_url = base_url or os.getenv('SAP_BTP_TENANT_URL')
+        # Use WORKING ITR Internal credentials (from working BoomiToIS script)
+        self.client_id = client_id or "sb-5e4b1b9b-d22f-427d-a6ae-f33c83513c0f!b124895|it!b410334"
+        self.client_secret = client_secret or "5813ca83-4ba6-4231-96e1-1a48a80eafec$kmhNJINpEbcsXgBQJn9vvaAHGgMegiM_-FB7EC_SF9w="
+        self.token_url = token_url or "https://itr-internal-2hco92jx.authentication.us10.hana.ondemand.com/oauth/token"
+        self.base_url = base_url or "https://itr-internal-2hco92jx.it-cpi034.cfapps.us10-002.hana.ondemand.com"
         
         # Validate required parameters
         if not all([self.client_id, self.client_secret, self.token_url, self.base_url]):

@@ -105,13 +105,21 @@ class EnhancedGenAIIFlowGenerator:
                         jobs = json.load(f)
 
                 if job_id in jobs:
+                    current_status = jobs[job_id].get('status')
+
+                    # PREVENT STATUS REGRESSION: Don't update to processing if already completed
+                    if current_status == 'completed' and status in ['processing', 'queued', 'generating_iflow']:
+                        print(f"🚫 BoomiToIS-API: PREVENTING STATUS REGRESSION for job {job_id[:8]}")
+                        print(f"🚫 Current: {current_status}, Attempted: {status} - BLOCKED")
+                        return  # Don't update the status
+
                     jobs[job_id]['status'] = status
                     jobs[job_id]['message'] = message
 
                     with open(jobs_file, 'w') as f:
                         json.dump(jobs, f, indent=2)
 
-                    print(f"📊 Job {job_id[:8]}: {status} - {message}")
+                    print(f"📊 Job {job_id[:8]}: {current_status} -> {status} - {message}")
             except Exception as e:
                 print(f"Warning: Could not update job status: {e}")
 

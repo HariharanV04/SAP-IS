@@ -82,8 +82,16 @@ class GemmaJobManager:
         return self.jobs.get(job_id)
     
     def update_job_status(self, job_id, status, **kwargs):
-        """Update job status and other fields"""
+        """Update job status and other fields with protection against regression"""
         if job_id in self.jobs:
+            current_status = self.jobs[job_id].get('status')
+
+            # PREVENT STATUS REGRESSION: Don't update to processing if already completed
+            if current_status == 'completed' and status in ['processing', 'queued', 'generating_iflow']:
+                print(f"🚫 Gemma3-API: PREVENTING STATUS REGRESSION for job {job_id[:8]}")
+                print(f"🚫 Current: {current_status}, Attempted: {status} - BLOCKED")
+                return  # Don't update the status
+
             self.jobs[job_id]['status'] = status
             self.jobs[job_id]['last_updated'] = datetime.now().isoformat()
             for key, value in kwargs.items():
