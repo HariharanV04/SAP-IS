@@ -1,0 +1,9 @@
+<?xml version="1.0" ?>
+<shape image="note_icon" name="shape13" shapetype="note" x="1136.0" y="64.0">
+  <configuration>
+    <note createdBy="purini.anil@accenture.com">
+      <noteText>Append the employee GPIDs from extension to WHERE dynamic process property.</noteText>
+    </note>
+  </configuration>
+  <dragpoints/>
+</shape>

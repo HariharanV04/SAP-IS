@@ -12,7 +12,10 @@ import {
   FileCode,
   Trash2,
   Plus,
-  RotateCcw
+  RotateCcw,
+  ArrowRight,
+  ChevronDown,
+  Zap
 } from "lucide-react"
 
 import {
@@ -53,10 +56,11 @@ const JobResult = ({ jobInfo, onNewJob, onJobUpdate }) => {
   const [isDeploying, setIsDeploying] = useState(false)
   const [isDeployed, setIsDeployed] = useState(false)
 
-  // User input for deployment configuration
+  // Simple deployment configuration state
   const [showDeploymentConfig, setShowDeploymentConfig] = useState(false)
   const [customPackageName, setCustomPackageName] = useState("ConversionPackages")
   const [customIflowName, setCustomIflowName] = useState("")
+
   const [downloading, setDownloading] = useState({
     html: false,
     markdown: false,
@@ -532,7 +536,7 @@ const JobResult = ({ jobInfo, onNewJob, onJobUpdate }) => {
       const packageId = (customPackageName && customPackageName.trim()) ? customPackageName.trim() : "ConversionPackages"
 
       // Use the direct deployment approach with platform information
-      console.log(`🚀 DEPLOYMENT INFO:`)
+      console.log(`DEPLOYMENT INFO:`)
       console.log(`  - Job ID: ${deployJobId}`)
       console.log(`  - iFlow Name: ${iflowName}`)
       console.log(`  - iFlow ID: ${iflowId}`)
@@ -821,35 +825,7 @@ const JobResult = ({ jobInfo, onNewJob, onJobUpdate }) => {
 
   return (
     <div className="bg-white shadow-sm rounded-lg p-6 space-y-6">
-      {/* New Upload Button - Prominent placement at top */}
-      {(jobInfo.status === "completed" || jobInfo.status === "failed" || jobInfo.status === "documentation_ready") && (
-        <div className="flex justify-between items-center p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
-          <div>
-            <h3 className="text-lg font-semibold text-gray-800">
-              {jobInfo.status === "completed" ? "Job Completed Successfully!" :
-               jobInfo.status === "failed" ? "Job Failed" :
-               "Documentation Ready"}
-            </h3>
-            <p className="text-sm text-gray-600">
-              {jobInfo.status === "completed" ? "Your files have been processed and are ready for download." :
-               jobInfo.status === "failed" ? "There was an issue processing your files." :
-               "Your documentation has been processed and is ready for iFlow generation."}
-            </p>
-          </div>
-          <button
-            onClick={() => {
-              if (onNewJob) {
-                onNewJob()
-              }
-            }}
-            className="flex items-center space-x-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium shadow-sm"
-            title="Start a new upload"
-          >
-            <RotateCcw className="h-5 w-5" />
-            <span>Start New Upload</span>
-          </button>
-        </div>
-      )}
+
 
       {(jobInfo.status === "completed" || jobInfo.status === "documentation_ready") && (
         <>
@@ -946,7 +922,7 @@ const JobResult = ({ jobInfo, onNewJob, onJobUpdate }) => {
                 </svg>
               </div>
 
-              {/* Deployment Configuration Section */}
+              {/* Simple Deployment Configuration */}
               {!isDeployed && isIflowGenerated && (
                 <div className="mb-4 p-4 bg-gray-50 rounded-lg border">
                   <div className="flex items-center justify-between mb-3">
@@ -956,9 +932,7 @@ const JobResult = ({ jobInfo, onNewJob, onJobUpdate }) => {
                       className="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1"
                     >
                       {showDeploymentConfig ? "Hide" : "Customize"}
-                      <svg className={`w-4 h-4 transition-transform ${showDeploymentConfig ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
+                      <ChevronDown className={`w-4 h-4 transition-transform ${showDeploymentConfig ? "rotate-180" : ""}`} />
                     </button>
                   </div>
 
@@ -1102,7 +1076,7 @@ const JobResult = ({ jobInfo, onNewJob, onJobUpdate }) => {
                   <div className="flex items-center gap-2 mb-2">
                     <CheckCircle className="h-5 w-5 text-green-600" />
                     <h4 className="font-semibold text-green-800">
-                      🚀 Deployed to SAP Integration Suite
+                      Deployed to SAP Integration Suite
                     </h4>
                   </div>
 
@@ -1579,7 +1553,7 @@ const JobResult = ({ jobInfo, onNewJob, onJobUpdate }) => {
       {jobInfo.parsed_details && (
         <div>
           <h4 className="font-semibold text-gray-800 mb-3">
-            Parsed MuleSoft Components:
+            Parsed Components:
           </h4>
           {/* Changed to flex layout for better responsiveness */}
           <div className="flex flex-wrap gap-4">

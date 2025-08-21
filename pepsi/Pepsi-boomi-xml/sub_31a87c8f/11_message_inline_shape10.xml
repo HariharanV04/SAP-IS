@@ -1,0 +1,29 @@
+<?xml version="1.0" ?>
+<shape image="message_icon" name="shape10" shapetype="message" userlabel="Mail Body (Notification Message for Successful file Transfer to NAVEX)" x="896.0" y="320.0">
+  <configuration>
+    <message combined="false">
+      <msgTxt>Hi Team,
+File has been transferred  successfully from EC to NAVEX.
+File Name: {1}
+Execution Date: {2}
+Thanks.</msgTxt>
+      <msgParameters>
+        <parametervalue key="0" valueType="process">
+          <processparameter processproperty="DPP_FileName" processpropertydefaultvalue=""/>
+        </parametervalue>
+        <parametervalue key="1" valueType="process">
+          <processparameter processproperty="EDATE" processpropertydefaultvalue=""/>
+        </parametervalue>
+      </msgParameters>
+    </message>
+  </configuration>
+  <dragpoints>
+    <dragpoint name="shape10.dragpoint1" toShape="shape17" x="1120.0" y="328.0">
+      <linesegment length="0" name="shape10.dragpoint1.lineseg1" orient="horizontal" x="929.0" y="334.0"/>
+      <linesegment length="0" name="shape10.dragpoint1.lineseg2" orient="vertical" x="929.0" y="334.0"/>
+      <linesegment length="103" name="shape10.dragpoint1.lineseg3" orient="horizontal" x="929.0" y="334.0"/>
+      <linesegment length="0" name="shape10.dragpoint1.lineseg4" orient="vertical" x="1032.0" y="334.0"/>
+      <linesegment length="88" name="shape10.dragpoint1.lineseg5" orient="horizontal" x="1032.0" y="334.0"/>
+    </dragpoint>
+  </dragpoints>
+</shape>

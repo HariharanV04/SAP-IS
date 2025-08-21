@@ -1,0 +1,9 @@
+<?xml version="1.0" ?>
+<shape image="note_icon" name="shape19" shapetype="note" x="1168.0" y="128.0">
+  <configuration>
+    <note createdBy="purini.anil@accenture.com">
+      <noteText>Get WHERE after all properties</noteText>
+    </note>
+  </configuration>
+  <dragpoints/>
+</shape>

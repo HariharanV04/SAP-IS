@@ -1,0 +1,29 @@
+<?xml version="1.0" ?>
+<shape image="decision_icon" name="shape29" shapetype="decision" userlabel="Delta Run?" x="128.0" y="224.0">
+  <configuration>
+    <decision comparison="equals" name="Delta Run?">
+      <decisionvalue valueType="definedparameter">
+        <definedprocessparameter componentId="795e769e-a9c3-442e-bff3-a96b04f9b531" componentName="EC372 - EC to NAVEX (OB)" propertyKey="d0c9f73d-8faa-47c1-adda-3abd94033ac9" propertyLabel="FileType"/>
+      </decisionvalue>
+      <decisionvalue valueType="static">
+        <staticparameter staticproperty="Delta"/>
+      </decisionvalue>
+    </decision>
+  </configuration>
+  <dragpoints>
+    <dragpoint identifier="true" name="shape29.dragpoint1" text="True" toShape="shape24" x="272.0" y="169.0">
+      <linesegment length="0" name="shape29.dragpoint1.lineseg1" orient="horizontal" x="162.0" y="239.0"/>
+      <linesegment length="0" name="shape29.dragpoint1.lineseg2" orient="vertical" x="162.0" y="239.0"/>
+      <linesegment length="63" name="shape29.dragpoint1.lineseg3" orient="horizontal" x="162.0" y="239.0"/>
+      <linesegment length="64" name="shape29.dragpoint1.lineseg4" orient="vertical" x="225.0" y="175.0"/>
+      <linesegment label="True" length="47" name="shape29.dragpoint1.lineseg5" orient="horizontal" x="225.0" y="175.0"/>
+    </dragpoint>
+    <dragpoint identifier="false" name="shape29.dragpoint2" text="False" toShape="shape28" x="272.0" y="297.0">
+      <linesegment length="0" name="shape29.dragpoint2.lineseg1" orient="horizontal" x="162.0" y="239.0"/>
+      <linesegment length="0" name="shape29.dragpoint2.lineseg2" orient="vertical" x="162.0" y="239.0"/>
+      <linesegment length="63" name="shape29.dragpoint2.lineseg3" orient="horizontal" x="162.0" y="239.0"/>
+      <linesegment length="64" name="shape29.dragpoint2.lineseg4" orient="vertical" x="225.0" y="239.0"/>
+      <linesegment label="False" length="47" name="shape29.dragpoint2.lineseg5" orient="horizontal" x="225.0" y="303.0"/>
+    </dragpoint>
+  </dragpoints>
+</shape>

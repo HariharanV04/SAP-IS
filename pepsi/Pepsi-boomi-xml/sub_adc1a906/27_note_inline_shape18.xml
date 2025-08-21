@@ -1,0 +1,9 @@
+<?xml version="1.0" ?>
+<shape image="note_icon" name="shape18" shapetype="note" x="528.0" y="32.0">
+  <configuration>
+    <note createdBy="purini.anil@accenture.com">
+      <noteText>Append the country code from extension to WHERE dynamic process property.</noteText>
+    </note>
+  </configuration>
+  <dragpoints/>
+</shape>

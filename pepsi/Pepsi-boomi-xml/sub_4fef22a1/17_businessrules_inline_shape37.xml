@@ -1,0 +1,21 @@
+<?xml version="1.0" ?>
+<shape xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" image="businessrules_icon" name="shape37" shapetype="businessrules" userlabel="Orighirdate from Expats" x="895.0" y="16.0">
+  <configuration>
+    <businessrules profileId="b3a5d5ef-2ad2-43a4-98dd-646c12e74af9" profileName="SuccessFactors CompoundEmployee QUERY Response" profileType="profile.xml">
+      <rule key="1" name="Check if Expat">
+        <input alias="employee_class" elementKey="24720" id="1" name="employee_class (CompoundEmployee/person/employment_information/job_information/employee_class)" taglist="0" xsi:type="BusinessRuleField"/>
+        <condition operator="and" xsi:type="GroupingCondition">
+          <nestedExpression operator="=" xsi:type="SimpleCondition">
+            <leftInput deleted="false" id="1" name="employee_class" xsi:type="FieldConditionInput"/>
+            <rightInput deleted="false" id="0" name="&quot;E&quot;" value="E" xsi:type="StaticConditionInput"/>
+          </nestedExpression>
+        </condition>
+        <errorMessage/>
+      </rule>
+    </businessrules>
+  </configuration>
+  <dragpoints>
+    <dragpoint identifier="Accepted" name="shape37.dragpoint1" text="Accepted" toShape="shape39" x="1136.0" y="24.0"/>
+    <dragpoint identifier="Rejected" name="shape37.dragpoint2" text="Rejected" toShape="shape18" x="1136.0" y="88.0"/>
+  </dragpoints>
+</shape>

@@ -1,0 +1,16 @@
+<?xml version="1.0" ?>
+<bns:Component xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bns="http://api.platform.boomi.com/" folderFullPath="PepsiCo" componentId="7dcc0c4e-b199-4ed8-a426-7641c92096f3" version="35" name="Pepsi SF Cloud (sftp8.sapsf.com)" type="connector-settings" subType="sftp" createdDate="2013-09-05T19:45:29Z" createdBy="bgogineni@successfactors.com" modifiedDate="2022-06-16T06:36:24Z" modifiedBy="abhineet.verma.Contractor@pepsico.com" deleted="false" currentVersion="true" folderName="PepsiCo" folderId="RjoyOTQ1MTc" branchName="main" branchId="QjoyOTk5NDY">
+  <bns:encryptedValues>
+    <bns:encryptedValue path="//SFTPSettings/AuthSettings/@password" isSet="true"/>
+  </bns:encryptedValues>
+  <bns:description>SFTP connection to Successfactors Pepsi SFTP server  </bns:description>
+  <bns:object>
+    <SFTPSettings xmlns="" host="sftp8.sapsf.com" port="22">
+      <AuthSettings password="b61a12ea2877f7c0f7f525f879ee7a5f24ad335496cb05da8c7b1f11f9d6de289479b84eac4a5dfebb13f35c5489cc0e5fa0cc904f3cfaedf68b76d6377054ef" user="pepsisftp"/>
+      <ProxySettings host="" proxyEnabled="false" type="ATOM" user=""/>
+      <SSHOptions dhKeySizeMax1024="false" sshkeyauth="false" sshkeypath="">
+        <knownHostEntry/>
+      </SSHOptions>
+    </SFTPSettings>
+  </bns:object>
+</bns:Component>

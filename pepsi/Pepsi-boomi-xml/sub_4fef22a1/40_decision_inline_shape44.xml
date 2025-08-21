@@ -1,0 +1,17 @@
+<?xml version="1.0" ?>
+<shape image="decision_icon" name="shape44" shapetype="decision" userlabel="end_date_check" x="1103.0" y="272.0">
+  <configuration>
+    <decision comparison="equals" name="end_date_check">
+      <decisionvalue valueType="profile">
+        <profileelement elementId="21794" elementName="end_date (CompoundEmployee/person/employment_information/end_date)" profileId="b3a5d5ef-2ad2-43a4-98dd-646c12e74af9" profileType="profile.xml"/>
+      </decisionvalue>
+      <decisionvalue valueType="static">
+        <staticparameter staticproperty=""/>
+      </decisionvalue>
+    </decision>
+  </configuration>
+  <dragpoints>
+    <dragpoint identifier="true" name="shape44.dragpoint1" text="True" toShape="unset" x="1204.0" y="258.0"/>
+    <dragpoint identifier="false" name="shape44.dragpoint2" text="False" toShape="shape45" x="1215.0" y="328.0"/>
+  </dragpoints>
+</shape>

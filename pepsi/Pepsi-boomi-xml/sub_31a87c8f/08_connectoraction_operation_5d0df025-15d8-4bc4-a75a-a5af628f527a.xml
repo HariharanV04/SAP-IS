@@ -1,0 +1,17 @@
+<?xml version="1.0" ?>
+<bns:Component xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bns="http://api.platform.boomi.com/" folderFullPath="PepsiCo/2.0 Development/2.1 Global Integrations/EC372 - EC to NAVEX (OB)" componentId="5d0df025-15d8-4bc4-a75a-a5af628f527a" version="1" name="NAVEX SFTP Connector Operation" type="connector-action" subType="sftp" createdDate="2018-04-25T11:25:33Z" createdBy="Deep.Singh.Chauhan@accenture.com" modifiedDate="2018-04-25T11:25:33Z" modifiedBy="Deep.Singh.Chauhan@accenture.com" deleted="false" currentVersion="true" folderName="EC372 - EC to NAVEX (OB)" folderId="RjoxOTM3OTEx" branchName="main" branchId="QjoyOTk5NDY">
+  <bns:encryptedValues/>
+  <bns:description/>
+  <bns:object>
+    <Operation xmlns="">
+      <Archiving directory="" enabled="false"/>
+      <Configuration>
+        <SFTPSendAction moveToDirectory="" moveToForceOverride="false" remoteDirectory="" sftpaction="actionputrename"/>
+      </Configuration>
+      <Tracking>
+        <TrackedFields/>
+      </Tracking>
+      <Caching/>
+    </Operation>
+  </bns:object>
+</bns:Component>

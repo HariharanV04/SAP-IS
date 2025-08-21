@@ -1,0 +1,17 @@
+<?xml version="1.0" ?>
+<shape image="dataprocess_icon" name="shape16" shapetype="dataprocess" userlabel="Split on EmpInfo" x="671.0" y="96.0">
+  <configuration>
+    <dataprocess>
+      <step index="1" key="1" name="Split Documents" processtype="8">
+        <documentsplit profileType="xml">
+          <SplitOptions>
+            <XMLOptions linkElementKey="20636" linkElementName="employment_information (CompoundEmployee/person/employment_information)" profileId="b3a5d5ef-2ad2-43a4-98dd-646c12e74af9"/>
+          </SplitOptions>
+        </documentsplit>
+      </step>
+    </dataprocess>
+  </configuration>
+  <dragpoints>
+    <dragpoint name="shape16.dragpoint1" toShape="shape40" x="752.0" y="104.0"/>
+  </dragpoints>
+</shape>

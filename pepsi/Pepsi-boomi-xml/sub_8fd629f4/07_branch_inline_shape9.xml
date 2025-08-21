@@ -1,0 +1,22 @@
+<?xml version="1.0" ?>
+<shape image="branch_icon" name="shape9" shapetype="branch" userlabel="" x="1120.0" y="240.0">
+  <configuration>
+    <branch numBranches="2"/>
+  </configuration>
+  <dragpoints>
+    <dragpoint identifier="1" name="shape9.dragpoint1" text="1" toShape="shape12" x="1280.0" y="169.0">
+      <linesegment length="0" name="shape9.dragpoint1.lineseg1" orient="horizontal" x="1154.0" y="255.0"/>
+      <linesegment length="0" name="shape9.dragpoint1.lineseg2" orient="vertical" x="1154.0" y="255.0"/>
+      <linesegment length="71" name="shape9.dragpoint1.lineseg3" orient="horizontal" x="1154.0" y="255.0"/>
+      <linesegment length="80" name="shape9.dragpoint1.lineseg4" orient="vertical" x="1225.0" y="175.0"/>
+      <linesegment label="1" length="55" name="shape9.dragpoint1.lineseg5" orient="horizontal" x="1225.0" y="175.0"/>
+    </dragpoint>
+    <dragpoint identifier="2" name="shape9.dragpoint2" text="2" toShape="shape13" x="1280.0" y="345.0">
+      <linesegment length="0" name="shape9.dragpoint2.lineseg1" orient="horizontal" x="1154.0" y="255.0"/>
+      <linesegment length="0" name="shape9.dragpoint2.lineseg2" orient="vertical" x="1154.0" y="255.0"/>
+      <linesegment length="71" name="shape9.dragpoint2.lineseg3" orient="horizontal" x="1154.0" y="255.0"/>
+      <linesegment length="96" name="shape9.dragpoint2.lineseg4" orient="vertical" x="1225.0" y="255.0"/>
+      <linesegment label="2" length="55" name="shape9.dragpoint2.lineseg5" orient="horizontal" x="1225.0" y="351.0"/>
+    </dragpoint>
+  </dragpoints>
+</shape>

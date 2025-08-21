@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+<shape image="start" name="shape1" shapetype="start" userlabel="Start" x="80.0" y="176.0">
+  <configuration>
+    <passthroughaction/>
+  </configuration>
+  <dragpoints>
+    <dragpoint name="shape1.dragpoint1" toShape="shape7" x="224.0" y="184.0">
+      <linesegment length="0" name="shape1.dragpoint1.lineseg1" orient="horizontal" x="113.0" y="190.0"/>
+      <linesegment length="0" name="shape1.dragpoint1.lineseg2" orient="vertical" x="113.0" y="190.0"/>
+      <linesegment length="63" name="shape1.dragpoint1.lineseg3" orient="horizontal" x="113.0" y="190.0"/>
+      <linesegment length="0" name="shape1.dragpoint1.lineseg4" orient="vertical" x="176.0" y="190.0"/>
+      <linesegment length="48" name="shape1.dragpoint1.lineseg5" orient="horizontal" x="176.0" y="190.0"/>
+    </dragpoint>
+  </dragpoints>
+</shape>

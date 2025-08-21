@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>
+<bns:Component xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bns="http://api.platform.boomi.com/" folderFullPath="PepsiCo/1.1 Common Components" componentId="0ad0a6cc-c176-4361-83c7-57adef5d0183" version="3" name="Inline Notification Mail Message" type="connector-action" subType="mail" createdDate="2015-08-03T14:25:56Z" createdBy="ahungund@successfactors.com" modifiedDate="2015-08-03T16:20:36Z" modifiedBy="ahungund@successfactors.com" deleted="false" currentVersion="true" folderName="1.1 Common Components" folderId="RjozODA3NzE" branchName="main" branchId="QjoyOTk5NDY">
+  <bns:encryptedValues/>
+  <bns:description>Notification mail message with no
+attachment.
+</bns:description>
+  <bns:object>
+    <Operation xmlns="">
+      <Archiving directory="" enabled="false"/>
+      <Configuration>
+        <MailSendAction bodyContentType="text/plain" dataContentType="text/plain" disposition="inline" from="" subject="" to=""/>
+      </Configuration>
+      <Tracking>
+        <TrackedFields/>
+      </Tracking>
+      <Caching/>
+    </Operation>
+  </bns:object>
+</bns:Component>

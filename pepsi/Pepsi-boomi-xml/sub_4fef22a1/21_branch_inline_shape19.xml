@@ -1,0 +1,10 @@
+<?xml version="1.0" ?>
+<shape image="branch_icon" name="shape19" shapetype="branch" userlabel="" x="1135.0" y="160.0">
+  <configuration>
+    <branch numBranches="2"/>
+  </configuration>
+  <dragpoints>
+    <dragpoint identifier="1" name="shape19.dragpoint1" text="1" toShape="shape20" x="1247.0" y="88.0"/>
+    <dragpoint identifier="2" name="shape19.dragpoint2" text="2" toShape="shape27" x="1248.0" y="216.0"/>
+  </dragpoints>
+</shape>

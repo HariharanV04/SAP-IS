@@ -1,0 +1,98 @@
+<?xml version="1.0" ?>
+<shape image="message_icon" name="shape4" shapetype="message" userlabel="ControlReport  Detail for Attachment" x="576.0" y="112.0">
+  <configuration>
+    <message combined="false">
+      <msgTxt>Number of records processed: {1}
+Number of successful records : {2}
+Number of error records : {3}
+Process Properties in Extension for this run :
+------------------------------------------------------------------
+Output File name =    {18}
+From Email Address for Errors  =   {4}
+To Email Address for Errors =  {5}
+From Email Address for Success = {6}
+To Email Address for Success = {7}
+Company Territory Code =  {8}
+Legal Entity =  {9}
+Employee Class = {10}
+GPID(s) = {11}
+Archive path on SFTP Server = {12}
+Employee Status =   {13}
+Send File to ADAM =   {14}
+Send File to PepSFTP = {15}
+ADAM SFTP location = {16}
+Encrypt Archive File =    {17}
+Last Successful Run Date (from extension) =  {19}
+Last Successful Run Date (from process) =  {20}</msgTxt>
+      <msgParameters>
+        <parametervalue key="0" valueType="current"/>
+        <parametervalue key="1" valueType="process">
+          <processparameter processproperty="DemographicTotalCount" processpropertydefaultvalue=""/>
+        </parametervalue>
+        <parametervalue key="2" valueType="process">
+          <processparameter processproperty="RPT_INT_ALL_BRULE_ERR_CNT" processpropertydefaultvalue=""/>
+        </parametervalue>
+        <parametervalue key="3" valueType="definedparameter">
+          <definedprocessparameter componentId="795e769e-a9c3-442e-bff3-a96b04f9b531" componentName="EC372 - EC to NAVEX (OB)" propertyKey="a6b2e057-49d9-4cbc-9c94-16fe27cf011b" propertyLabel="fromEmailAddressForErrors"/>
+        </parametervalue>
+        <parametervalue key="4" valueType="definedparameter">
+          <definedprocessparameter componentId="795e769e-a9c3-442e-bff3-a96b04f9b531" componentName="EC372 - EC to NAVEX (OB)" propertyKey="630bd0e1-a257-4ac9-b3c6-b4213140f7ff" propertyLabel="toEmailAddressForErrors"/>
+        </parametervalue>
+        <parametervalue key="5" valueType="definedparameter">
+          <definedprocessparameter componentId="795e769e-a9c3-442e-bff3-a96b04f9b531" componentName="EC372 - EC to NAVEX (OB)" propertyKey="9a653915-1d4f-464a-b613-f20c8958f652" propertyLabel="fromEmailAddressForSuccess"/>
+        </parametervalue>
+        <parametervalue key="6" valueType="definedparameter">
+          <definedprocessparameter componentId="795e769e-a9c3-442e-bff3-a96b04f9b531" componentName="EC372 - EC to NAVEX (OB)" propertyKey="e6c11e22-d87f-4570-975b-f39b8012be6e" propertyLabel="toEmailAddressForSuccess"/>
+        </parametervalue>
+        <parametervalue key="7" valueType="definedparameter">
+          <definedprocessparameter componentId="795e769e-a9c3-442e-bff3-a96b04f9b531" componentName="EC372 - EC to NAVEX (OB)" propertyKey="a92b59a7-bbfb-4ee5-8a4c-e32d7727fbb4" propertyLabel="Filter_company_territory_code"/>
+        </parametervalue>
+        <parametervalue key="8" valueType="definedparameter">
+          <definedprocessparameter componentId="795e769e-a9c3-442e-bff3-a96b04f9b531" componentName="EC372 - EC to NAVEX (OB)" propertyKey="8caddbc7-67c5-41dc-afb1-ce06fa7d9e8e" propertyLabel="Filter_LegalEntity"/>
+        </parametervalue>
+        <parametervalue key="9" valueType="definedparameter">
+          <definedprocessparameter componentId="795e769e-a9c3-442e-bff3-a96b04f9b531" componentName="EC372 - EC to NAVEX (OB)" propertyKey="5373d17c-a180-4aab-bc91-e91f8689b86c" propertyLabel="Filter_EmployeeClass"/>
+        </parametervalue>
+        <parametervalue key="10" valueType="definedparameter">
+          <definedprocessparameter componentId="795e769e-a9c3-442e-bff3-a96b04f9b531" componentName="EC372 - EC to NAVEX (OB)" propertyKey="c7175bc9-9ed8-4da3-97ad-e2147208110f" propertyLabel="Filter_GPID"/>
+        </parametervalue>
+        <parametervalue key="11" valueType="definedparameter">
+          <definedprocessparameter componentId="795e769e-a9c3-442e-bff3-a96b04f9b531" componentName="EC372 - EC to NAVEX (OB)" propertyKey="6c4f4625-a39d-4368-b986-85499c5dd7d2" propertyLabel="Archive path on SFTP server"/>
+        </parametervalue>
+        <parametervalue key="12" valueType="definedparameter">
+          <definedprocessparameter componentId="795e769e-a9c3-442e-bff3-a96b04f9b531" componentName="EC372 - EC to NAVEX (OB)" propertyKey="6236f705-e6ba-4f9c-8dcf-bacffe65d640" propertyLabel="Employee Status"/>
+        </parametervalue>
+        <parametervalue key="13" valueType="definedparameter">
+          <definedprocessparameter componentId="795e769e-a9c3-442e-bff3-a96b04f9b531" componentName="EC372 - EC to NAVEX (OB)" propertyKey="9649296e-66e0-4bf8-9041-cd438ad4167b" propertyLabel="Send Output To Vendor ?"/>
+        </parametervalue>
+        <parametervalue key="14" valueType="definedparameter">
+          <definedprocessparameter componentId="795e769e-a9c3-442e-bff3-a96b04f9b531" componentName="EC372 - EC to NAVEX (OB)" propertyKey="b2157951-1c8b-4e53-96fe-70de4e1be1b3" propertyLabel="SendFilesToPepsoSFTP"/>
+        </parametervalue>
+        <parametervalue key="15" valueType="definedparameter">
+          <definedprocessparameter componentId="795e769e-a9c3-442e-bff3-a96b04f9b531" componentName="EC372 - EC to NAVEX (OB)" propertyKey="729bf863-ed8a-4863-85e7-f6a69f337c8b" propertyLabel="NAVEXSFTPDirectory"/>
+        </parametervalue>
+        <parametervalue key="16" valueType="definedparameter">
+          <definedprocessparameter componentId="795e769e-a9c3-442e-bff3-a96b04f9b531" componentName="EC372 - EC to NAVEX (OB)" propertyKey="60304a50-7a2a-412a-932c-db44d28dbdc4" propertyLabel="Encrypt Archive File"/>
+        </parametervalue>
+        <parametervalue key="17" valueType="process">
+          <processparameter processproperty="DPP_FileName" processpropertydefaultvalue=""/>
+        </parametervalue>
+        <parametervalue key="18" valueType="definedparameter">
+          <definedprocessparameter componentId="795e769e-a9c3-442e-bff3-a96b04f9b531" componentName="EC372 - EC to NAVEX (OB)" propertyKey="bdf17f77-c75b-4777-bc49-2ce59e2286d9" propertyLabel="Filter_LSRD"/>
+        </parametervalue>
+        <parametervalue key="19" valueType="process">
+          <processparameter processproperty="EDATE" processpropertydefaultvalue=""/>
+        </parametervalue>
+      </msgParameters>
+    </message>
+  </configuration>
+  <dragpoints>
+    <dragpoint name="shape4.dragpoint1" toShape="shape7" x="720.0" y="121.0">
+      <linesegment length="0" name="shape4.dragpoint1.lineseg1" orient="horizontal" x="610.0" y="127.0"/>
+      <linesegment length="0" name="shape4.dragpoint1.lineseg2" orient="vertical" x="610.0" y="127.0"/>
+      <linesegment length="63" name="shape4.dragpoint1.lineseg3" orient="horizontal" x="610.0" y="127.0"/>
+      <linesegment length="0" name="shape4.dragpoint1.lineseg4" orient="vertical" x="673.0" y="127.0"/>
+      <linesegment length="47" name="shape4.dragpoint1.lineseg5" orient="horizontal" x="673.0" y="127.0"/>
+    </dragpoint>
+  </dragpoints>
+</shape>

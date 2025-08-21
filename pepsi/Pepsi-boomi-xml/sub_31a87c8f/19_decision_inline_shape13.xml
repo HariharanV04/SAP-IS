@@ -1,0 +1,29 @@
+<?xml version="1.0" ?>
+<shape image="decision_icon" name="shape13" shapetype="decision" userlabel="Encrypt Archive File" x="528.0" y="480.0">
+  <configuration>
+    <decision comparison="equals" name="Encrypt Archive File">
+      <decisionvalue valueType="definedparameter">
+        <definedprocessparameter componentId="795e769e-a9c3-442e-bff3-a96b04f9b531" componentName="EC372 - EC to NAVEX (OB)" propertyKey="60304a50-7a2a-412a-932c-db44d28dbdc4" propertyLabel="Encrypt Archive File"/>
+      </decisionvalue>
+      <decisionvalue valueType="static">
+        <staticparameter staticproperty="Yes"/>
+      </decisionvalue>
+    </decision>
+  </configuration>
+  <dragpoints>
+    <dragpoint identifier="true" name="shape13.dragpoint1" text="True" toShape="shape2" x="592.0" y="408.0">
+      <linesegment length="0" name="shape13.dragpoint1.lineseg1" orient="horizontal" x="561.0" y="494.0"/>
+      <linesegment length="0" name="shape13.dragpoint1.lineseg2" orient="vertical" x="561.0" y="494.0"/>
+      <linesegment length="23" name="shape13.dragpoint1.lineseg3" orient="horizontal" x="561.0" y="494.0"/>
+      <linesegment length="80" name="shape13.dragpoint1.lineseg4" orient="vertical" x="584.0" y="414.0"/>
+      <linesegment label="True" length="8" name="shape13.dragpoint1.lineseg5" orient="horizontal" x="584.0" y="414.0"/>
+    </dragpoint>
+    <dragpoint identifier="false" name="shape13.dragpoint2" text="False" toShape="shape4" x="720.0" y="488.0">
+      <linesegment length="0" name="shape13.dragpoint2.lineseg1" orient="horizontal" x="561.0" y="494.0"/>
+      <linesegment length="0" name="shape13.dragpoint2.lineseg2" orient="vertical" x="561.0" y="494.0"/>
+      <linesegment length="87" name="shape13.dragpoint2.lineseg3" orient="horizontal" x="561.0" y="494.0"/>
+      <linesegment length="0" name="shape13.dragpoint2.lineseg4" orient="vertical" x="648.0" y="494.0"/>
+      <linesegment label="False" length="72" name="shape13.dragpoint2.lineseg5" orient="horizontal" x="648.0" y="494.0"/>
+    </dragpoint>
+  </dragpoints>
+</shape>

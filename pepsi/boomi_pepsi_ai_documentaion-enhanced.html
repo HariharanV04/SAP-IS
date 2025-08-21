@@ -1,0 +1,1716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentation with Mermaid</title>
+    
+    <style>
+        /* Professional Technical Document Styling */
+        body {
+            font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: #fafafa;
+            color: #333;
+        }
+
+        /* Header and Title Styling */
+        h1 {
+            color: #1e3a8a;
+            border-bottom: 3px solid #3b82f6;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            font-weight: 600;
+        }
+
+        h2 {
+            color: #1e40af;
+            border-left: 4px solid #3b82f6;
+            padding-left: 15px;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            font-weight: 500;
+        }
+
+        h3 {
+            color: #1e40af;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+            font-weight: 500;
+        }
+
+        h4 {
+            color: #374151;
+            margin-top: 25px;
+            margin-bottom: 12px;
+            font-size: 1.2em;
+            font-weight: 500;
+        }
+
+        /* Content Container */
+        .document-container {
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        /* Table of Contents */
+        .toc {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .toc h2 {
+            margin-top: 0;
+            color: #1e40af;
+            border: none;
+            padding: 0;
+        }
+
+        .toc ol {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .toc li {
+            margin: 8px 0;
+        }
+
+        .toc a {
+            color: #3b82f6;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .toc a:hover {
+            color: #1d4ed8;
+            text-decoration: underline;
+        }
+
+        /* Code and Technical Elements */
+        code {
+            background: #f1f5f9;
+            color: #e11d48;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        pre {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 20px;
+            overflow-x: auto;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+
+        /* Mermaid Diagrams */
+        pre.mermaid {
+            text-align: center;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 30px;
+            margin: 30px 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Tables */
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px 0;
+            background: white;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        th {
+            background: #3b82f6;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        tr:nth-child(even) {
+            background: #f8fafc;
+        }
+
+        tr:hover {
+            background: #f1f5f9;
+        }
+
+        /* Lists */
+        ul, ol {
+            margin: 15px 0;
+            padding-left: 25px;
+        }
+
+        li {
+            margin: 8px 0;
+            line-height: 1.5;
+        }
+
+        /* Strong and Emphasis */
+        strong {
+            color: #1e40af;
+            font-weight: 600;
+        }
+
+        em {
+            color: #6b7280;
+            font-style: italic;
+        }
+
+        /* Paragraphs */
+        p {
+            margin: 15px 0;
+            text-align: justify;
+            line-height: 1.7;
+        }
+
+        /* Links */
+        a {
+            color: #3b82f6;
+            text-decoration: none;
+        }
+
+        a:hover {
+            color: #1d4ed8;
+            text-decoration: underline;
+        }
+
+        /* Blockquotes */
+        blockquote {
+            border-left: 4px solid #3b82f6;
+            margin: 20px 0;
+            padding: 15px 20px;
+            background: #f8fafc;
+            border-radius: 0 6px 6px 0;
+            font-style: italic;
+        }
+
+        /* Document Header */
+        .document-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .document-header h1 {
+            color: white;
+            border: none;
+            margin: 0;
+            font-size: 2.8em;
+        }
+
+        .document-subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+            margin-top: 10px;
+        }
+
+        /* Company Logo */
+        .company-logo {
+            position: absolute;
+            top: 20px;
+            left: 30px;
+            height: 60px;
+            width: auto;
+            opacity: 0.9;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .logo-container svg {
+            height: 80px;
+            width: auto;
+            margin-right: 20px;
+        }
+
+        /* Footer */
+        .document-footer {
+            margin-top: 50px;
+            padding: 20px;
+            text-align: center;
+            color: #6b7280;
+            border-top: 1px solid #e2e8f0;
+            font-size: 0.9em;
+        }
+
+        /* Print Styles */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .document-container {
+                box-shadow: none;
+                padding: 20px;
+            }
+
+            .document-header {
+                background: #3b82f6 !important;
+                -webkit-print-color-adjust: exact;
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            body {
+                padding: 20px 10px;
+            }
+
+            .document-container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            h2 {
+                font-size: 1.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="document-container">
+
+    <div class="document-header">
+        <div class="logo-container">
+            <svg width="507" height="206" viewBox="0 0 507 206" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M70.2578 134.616C71.3379 112.751 80.8662 95.298 100.193 83.445C108.911 78.1131 118.478 74.7759 128.469 72.7812C133.754 71.7455 139.154 71.1318 144.516 70.4029C146.599 70.1344 148.683 70.0194 150.766 69.9043C151.036 69.9043 151.46 70.2879 151.614 70.5947C153.543 74.5457 155.086 78.6501 156.282 82.8696C157.555 87.4344 158.519 92.0758 158.751 96.8323C158.944 100.63 159.137 104.427 158.867 108.225C157.786 123.453 152.579 137.148 143.089 149.192C132.404 162.733 118.593 171.594 101.851 175.89C96.9909 177.118 92.0532 177.77 87.0383 178C86.7297 178 86.3054 177.731 86.1125 177.463C81.9849 172.208 78.5516 166.531 75.8899 160.432C73.4211 154.793 71.6851 148.885 70.875 142.786C70.5279 140.255 70.4893 137.685 70.2578 134.616Z" fill="#F36F21"/>
+<path d="M9 91.999C12.6261 63.8435 35.6173 34.729 71.3386 29.0135C109.76 22.876 139.464 45.6613 150.766 69.0987C150.303 69.0987 149.956 69.0987 149.57 69.0987C125.383 69.0987 101.158 69.0987 76.9706 69.022C73.8074 69.022 70.6056 68.8302 67.4424 68.9069C48.1931 69.2905 30.6796 74.9676 15.2493 86.5521C13.2819 88.0481 11.5074 89.7742 9.61721 91.4237C9.42433 91.5771 9.23146 91.7689 9 91.999Z" fill="#F36F21"/>
+<path d="M61.3469 174.855C58.8781 173.934 56.7179 173.128 54.519 172.323C54.3647 172.284 54.2104 172.208 54.0561 172.131C51.0986 170.878 48.9255 168.794 47.5368 165.878C44.2578 159.089 42.0976 151.993 41.0946 144.512C40.516 140.331 40.2074 136.15 40.6317 131.969C41.2489 125.947 42.7148 120.078 44.9522 114.439C50.1985 101.205 59.4181 91.5005 71.6853 84.4041C80.6349 79.2256 90.3174 75.8883 100.308 73.4716C101.196 73.2415 102.083 73.0498 103.24 72.7812C100.347 73.8937 97.724 74.8143 95.178 75.8884C83.8753 80.6832 73.5755 87.0125 65.1274 96.0269C57.8366 103.775 52.8603 112.751 50.7772 123.185C50.1985 126.062 49.7742 129.015 49.6971 131.969C49.3113 147.044 53.0917 161.084 60.9226 174.011C61.0383 174.164 61.1155 174.356 61.3469 174.778V174.855Z" fill="#F36F21"/>
+<path d="M90.1253 71.5151C75.0421 73.5098 60.6533 77.5375 47.6533 85.6696C37.6236 91.9221 29.7155 100.169 24.6235 110.91C22.0775 116.319 20.303 121.996 19.6087 127.941C19.0686 132.353 18.8757 136.802 18.5285 141.099C18.5285 141.099 18.3357 140.83 18.1814 140.6C15.9054 136.649 14.0152 132.506 12.4336 128.248C12.0864 127.328 12.125 126.484 12.3178 125.601C14.2852 116.012 17.9885 107.189 24.0449 99.3638C29.7155 92.0372 36.7749 86.3984 44.9916 82.1405C53.2854 77.806 62.1192 75.1592 71.3003 73.5098C77.5496 72.3974 83.8374 71.7452 90.1639 71.5535L90.1253 71.5151Z" fill="#F36F21"/>
+<path d="M189.28 104V57.14H196.672V104H189.28ZM250.888 63.674H235.312V104H227.854V63.674H212.212V57.14H250.888V63.674ZM266.412 104V57.14H286.806C288.918 57.14 290.854 57.58 292.614 58.46C294.374 59.34 295.892 60.506 297.168 61.958C298.488 63.41 299.5 65.038 300.204 66.842C300.952 68.646 301.326 70.494 301.326 72.386C301.326 74.454 300.952 76.434 300.204 78.326C299.456 80.218 298.378 81.846 296.97 83.21C295.606 84.574 294 85.564 292.152 86.18L303.174 104H294.858L284.694 87.698H273.804V104H266.412ZM273.804 81.164H286.74C288.104 81.164 289.314 80.768 290.37 79.976C291.426 79.184 292.262 78.128 292.878 76.808C293.494 75.444 293.802 73.97 293.802 72.386C293.802 70.758 293.45 69.306 292.746 68.03C292.042 66.71 291.118 65.654 289.974 64.862C288.874 64.07 287.664 63.674 286.344 63.674H273.804V81.164ZM347.271 65.918C346.611 65.17 345.841 64.51 344.961 63.938C344.081 63.322 343.091 62.794 341.991 62.354C340.891 61.914 339.703 61.562 338.427 61.298C337.195 61.034 335.875 60.902 334.467 60.902C330.375 60.902 327.361 61.694 325.425 63.278C323.533 64.818 322.587 66.93 322.587 69.614C322.587 71.462 323.027 72.914 323.907 73.97C324.831 75.026 326.261 75.884 328.197 76.544C330.133 77.204 332.597 77.886 335.589 78.59C338.933 79.294 341.815 80.13 344.235 81.098C346.655 82.066 348.525 83.386 349.845 85.058C351.165 86.686 351.825 88.908 351.825 91.724C351.825 93.88 351.407 95.75 350.571 97.334C349.735 98.918 348.569 100.238 347.073 101.294C345.577 102.35 343.795 103.142 341.727 103.67C339.659 104.154 337.393 104.396 334.929 104.396C332.509 104.396 330.177 104.154 327.933 103.67C325.733 103.142 323.643 102.394 321.663 101.426C319.683 100.414 317.835 99.138 316.119 97.598L318.429 93.836C319.265 94.716 320.255 95.552 321.399 96.344C322.587 97.092 323.885 97.774 325.293 98.39C326.745 99.006 328.285 99.49 329.913 99.842C331.585 100.15 333.301 100.304 335.061 100.304C338.801 100.304 341.705 99.622 343.773 98.258C345.885 96.894 346.941 94.87 346.941 92.186C346.941 90.25 346.413 88.71 345.357 87.566C344.301 86.378 342.717 85.41 340.605 84.662C338.493 83.914 335.897 83.188 332.817 82.484C329.561 81.736 326.811 80.9 324.567 79.976C322.323 79.052 320.629 77.842 319.485 76.346C318.385 74.806 317.835 72.782 317.835 70.274C317.835 67.37 318.539 64.928 319.947 62.948C321.399 60.924 323.379 59.406 325.887 58.394C328.395 57.338 331.277 56.81 334.533 56.81C336.601 56.81 338.515 57.03 340.275 57.47C342.079 57.866 343.729 58.46 345.225 59.252C346.765 60.044 348.195 61.034 349.515 62.222L347.271 65.918ZM397.195 104H392.707V84.794C392.707 80.922 392.025 78.018 390.661 76.082C389.297 74.102 387.339 73.112 384.787 73.112C383.115 73.112 381.443 73.552 379.771 74.432C378.143 75.268 376.691 76.434 375.415 77.93C374.183 79.382 373.303 81.054 372.775 82.946V104H368.287V55.82H372.775V77.402C374.139 74.85 376.031 72.826 378.451 71.33C380.915 69.79 383.533 69.02 386.305 69.02C388.285 69.02 389.957 69.372 391.321 70.076C392.729 70.78 393.851 71.814 394.687 73.178C395.567 74.498 396.205 76.06 396.601 77.864C396.997 79.624 397.195 81.626 397.195 83.87V104ZM416.005 104V69.614H420.493V104H416.005ZM416.005 62.42V55.82H420.493V62.42H416.005ZM441.269 104V73.178H436.517V69.614H441.269V68.69C441.269 65.874 441.665 63.454 442.457 61.43C443.293 59.406 444.459 57.866 445.955 56.81C447.495 55.71 449.299 55.16 451.367 55.16C452.731 55.16 454.051 55.358 455.327 55.754C456.603 56.15 457.703 56.678 458.627 57.338L457.241 60.572C456.669 60.088 455.921 59.714 454.997 59.45C454.073 59.186 453.149 59.054 452.225 59.054C450.157 59.054 448.551 59.868 447.407 61.496C446.307 63.124 445.757 65.478 445.757 68.558V69.614H455.261V73.178H445.757V104H441.269ZM487.144 102.35C486.792 102.482 486.242 102.724 485.494 103.076C484.746 103.428 483.844 103.736 482.788 104C481.732 104.264 480.588 104.396 479.356 104.396C478.08 104.396 476.87 104.154 475.726 103.67C474.626 103.186 473.746 102.46 473.086 101.492C472.426 100.48 472.096 99.248 472.096 97.796V73.178H467.344V69.614H472.096V57.998H476.584V69.614H484.504V73.178H476.584V96.542C476.672 97.774 477.112 98.698 477.904 99.314C478.74 99.93 479.686 100.238 480.742 100.238C481.974 100.238 483.096 100.04 484.108 99.644C485.12 99.204 485.736 98.896 485.956 98.72L487.144 102.35Z" fill="black"/>
+<path d="M186.96 155V126.6H206.04V131.44H192.48V138.76H203.76V143.24H192.48V155H186.96ZM219.929 155V126.6H225.449V150.16H239.929V155H219.929ZM264.783 155.2C262.703 155.2 260.81 154.8 259.103 154C257.423 153.2 255.97 152.12 254.743 150.76C253.543 149.373 252.61 147.827 251.943 146.12C251.276 144.387 250.943 142.613 250.943 140.8C250.943 138.907 251.29 137.107 251.983 135.4C252.703 133.667 253.676 132.133 254.903 130.8C256.156 129.44 257.623 128.373 259.303 127.6C261.01 126.8 262.876 126.4 264.903 126.4C266.956 126.4 268.823 126.813 270.503 127.64C272.21 128.467 273.663 129.573 274.863 130.96C276.063 132.347 276.996 133.893 277.663 135.6C278.33 137.307 278.663 139.067 278.663 140.88C278.663 142.747 278.316 144.547 277.623 146.28C276.93 147.987 275.956 149.52 274.703 150.88C273.476 152.213 272.01 153.267 270.303 154.04C268.623 154.813 266.783 155.2 264.783 155.2ZM256.543 140.8C256.543 142.027 256.73 143.213 257.103 144.36C257.476 145.507 258.01 146.533 258.703 147.44C259.423 148.32 260.29 149.027 261.303 149.56C262.343 150.067 263.516 150.32 264.823 150.32C266.156 150.32 267.343 150.053 268.383 149.52C269.423 148.96 270.29 148.227 270.983 147.32C271.676 146.387 272.196 145.36 272.543 144.24C272.916 143.093 273.103 141.947 273.103 140.8C273.103 139.573 272.903 138.4 272.503 137.28C272.13 136.133 271.583 135.12 270.863 134.24C270.17 133.333 269.303 132.627 268.263 132.12C267.25 131.587 266.103 131.32 264.823 131.32C263.463 131.32 262.263 131.6 261.223 132.16C260.21 132.693 259.356 133.413 258.663 134.32C257.97 135.227 257.436 136.24 257.063 137.36C256.716 138.48 256.543 139.627 256.543 140.8ZM301.485 126.68H306.605L309.845 136.08L313.125 126.68H318.205L313.325 139.6L316.925 148.64L324.965 126.6H330.965L319.605 155H314.845L309.845 143.08L304.885 155H300.125L288.805 126.6H294.725L302.805 148.64L306.325 139.6L301.485 126.68Z" fill="#F36F21"/>
+</svg>
+            <div>
+                <h1>Employee Data Export Integration - SuccessFactors to NAVEX Vendor Platform</h1>
+                <div class="document-subtitle">Technical Design Document</div>
+            </div>
+        </div>
+    </div>
+
+    
+<h2 id="table-of-contents">Table of Contents</h2>
+<ol>
+<li><a href="#api-overview">API Overview</a></li>
+<li><a href="#endpoints">Endpoints</a></li>
+<li><a href="#current-dell-boomi-flow-logic">Current Dell Boomi Flow Logic</a></li>
+<li><a href="#process-flow-overview">Process Flow Overview</a></li>
+<li><a href="#step-by-step-flow-description">Step-by-Step Flow Description</a></li>
+<li><a href="#boomi-transformations-explained">Boomi Transformations Explained</a></li>
+<li><a href="#sap-integration-suite-implementation">SAP Integration Suite Implementation</a></li>
+<li><a href="#component-mapping">Component Mapping</a></li>
+<li><a href="#integration-flow-visualization">Integration Flow Visualization</a></li>
+<li><a href="#configuration-details">Configuration Details</a></li>
+<li><a href="#environment-configuration">Environment Configuration</a></li>
+<li><a href="#api-reference">API Reference</a></li>
+</ol>
+<h2 id="api-overview">API Overview</h2>
+<p>This integration process extracts employee demographic data from SuccessFactors Employee Central and delivers it to the NAVEX vendor platform for compliance and ethics management purposes. The system supports both full and delta extraction modes with configurable filtering capabilities.</p>
+<p><strong>Key Features:</strong>
+- Automated employee data extraction from SuccessFactors Employee Central
+- Dynamic filtering based on employee class, legal entity, territory codes, and employment status
+- Delta processing with last successful run date tracking
+- Secure file delivery to NAVEX vendor via SFTP with PGP encryption
+- Archive management with PepsiCo internal SFTP storage
+- Comprehensive error handling and notification system
+- Control reporting and audit trail functionality</p>
+<p><strong>Authentication:</strong> Process property-based configuration with PGP encryption for secure data transmission</p>
+<p><strong>Data Processing Modes:</strong>
+- <strong>Delta Mode:</strong> Incremental extraction based on last modified date
+- <strong>Full Mode:</strong> Complete dataset extraction with configurable date range</p>
+<p><strong>File Formats:</strong> CSV output format with PGP encryption for secure vendor delivery</p>
+<h2 id="endpoints">Endpoints</h2>
+<h3 id="successfactors-employee-central-api-endpoints">SuccessFactors Employee Central API Endpoints</h3>
+<p><strong>Base URL:</strong> Configured via process properties (Employee Central system connection)</p>
+<h4 id="get-employee-demographics">GET /Employee Demographics</h4>
+<ul>
+<li><strong>Purpose:</strong> Extract employee demographic data with dynamic filtering</li>
+<li><strong>Method:</strong> GET (via SuccessFactors connector)</li>
+<li><strong>Authentication:</strong> SuccessFactors system authentication</li>
+<li><strong>Query Parameters:</strong></li>
+<li><code>$filter</code>: Dynamic WHERE clause based on process properties</li>
+<li><code>$select</code>: Employee demographic fields selection</li>
+<li>Date range filters for delta processing</li>
+</ul>
+<p><strong>Response Format:</strong></p>
+<pre class="codehilite"><code class="language-xml">&lt;EmployeeData&gt;
+  &lt;Employee&gt;
+    &lt;GPID&gt;Global Person ID&lt;/GPID&gt;
+    &lt;FirstName&gt;Employee First Name&lt;/FirstName&gt;
+    &lt;LastName&gt;Employee Last Name&lt;/LastName&gt;
+    &lt;EmployeeStatus&gt;Active/Terminated&lt;/EmployeeStatus&gt;
+    &lt;EmployeeClass&gt;Employee Classification&lt;/EmployeeClass&gt;
+    &lt;PayGrade&gt;Pay Grade Level&lt;/PayGrade&gt;
+    &lt;PositionTitle&gt;Job Title&lt;/PositionTitle&gt;
+    &lt;EmailAddress&gt;Business Email&lt;/EmailAddress&gt;
+    &lt;Country&gt;Work Country&lt;/Country&gt;
+    &lt;ManagerID&gt;Manager Global Person ID&lt;/ManagerID&gt;
+    &lt;OriginalHireDate&gt;Initial Hire Date&lt;/OriginalHireDate&gt;
+    &lt;TerminationDate&gt;End Date if applicable&lt;/TerminationDate&gt;
+    &lt;Location&gt;Work Location&lt;/Location&gt;
+    &lt;Region&gt;Geographic Region&lt;/Region&gt;
+    &lt;Sector&gt;Business Sector&lt;/Sector&gt;
+  &lt;/Employee&gt;
+&lt;/EmployeeData&gt;
+</code></pre>
+
+<h2 id="current-dell-boomi-flow-logic">Current Dell Boomi Flow Logic</h2>
+<h3 id="process-flow-overview">Process Flow Overview</h3>
+<p>The Employee Central to NAVEX integration is a comprehensive data extraction and delivery system that:</p>
+<ol>
+<li><strong>Initializes</strong> with error reporting properties and dynamic filtering configuration</li>
+<li><strong>Determines processing mode</strong> (Delta vs Full) based on last successful run date</li>
+<li><strong>Builds dynamic WHERE clauses</strong> for targeted employee data extraction</li>
+<li><strong>Extracts employee demographics</strong> from SuccessFactors Employee Central</li>
+<li><strong>Transforms data</strong> to NAVEX-required CSV format with field mappings</li>
+<li><strong>Delivers files securely</strong> to NAVEX vendor SFTP with PGP encryption</li>
+<li><strong>Archives files</strong> to PepsiCo internal SFTP repository</li>
+<li><strong>Generates control reports</strong> and sends success/error notifications</li>
+</ol>
+<p>The process includes sophisticated error handling, parallel processing capabilities, and configurable filtering to support various business scenarios including legal entity separation, territory-based filtering, and employee class restrictions.</p>
+<h3 id="step-by-step-flow-description">Step-by-Step Flow Description</h3>
+<hr />
+<h4 id="step-1-main-process-start-ec372-ec-to-navex"><strong>Step 1: Main Process Start (EC372 - EC to NAVEX)</strong></h4>
+<p><strong>Component Type:</strong> Start Event</p>
+<p><strong>Purpose:</strong> Initiates the employee data extraction process with decision logic for processing mode determination</p>
+<p><strong>Configuration Details:</strong>
+- <strong>Process Name:</strong> EC372 - EC to NAVEX (OB)
+- <strong>Version:</strong> 75
+- <strong>Trigger Type:</strong> Scheduled or manual execution
+- <strong>Initial Processing:</strong> Delta vs Full run determination</p>
+<p><strong>Data Flow:</strong>
+- <strong>Input:</strong> Process execution trigger with configuration parameters
+- <strong>Processing:</strong> Routes to Delta Run decision logic
+- <strong>Output:</strong> Process initiation with mode determination</p>
+<hr />
+<h4 id="step-2-delta-run-decision-shape15"><strong>Step 2: Delta Run Decision (shape15)</strong></h4>
+<p><strong>Component Type:</strong> Decision</p>
+<p><strong>Purpose:</strong> Determines whether to perform incremental (delta) or full data extraction based on last successful run date</p>
+<p><strong>Configuration Details:</strong>
+- <strong>Decision Criteria:</strong> Filter_LSRD property evaluation
+- <strong>Logic:</strong> equals comparison
+- <strong>Branch Logic:</strong> Routes to different property setting paths</p>
+<p><strong>Data Flow:</strong>
+- <strong>Input:</strong> Process execution context
+- <strong>Processing:</strong> Evaluates Filter_LSRD (Last Successful Run Date) property
+- <strong>Output:</strong> Routes to appropriate date range setting logic</p>
+<hr />
+<h4 id="step-3-lsrd-filter-decision-shape3"><strong>Step 3: LSRD Filter Decision (shape3)</strong></h4>
+<p><strong>Component Type:</strong> Decision</p>
+<p><strong>Purpose:</strong> Business decision to check if Filter LSRD (Last Successful Run Date) is NULL</p>
+<p><strong>Configuration Details:</strong>
+- <strong>Decision Name:</strong> Filter LSRD is NULL
+- <strong>Logic:</strong> equals comparison
+- <strong>Purpose:</strong> Determines initial setup vs ongoing delta processing</p>
+<p><strong>Data Flow:</strong>
+- <strong>Input:</strong> Current LSRD filter value
+- <strong>Processing:</strong> NULL check on last successful run date
+- <strong>Output:</strong> Routes to appropriate date range configuration</p>
+<hr />
+<h4 id="step-4-date-range-configuration-setlastsuccessrundate"><strong>Step 4: Date Range Configuration (SetLastSuccessRunDate)</strong></h4>
+<p><strong>Component Type:</strong> Document Properties</p>
+<p><strong>Purpose:</strong> Sets dynamic date range properties for data extraction filtering</p>
+<p><strong>Configuration Details:</strong>
+- <strong>Dynamic Properties:</strong> 5 dynamic properties configured
+  - Dynamic Process Property - SDATE: Process start date calculation
+  - Dynamic Process Property - EDATE: Process end date calculation<br />
+  - Dynamic Process Property - LSRD: Last successful run date tracking
+  - Additional date range parameters for filtering</p>
+<p><strong>Data Flow:</strong>
+- <strong>Input:</strong> Current execution context and date parameters
+- <strong>Processing:</strong> Calculates appropriate date ranges for extraction filtering
+- <strong>Output:</strong> Configured date range properties for SuccessFactors query</p>
+<hr />
+<h4 id="step-5-parallel-processing-initialization-shape4"><strong>Step 5: Parallel Processing Initialization (shape4)</strong></h4>
+<p><strong>Component Type:</strong> Parallel Gateway</p>
+<p><strong>Purpose:</strong> Initiates parallel processing with 5 concurrent branches for comprehensive data extraction</p>
+<p><strong>Configuration Details:</strong>
+- <strong>Branches:</strong> 5 parallel execution paths
+- <strong>Processing Type:</strong> Concurrent execution of multiple data extraction components
+- <strong>Coordination:</strong> All branches must complete before proceeding</p>
+<p><strong>Data Flow:</strong>
+- <strong>Input:</strong> Configured date range and filter properties
+- <strong>Processing:</strong> Splits execution into parallel streams for efficiency
+- <strong>Output:</strong> Multiple concurrent data extraction processes</p>
+<hr />
+<h4 id="step-6-error-reporting-initialization-sub-initialize-error-report-properties"><strong>Step 6: Error Reporting Initialization (Sub: Initialize Error Report Properties)</strong></h4>
+<p><strong>Component Type:</strong> Process Call (Sub-process)</p>
+<p><strong>Purpose:</strong> Initializes comprehensive error reporting properties for all integration components</p>
+<p><strong>Configuration Details:</strong>
+- <strong>Sub-process:</strong> Initialize Error Report Properties (Version 6)
+- <strong>Error Categories:</strong> Business Rule, Cleanse, Decision, Route, TryCatch, Return, General
+- <strong>Property Types:</strong> Error count, warning count, skip count for each category</p>
+<p><strong>Properties Set (21 total dynamic properties):</strong>
+- <strong>Business Rule Errors:</strong> RPT_INT_ALL_BRULE_ERR_CNT, RPT_INT_ALL_BRULE_WRN_CNT, RPT_INT_ALL_BRULE_SKP_CNT
+- <strong>Cleanse Errors:</strong> RPT_INT_ALL_CLNS_ERR_CNT, RPT_INT_ALL_CLNS_WRN_CNT, RPT_INT_ALL_CLNS_SKP_CNT
+- <strong>Decision Errors:</strong> RPT_INT_ALL_DCN_ERR_CNT, RPT_INT_ALL_DCN_WRN_CNT, RPT_INT_ALL_DCN_SKP_CNT
+- <strong>Route Errors:</strong> RPT_INT_ALL_ROUTE_ERR_CNT, RPT_INT_ALL_ROUTE_WRN_CNT, RPT_INT_ALL_ROUTE_SKP_CNT
+- <strong>TryCatch Errors:</strong> RPT_INT_ALL_TRYCATCH_ERR_CNT, RPT_INT_ALL_TRYCATCH_WRN_CNT, RPT_INT_ALL_TRYCATCH_SKP_CNT
+- <strong>Return Errors:</strong> RPT_INT_ALL_RETURN_ERR_CNT, RPT_INT_ALL_RETURN_WRN_CNT, RPT_INT_ALL_RETURN_SKP_CNT
+- <strong>General Errors:</strong> RPT_INT_ALL_ERR_CNT, RPT_INT_INTERFACE_START_TIME, RPT_INT_ALL_WRN_CNT, RPT_INT_ALL_SKP_CNT</p>
+<p><strong>Data Flow:</strong>
+- <strong>Input:</strong> Process execution context
+- <strong>Processing:</strong> Initializes all error tracking counters to zero
+- <strong>Output:</strong> Comprehensive error reporting framework ready for use</p>
+<hr />
+<h4 id="step-7-dynamic-filter-construction-sub-where-clause"><strong>Step 7: Dynamic Filter Construction (Sub: Where Clause)</strong></h4>
+<p><strong>Component Type:</strong> Process Call (Sub-process)</p>
+<p><strong>Purpose:</strong> Constructs dynamic WHERE clause for SuccessFactors data extraction based on configurable filter criteria</p>
+<p><strong>Configuration Details:</strong>
+- <strong>Sub-process:</strong> Where Clause (Dynamic Filter) (Version 6)
+- <strong>Filter Criteria:</strong> GPID, company_territory_code, employee_class, Legal Entity, Delta processing dates
+- <strong>Logic:</strong> Sequential decision points with dynamic property building</p>
+<p><strong>Filter Components:</strong>
+- <strong>GPID Filter:</strong> Global Person ID specific filtering when not blank
+- <strong>Territory Filter:</strong> Company territory code filtering when specified
+- <strong>Employee Class Filter:</strong> Employee classification filtering when configured
+- <strong>Legal Entity Filter:</strong> Organizational unit filtering when required
+- <strong>Date Range Filter:</strong> Last modified date and effective end date filtering for delta processing</p>
+<p><strong>Data Flow:</strong>
+- <strong>Input:</strong> Process filter properties and configuration parameters
+- <strong>Processing:</strong> Builds complex WHERE clause with multiple AND conditions based on non-null filter values
+- <strong>Output:</strong> Dynamic WHERE clause property for SuccessFactors query optimization</p>
+<hr />
+<h4 id="step-8-picklist-values-query-sub-query-picklist-values"><strong>Step 8: Picklist Values Query (Sub: Query Picklist Values)</strong></h4>
+<p><strong>Component Type:</strong> Process Call (Sub-process)</p>
+<p><strong>Purpose:</strong> Queries SuccessFactors for picklist values needed for data transformation and validation</p>
+<p><strong>Configuration Details:</strong>
+- <strong>Sub-process:</strong> Query Picklist Values (Version 1)
+- <strong>Property Set:</strong> Dynamic Process Property - PICKLISTIDS
+- <strong>Purpose:</strong> Retrieves lookup values for employee status, employee class, and other enumerated fields</p>
+<p><strong>Data Flow:</strong>
+- <strong>Input:</strong> SuccessFactors connection context
+- <strong>Processing:</strong> Queries picklist metadata for field value mapping
+- <strong>Output:</strong> Picklist value mappings for data transformation</p>
+<hr />
+<h4 id="step-9-core-data-extraction-sub-extract-data"><strong>Step 9: Core Data Extraction (Sub: Extract Data)</strong></h4>
+<p><strong>Component Type:</strong> Process Call (Sub-process)</p>
+<p><strong>Purpose:</strong> Performs the primary employee demographic data extraction from SuccessFactors Employee Central</p>
+<p><strong>Configuration Details:</strong>
+- <strong>Sub-process:</strong> Extract Data (Version 83)
+- <strong>Connector:</strong> SuccessFactors Employee Central connector
+- <strong>Data Entities:</strong> Employee demographics, job information, organizational data
+- <strong>Error Handling:</strong> Comprehensive exception handling with detailed error reporting</p>
+<p><strong>Processing Components:</strong>
+- <strong>SuccessFactors Query:</strong> Uses dynamic WHERE clause for targeted data extraction
+- <strong>Data Transformation:</strong> Maps SuccessFactors fields to NAVEX required format
+- <strong>Error Processing:</strong> Captures and processes any data extraction errors
+- <strong>Success Reporting:</strong> Tracks successful record counts and processing metrics</p>
+<p><strong>Data Flow:</strong>
+- <strong>Input:</strong> Dynamic WHERE clause, picklist values, and extraction parameters
+- <strong>Processing:</strong> Executes SuccessFactors query and transforms data to target format
+- <strong>Output:</strong> Processed employee demographic data ready for delivery</p>
+<hr />
+<h4 id="step-10-sftp-file-name-configuration-shape11"><strong>Step 10: SFTP File Name Configuration (shape11)</strong></h4>
+<p><strong>Component Type:</strong> Document Properties</p>
+<p><strong>Purpose:</strong> Sets dynamic file naming properties for SFTP delivery to both NAVEX vendor and PepsiCo archive</p>
+<p><strong>Configuration Details:</strong>
+- <strong>Properties Set:</strong> 2 dynamic properties
+  - SFTP - File Name: Generated filename with timestamp and processing type
+  - Dynamic Process Property - DPP_FileName: Dynamic filename for downstream processing</p>
+<p><strong>Naming Convention:</strong> Includes process identifier, execution timestamp, and file type designation</p>
+<p><strong>Data Flow:</strong>
+- <strong>Input:</strong> Processed employee data and execution context
+- <strong>Processing:</strong> Generates unique filenames with appropriate extensions and metadata
+- <strong>Output:</strong> Configured filename properties for file delivery operations</p>
+<hr />
+<h4 id="step-11-secure-file-delivery-send-files-to-sftp"><strong>Step 11: Secure File Delivery (Send Files to SFTP)</strong></h4>
+<p><strong>Component Type:</strong> Process Call (Sub-process)</p>
+<p><strong>Purpose:</strong> Delivers processed employee data files to both NAVEX vendor and PepsiCo archive locations with appropriate security measures</p>
+<p><strong>Configuration Details:</strong>
+- <strong>Sub-process:</strong> SFTP to Pepsi and NAVEX (Version 4)
+- <strong>Security:</strong> PGP encryption for NAVEX vendor delivery
+- <strong>Destinations:</strong> NAVEX vendor SFTP and PepsiCo internal archive SFTP
+- <strong>Decision Logic:</strong> Configurable delivery destinations based on process properties</p>
+<p><strong>Delivery Components:</strong>
+- <strong>NAVEX Delivery:</strong> Encrypted file delivery to vendor SFTP with specific directory structure
+- <strong>PepsiCo Archive:</strong> Internal file archiving with optional encryption
+- <strong>Success Notification:</strong> Email notifications upon successful file delivery
+- <strong>Error Handling:</strong> Exception processing for SFTP connection and delivery failures</p>
+<p><strong>Data Flow:</strong>
+- <strong>Input:</strong> Processed CSV data files with configured filenames
+- <strong>Processing:</strong> PGP encryption (for vendor delivery) and SFTP transmission to configured destinations
+- <strong>Output:</strong> Successfully delivered files with confirmation notifications</p>
+<hr />
+<h4 id="step-12-extensions-and-reporting-shape16"><strong>Step 12: Extensions and Reporting (shape16)</strong></h4>
+<p><strong>Component Type:</strong> Document Properties</p>
+<p><strong>Purpose:</strong> Sets final processing extensions and prepares comprehensive reporting metrics</p>
+<p><strong>Configuration Details:</strong>
+- <strong>Properties Set:</strong> 3 dynamic properties
+  - Dynamic Process Property - EDATE: Final processing end date
+  - Dynamic Process Property - DemographicTotalCount: Total records processed count
+  - Dynamic Process Property - DemographicErrorCount: Error records count</p>
+<p><strong>Data Flow:</strong>
+- <strong>Input:</strong> Processing completion status and metrics
+- <strong>Processing:</strong> Calculates final processing statistics and timestamps
+- <strong>Output:</strong> Complete processing metrics for reporting and audit purposes</p>
+<hr />
+<h4 id="step-13-control-and-error-reporting-process-for-control-and-error-report"><strong>Step 13: Control and Error Reporting (Process for Control and Error Report)</strong></h4>
+<p><strong>Component Type:</strong> Process Call (Sub-process)</p>
+<p><strong>Purpose:</strong> Generates comprehensive control reports and error summaries for audit and monitoring purposes</p>
+<p><strong>Configuration Details:</strong>
+- <strong>Sub-process:</strong> Process for Control and Error Report (Version 7)
+- <strong>Report Types:</strong> Control report with processing statistics, error report with detailed error information
+- <strong>Delivery:</strong> Email delivery with file attachments
+- <strong>Archive Decision:</strong> Configurable archiving to SFTP based on process properties</p>
+<p><strong>Report Components:</strong>
+- <strong>Control Report:</strong> Processing summary with record counts, timing, and success metrics
+- <strong>Error Report:</strong> Detailed error information with severity levels and error descriptions
+- <strong>Email Notifications:</strong> Formatted email reports to configured recipients
+- <strong>SFTP Archive:</strong> Optional report archiving to internal SFTP repository</p>
+<p><strong>Data Flow:</strong>
+- <strong>Input:</strong> Complete processing metrics, error details, and success statistics
+- <strong>Processing:</strong> Generates formatted reports and delivers via configured channels
+- <strong>Output:</strong> Delivered control and error reports with audit trail completion</p>
+<hr />
+<h4 id="step-14-process-completion"><strong>Step 14: Process Completion</strong></h4>
+<p><strong>Component Type:</strong> End Event</p>
+<p><strong>Purpose:</strong> Completes the employee data extraction and delivery process with final status confirmation</p>
+<p><strong>Configuration Details:</strong>
+- <strong>Completion Type:</strong> Successful process termination with full reporting
+- <strong>Final Actions:</strong> Process completion logging and resource cleanup
+- <strong>Status:</strong> Integration completion with success/failure indication</p>
+<p><strong>Data Flow:</strong>
+- <strong>Input:</strong> Final processing status and completion confirmation
+- <strong>Processing:</strong> Process termination with status logging
+- <strong>Output:</strong> Complete integration execution with audit trail</p>
+<h2 id="boomi-transformations-explained">Boomi Transformations Explained</h2>
+<h3 id="1-map-ec372-ec-to-navex-ob">1. Map EC372 - EC to NAVEX (OB)</h3>
+<p><strong>Purpose:</strong> Primary data transformation mapping SuccessFactors Employee Central fields to NAVEX vendor required CSV format</p>
+<p><strong>Input Profile:</strong> SuccessFactors Employee Demographics API response with nested employee data structures
+- Employee Personal Information (GPID, names, contact details)
+- Employment Information (status, class, position details)<br />
+- Organizational Data (location, region, sector, management hierarchy)
+- Dates (hire date, termination date, effective dates)</p>
+<p><strong>Output Profile:</strong> NAVEX CSV Record Structure
+- Flattened employee record with all required demographic fields
+- Standardized field names and formats for vendor consumption
+- Validated data types and business rule compliance</p>
+<p><strong>Field Mappings:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Source Field</th>
+<th>Target Field</th>
+<th>Data Type</th>
+<th>Business Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Employee.GPID</td>
+<td>Record/Elements/GPID</td>
+<td>String</td>
+<td>Maps Global Person ID as unique employee identifier</td>
+</tr>
+<tr>
+<td>PersonalInformation.FirstName</td>
+<td>Record/Elements/First Name</td>
+<td>String</td>
+<td>Maps employee first name for identification</td>
+</tr>
+<tr>
+<td>PersonalInformation.LastName</td>
+<td>Record/Elements/Last Name</td>
+<td>String</td>
+<td>Maps employee last name for identification</td>
+</tr>
+<tr>
+<td>Employment.Status</td>
+<td>Record/Elements/emplStatus</td>
+<td>String</td>
+<td>Maps current employment status (Active/Terminated)</td>
+</tr>
+<tr>
+<td>Employment.Class</td>
+<td>Record/Elements/employee-class</td>
+<td>String</td>
+<td>Maps employee classification for role categorization</td>
+</tr>
+<tr>
+<td>Job.PayGrade</td>
+<td>Record/Elements/pay-grade</td>
+<td>String</td>
+<td>Maps compensation pay grade level</td>
+</tr>
+<tr>
+<td>Job.PositionTitle</td>
+<td>Record/Elements/Position Title</td>
+<td>String</td>
+<td>Maps current job title and role</td>
+</tr>
+<tr>
+<td>Employment.IsUnionEmployee</td>
+<td>Record/Elements/Is Union Employee</td>
+<td>String</td>
+<td>Maps union membership status</td>
+</tr>
+<tr>
+<td>Employment.ParticipatingInUnion</td>
+<td>Record/Elements/Participating in Union</td>
+<td>String</td>
+<td>Maps active union participation flag</td>
+</tr>
+<tr>
+<td>PersonalInformation.BusinessEmail</td>
+<td>Record/Elements/Email Address</td>
+<td>String</td>
+<td>Maps primary business email address</td>
+</tr>
+<tr>
+<td>Employment.Country</td>
+<td>Record/Elements/Country</td>
+<td>String</td>
+<td>Maps work location country</td>
+</tr>
+<tr>
+<td>Job.Location</td>
+<td>Record/Elements/location</td>
+<td>String</td>
+<td>Maps specific work location or office</td>
+</tr>
+<tr>
+<td>Organization.Region</td>
+<td>Record/Elements/Region</td>
+<td>String</td>
+<td>Maps geographic region assignment</td>
+</tr>
+<tr>
+<td>Organization.Sector</td>
+<td>Record/Elements/Sector</td>
+<td>String</td>
+<td>Maps business sector or division</td>
+</tr>
+<tr>
+<td>Management.ManagerID</td>
+<td>Record/Elements/manager-id</td>
+<td>String</td>
+<td>Maps direct manager's Global Person ID</td>
+</tr>
+<tr>
+<td>PersonalInformation.UserID</td>
+<td>Record/Elements/User ID</td>
+<td>String</td>
+<td>Maps system user identifier</td>
+</tr>
+<tr>
+<td>Management.RelationshipType</td>
+<td>Record/Elements/Relationship Type</td>
+<td>String</td>
+<td>Maps management relationship classification</td>
+</tr>
+<tr>
+<td>Employment.TerminationDate</td>
+<td>Record/Elements/Termination Date</td>
+<td>Date</td>
+<td>Maps employment end date if applicable</td>
+</tr>
+<tr>
+<td>Management.ManagerName</td>
+<td>Record/Elements/Manager name</td>
+<td>String</td>
+<td>Maps direct manager's full name</td>
+</tr>
+<tr>
+<td>Management.HRAManagerName</td>
+<td>Record/Elements/HRA Manager name</td>
+<td>String</td>
+<td>Maps HR manager's full name for employee</td>
+</tr>
+<tr>
+<td>Employment.TerminationReason</td>
+<td>Record/Elements/Termination Reason</td>
+<td>String</td>
+<td>Maps reason code for employment termination</td>
+</tr>
+<tr>
+<td>Employment.OriginalHireDate</td>
+<td>Record/Elements/Original Hire Date</td>
+<td>Date</td>
+<td>Maps initial company hire date</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Function Steps Used:</strong>
+- DocumentPropertyGet functions for dynamic property retrieval
+- Date formatting functions for standardized date output
+- String concatenation for composite field creation
+- Lookup functions for picklist value resolution</p>
+<p><strong>Transformation Logic:</strong>
+- Conditional mapping based on employment status for terminated employee data
+- Date format standardization from SuccessFactors format to NAVEX requirements
+- Null value handling for optional fields like termination data
+- Picklist value translation using retrieved picklist mappings</p>
+<h3 id="2-error_message_map">2. error_message_map</h3>
+<p><strong>Purpose:</strong> Transforms processing errors into standardized error reporting format for audit and troubleshooting</p>
+<p><strong>Input Profile:</strong> Boomi Processing Errors
+- Error context information with GPID reference
+- Severity level classification
+- Detailed error text and descriptions</p>
+<p><strong>Output Profile:</strong> Standardized Error Record
+- Structured error record with employee reference
+- Categorized severity levels
+- Formatted error descriptions for reporting</p>
+<p><strong>Field Mappings:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Source Field</th>
+<th>Target Field</th>
+<th>Data Type</th>
+<th>Business Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ErrorContext.GPID</td>
+<td>Record/Elements/GPID</td>
+<td>String</td>
+<td>Maps employee Global Person ID associated with error</td>
+</tr>
+<tr>
+<td>Error.Severity</td>
+<td>Record/Elements/Severity</td>
+<td>String</td>
+<td>Maps error severity level (Warning, Error, Critical)</td>
+</tr>
+<tr>
+<td>Error.Description</td>
+<td>Record/Elements/Error text</td>
+<td>String</td>
+<td>Maps detailed error description for troubleshooting</td>
+</tr>
+</tbody>
+</table>
+<h3 id="3-controlreportmap">3. ControlReportMap</h3>
+<p><strong>Purpose:</strong> Transforms processing statistics and metrics into control report format for process monitoring</p>
+<p><strong>Input Profile:</strong> Processing Metrics
+- Record counts and processing statistics
+- Success/failure indicators
+- Timing and performance metrics</p>
+<p><strong>Output Profile:</strong> Control Report Record
+- Formatted control report entry
+- Statistical summary information</p>
+<p><strong>Field Mappings:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Source Field</th>
+<th>Target Field</th>
+<th>Data Type</th>
+<th>Business Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ProcessingMetrics.SummaryText</td>
+<td>Record/Elements/text</td>
+<td>String</td>
+<td>Maps comprehensive processing summary for control reporting</td>
+</tr>
+</tbody>
+</table>
+<h2 id="sap-integration-suite-implementation">SAP Integration Suite Implementation</h2>
+<h3 id="component-mapping">Component Mapping</h3>
+<h4 id="main-process-ec372-ec-to-navex-component-mapping">Main Process (EC372 - EC to NAVEX) Component Mapping</h4>
+<table>
+<thead>
+<tr>
+<th>Boomi Component</th>
+<th>SAP Integration Suite Equivalent</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Start Event (shape1)</td>
+<td>Start Message Event</td>
+<td>Initiates employee data extraction process</td>
+</tr>
+<tr>
+<td>Decision - Delta Run (shape15)</td>
+<td>Router (Exclusive Gateway)</td>
+<td>Determines incremental vs full extraction mode</td>
+</tr>
+<tr>
+<td>Decision - Filter LSRD is NULL (shape3)</td>
+<td>Router (Exclusive Gateway)</td>
+<td>Checks last successful run date for processing mode</td>
+</tr>
+<tr>
+<td>Document Properties - SetLastSuccessRunDate (shape2, shape5)</td>
+<td>Content Modifier (Set Properties)</td>
+<td>Configures date range parameters for data extraction</td>
+</tr>
+<tr>
+<td>Parallel Gateway (shape4)</td>
+<td>Parallel Multicast</td>
+<td>Executes multiple data extraction components concurrently</td>
+</tr>
+<tr>
+<td>Process Call - Initialize Error Report</td>
+<td>Process Call</td>
+<td>Initializes comprehensive error reporting framework</td>
+</tr>
+<tr>
+<td>Process Call - Where Clause Dynamic Filter</td>
+<td>Process Call</td>
+<td>Builds dynamic filtering criteria for data extraction</td>
+</tr>
+<tr>
+<td>Process Call - Query Picklist Values</td>
+<td>Process Call</td>
+<td>Retrieves lookup values from SuccessFactors</td>
+</tr>
+<tr>
+<td>Process Call - Extract Data</td>
+<td>Process Call</td>
+<td>Performs core employee data extraction and transformation</td>
+</tr>
+<tr>
+<td>Document Properties - Set SFTP fileName (shape11)</td>
+<td>Content Modifier (Set Properties)</td>
+<td>Configures dynamic file naming for delivery</td>
+</tr>
+<tr>
+<td>Process Call - Send Files to SFTP (shape13)</td>
+<td>Process Call</td>
+<td>Delivers files to NAVEX and archive locations</td>
+</tr>
+<tr>
+<td>Document Properties - Set extensions (shape16)</td>
+<td>Content Modifier (Set Properties)</td>
+<td>Sets final processing metrics and timestamps</td>
+</tr>
+<tr>
+<td>Stop Event</td>
+<td>End Message Event</td>
+<td>Completes integration process execution</td>
+</tr>
+</tbody>
+</table>
+<h4 id="error-reporting-initialization-sub-process-component-mapping">Error Reporting Initialization Sub-Process Component Mapping</h4>
+<table>
+<thead>
+<tr>
+<th>Boomi Component</th>
+<th>SAP Integration Suite Equivalent</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Start Event (shape1)</td>
+<td>Start Message Event</td>
+<td>Begins error reporting properties initialization</td>
+</tr>
+<tr>
+<td>Parallel Gateway (shape6)</td>
+<td>Parallel Multicast</td>
+<td>Executes error property initialization concurrently</td>
+</tr>
+<tr>
+<td>Document Properties - Business Rule Errors (shape3)</td>
+<td>Content Modifier (Set Properties)</td>
+<td>Initializes business rule error tracking counters</td>
+</tr>
+<tr>
+<td>Document Properties - Cleanse Errors (shape4)</td>
+<td>Content Modifier (Set Properties)</td>
+<td>Initializes data cleansing error tracking counters</td>
+</tr>
+<tr>
+<td>Document Properties - Decision Errors (shape5)</td>
+<td>Content Modifier (Set Properties)</td>
+<td>Initializes decision logic error tracking counters</td>
+</tr>
+<tr>
+<td>Document Properties - Route Errors (shape8)</td>
+<td>Content Modifier (Set Properties)</td>
+<td>Initializes routing error tracking counters</td>
+</tr>
+<tr>
+<td>Document Properties - TryCatch Errors (shape9)</td>
+<td>Content Modifier (Set Properties)</td>
+<td>Initializes exception handling error tracking counters</td>
+</tr>
+<tr>
+<td>Document Properties - Return Errors (shape10)</td>
+<td>Content Modifier (Set Properties)</td>
+<td>Initializes return path error tracking counters</td>
+</tr>
+<tr>
+<td>Document Properties - General Errors (shape11)</td>
+<td>Content Modifier (Set Properties)</td>
+<td>Initializes general error tracking and timing properties</td>
+</tr>
+<tr>
+<td>End Event (shape7)</td>
+<td>End Message Event</td>
+<td>Completes error reporting initialization</td>
+</tr>
+</tbody>
+</table>
+<h4 id="dynamic-filter-construction-sub-process-component-mapping">Dynamic Filter Construction Sub-Process Component Mapping</h4>
+<table>
+<thead>
+<tr>
+<th>Boomi Component</th>
+<th>SAP Integration Suite Equivalent</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Start Event (shape1)</td>
+<td>Start Message Event</td>
+<td>Begins dynamic WHERE clause construction</td>
+</tr>
+<tr>
+<td>Decision - Delta Run (shape29)</td>
+<td>Router (Exclusive Gateway)</td>
+<td>Determines processing mode for date filtering</td>
+</tr>
+<tr>
+<td>Decision - Legal Entity not blank (shape22)</td>
+<td>Router (Exclusive Gateway)</td>
+<td>Checks legal entity filter configuration</td>
+</tr>
+<tr>
+<td>Decision - employee_class not blank (shape21)</td>
+<td>Router (Exclusive Gateway)</td>
+<td>Checks employee class filter configuration</td>
+</tr>
+<tr>
+<td>Decision - company_territory_code not blank (shape14)</td>
+<td>Router (Exclusive Gateway)</td>
+<td>Checks territory code filter configuration</td>
+</tr>
+<tr>
+<td>Decision - GPID IS NOT BLANK (shape3)</td>
+<td>Router (Exclusive Gateway)</td>
+<td>Checks Global Person ID filter configuration</td>
+</tr>
+<tr>
+<td>Document Properties - Set Legal Entity IN (shape23)</td>
+<td>Content Modifier (Set Properties)</td>
+<td>Adds legal entity filter to WHERE clause</td>
+</tr>
+<tr>
+<td>Document Properties - Set employee_class IN (shape10)</td>
+<td>Content Modifier (Set Properties)</td>
+<td>Adds employee class filter to WHERE clause</td>
+</tr>
+<tr>
+<td>Document Properties - Set company_territory_code IN (shape16)</td>
+<td>Content Modifier (Set Properties)</td>
+<td>Adds territory code filter to WHERE clause</td>
+</tr>
+<tr>
+<td>Document Properties - Set GPID IN (shape17)</td>
+<td>Content Modifier (Set Properties)</td>
+<td>Adds GPID filter to WHERE clause</td>
+</tr>
+<tr>
+<td>Document Properties - Set last modified &gt; (shape24)</td>
+<td>Content Modifier (Set Properties)</td>
+<td>Adds date range filter for delta processing</td>
+</tr>
+<tr>
+<td>Document Properties - Set effective_end_date &gt;= (shape28)</td>
+<td>Content Modifier (Set Properties)</td>
+<td>Adds effective date filter for active records</td>
+</tr>
+<tr>
+<td>Message Mapping - Fill in single quotes (shape25)</td>
+<td>Groovy Script</td>
+<td>Formats WHERE clause with proper SQL syntax</td>
+</tr>
+<tr>
+<td>Document Properties - Set where (shape26)</td>
+<td>Content Modifier (Set Properties)</td>
+<td>Finalizes complete WHERE clause property</td>
+</tr>
+<tr>
+<td>End Event (shape27)</td>
+<td>End Message Event</td>
+<td>Completes WHERE clause construction</td>
+</tr>
+</tbody>
+</table>
+<h4 id="data-extraction-sub-process-component-mapping">Data Extraction Sub-Process Component Mapping</h4>
+<table>
+<thead>
+<tr>
+<th>Boomi Component</th>
+<th>SAP Integration Suite Equivalent</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Start Event (shape1)</td>
+<td>Start Message Event</td>
+<td>Begins core data extraction process</td>
+</tr>
+<tr>
+<td>SuccessFactors Connector (shape3, shape4)</td>
+<td>SuccessFactors Adapter or HTTPS Adapter</td>
+<td>Queries employee demographic data from Employee Central</td>
+</tr>
+<tr>
+<td>Parallel Gateway (shape2, shape5)</td>
+<td>Parallel Multicast</td>
+<td>Processes demographic and supplemental data concurrently</td>
+</tr>
+<tr>
+<td>Message Mapping - Demographic Data (shape34)</td>
+<td>Message Mapping</td>
+<td>Transforms SuccessFactors data to NAVEX CSV format</td>
+</tr>
+<tr>
+<td>Message Mapping - Orighirdate from Expats (shape37)</td>
+<td>Message Mapping</td>
+<td>Processes expat original hire date information</td>
+</tr>
+<tr>
+<td>Decision - end_date_check (shape44)</td>
+<td>Router (Exclusive Gateway)</td>
+<td>Validates employee end date criteria</td>
+</tr>
+<tr>
+<td>Splitter - Split on EmpInfo (shape16)</td>
+<td>General Splitter</td>
+<td>Splits employee records for individual processing</td>
+</tr>
+<tr>
+<td>Message Mapping - Transform (shape27)</td>
+<td>Message Mapping</td>
+<td>Additional data transformation and validation</td>
+</tr>
+<tr>
+<td>Error Handler - Hard Errors (shape21, shape36)</td>
+<td>Exception Subprocess</td>
+<td>Processes extraction and transformation errors</td>
+</tr>
+<tr>
+<td>Document Properties - Set Error Record Count (shape22)</td>
+<td>Content Modifier (Set Properties)</td>
+<td>Tracks error record statistics</td>
+</tr>
+<tr>
+<td>Document Properties - Set Error Message Properties (shape23)</td>
+<td>Content Modifier (Set Properties)</td>
+<td>Configures error reporting parameters</td>
+</tr>
+<tr>
+<td>Aggregator - Total Error Count (shape24)</td>
+<td>Aggregator</td>
+<td>Consolidates error count metrics</td>
+</tr>
+<tr>
+<td>Document Properties - Set Success Counts (shape28)</td>
+<td>Content Modifier (Set Properties)</td>
+<td>Tracks successful record processing statistics</td>
+</tr>
+<tr>
+<td>Aggregator - Total Success Record Count (shape31)</td>
+<td>Aggregator</td>
+<td>Consolidates success count metrics</td>
+</tr>
+<tr>
+<td>Document Properties - Set FileName (shape35)</td>
+<td>Content Modifier (Set Properties)</td>
+<td>Configures output file naming</td>
+</tr>
+<tr>
+<td>Mail Connector - Error Notifications (shape12)</td>
+<td>Mail Adapter</td>
+<td>Sends error notification emails</td>
+</tr>
+<tr>
+<td>End Event (shape13, shape15, shape18, shape26, shape41, shape45)</td>
+<td>End Message Event</td>
+<td>Completes data extraction with various exit paths</td>
+</tr>
+</tbody>
+</table>
+<h4 id="sftp-delivery-sub-process-component-mapping">SFTP Delivery Sub-Process Component Mapping</h4>
+<table>
+<thead>
+<tr>
+<th>Boomi Component</th>
+<th>SAP Integration Suite Equivalent</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Start Event (shape1)</td>
+<td>Start Message Event</td>
+<td>Begins secure file delivery process</td>
+</tr>
+<tr>
+<td>Parallel Gateway (shape7)</td>
+<td>Parallel Multicast</td>
+<td>Processes NAVEX delivery and archive concurrently</td>
+</tr>
+<tr>
+<td>Decision - Send Files to Vendor (shape8)</td>
+<td>Router (Exclusive Gateway)</td>
+<td>Controls delivery to NAVEX vendor SFTP</td>
+</tr>
+<tr>
+<td>Decision - Send Files to Pepsico SFTP (shape11)</td>
+<td>Router (Exclusive Gateway)</td>
+<td>Controls delivery to PepsiCo archive SFTP</td>
+</tr>
+<tr>
+<td>Decision - Encrypt Archive File (shape13)</td>
+<td>Router (Exclusive Gateway)</td>
+<td>Controls PGP encryption for archive files</td>
+</tr>
+<tr>
+<td>PGP Encryption (shape2, shape26)</td>
+<td>PGP Encryptor</td>
+<td>Encrypts sensitive files for secure transmission</td>
+</tr>
+<tr>
+<td>Document Properties - Set NAVEX Directory (shape3)</td>
+<td>Content Modifier (Set Properties)</td>
+<td>Configures NAVEX SFTP target directory</td>
+</tr>
+<tr>
+<td>Document Properties - Set Archive Directory (shape4)</td>
+<td>Content Modifier (Set Properties)</td>
+<td>Configures PepsiCo archive SFTP directory</td>
+</tr>
+<tr>
+<td>SFTP Connector - NAVEX Delivery (shape6)</td>
+<td>SFTP Adapter</td>
+<td>Delivers encrypted files to NAVEX vendor</td>
+</tr>
+<tr>
+<td>SFTP Connector - Archive Delivery (shape5)</td>
+<td>SFTP Adapter</td>
+<td>Archives files to PepsiCo internal SFTP</td>
+</tr>
+<tr>
+<td>Message Mapping - Mail Notification (shape10)</td>
+<td>Message Mapping</td>
+<td>Prepares success notification message</td>
+</tr>
+<tr>
+<td>Document Properties - Set Mail Properties (shape17)</td>
+<td>Content Modifier (Set Properties)</td>
+<td>Configures email notification parameters</td>
+</tr>
+<tr>
+<td>Mail Connector - Success Notification (shape18)</td>
+<td>Mail Adapter</td>
+<td>Sends successful delivery notifications</td>
+</tr>
+<tr>
+<td>Error Handler - NAVEX SFTP Exception (shape23)</td>
+<td>Exception Subprocess</td>
+<td>Handles NAVEX delivery failures</td>
+</tr>
+<tr>
+<td>Error Handler - Pepsi SFTP Exception (shape15)</td>
+<td>Exception Subprocess</td>
+<td>Handles archive delivery failures</td>
+</tr>
+<tr>
+<td>End Event (shape12, shape19, shape20, shape22, shape25)</td>
+<td>End Message Event</td>
+<td>Completes delivery process with various outcomes</td>
+</tr>
+</tbody>
+</table>
+<h3 id="integration-flow-visualization">Integration Flow Visualization</h3>
+<pre class="mermaid">
+flowchart TD
+    %% Define node styles for SAP Integration Suite components
+    classDef httpAdapter fill:#87CEEB,stroke:#333,stroke-width:2px
+    classDef contentModifier fill:#98FB98,stroke:#333,stroke-width:2px
+    classDef mapping fill:#DDA0DD,stroke:#333,stroke-width:2px
+    classDef adapter fill:#FFD700,stroke:#333,stroke-width:2px
+    classDef event fill:#C0C0C0,stroke:#333,stroke-width:2px
+    classDef errorHandler fill:#FFA07A,stroke:#333,stroke-width:2px
+    classDef gateway fill:#F0E68C,stroke:#333,stroke-width:2px
+    classDef subprocess fill:#E6E6FA,stroke:#333,stroke-width:2px
+
+    %% Main Process Flow
+    Start(("Start Integration")):::event --> DeltaDecision{"Delta or Full<br/>Extraction?"}:::gateway
+    DeltaDecision -->|"Delta Mode"| LSRDCheck{"Last Run Date<br/>Available?"}:::gateway
+    DeltaDecision -->|"Full Mode"| SetExtensions["Content Modifier:<br/>Set Processing Extensions"]:::contentModifier
+    
+    LSRDCheck -->|"LSRD Available"| SetDeltaDates["Content Modifier:<br/>Set Delta Date Range"]:::contentModifier
+    LSRDCheck -->|"No LSRD"| SetFullDates["Content Modifier:<br/>Set Full Date Range"]:::contentModifier
+    
+    SetDeltaDates --> ParallelStart["Parallel Gateway:<br/>Start Concurrent Processing"]:::gateway
+    SetFullDates --> ParallelStart
+    SetExtensions --> ParallelStart
+
+    %% Parallel Processing Branches
+    ParallelStart --> InitErrorReporting["Process Call:<br/>Initialize Error Reporting"]:::subprocess
+    ParallelStart --> BuildWhereClause["Process Call:<br/>Build Dynamic WHERE Clause"]:::subprocess  
+    ParallelStart --> QueryPicklists["Process Call:<br/>Query Picklist Values"]:::subprocess
+    ParallelStart --> ExtractData["Process Call:<br/>Extract Employee Data"]:::subprocess
+    ParallelStart --> SetFileName["Content Modifier:<br/>Set SFTP File Names"]:::contentModifier
+
+    %% Sub_process Details
+    subgraph ErrorInit["Error Reporting Initialization"]
+        InitStart(("Sub_Process Start")):::event
+        InitParallel["Parallel Gateway:<br/>Initialize All Counters"]:::gateway
+        SetBRuleErrors["Content Modifier:<br/>Business Rule Error Counters"]:::contentModifier
+        SetCleanseErrors["Content Modifier:<br/>Cleanse Error Counters"]:::contentModifier
+        SetDecisionErrors["Content Modifier:<br/>Decision Error Counters"]:::contentModifier
+        SetRouteErrors["Content Modifier:<br/>Route Error Counters"]:::contentModifier
+        SetTryCatchErrors["Content Modifier:<br/>TryCatch Error Counters"]:::contentModifier
+        SetReturnErrors["Content Modifier:<br/>Return Error Counters"]:::contentModifier
+        SetGeneralErrors["Content Modifier:<br/>General Error Properties"]:::contentModifier
+        InitEnd(("Sub_Process End")):::event
+        
+        InitStart --> InitParallel
+        InitParallel --> SetBRuleErrors
+        InitParallel --> SetCleanseErrors  
+        InitParallel --> SetDecisionErrors
+        InitParallel --> SetRouteErrors
+        InitParallel --> SetTryCatchErrors
+        InitParallel --> SetReturnErrors
+        InitParallel --> SetGeneralErrors
+        SetBRuleErrors --> InitEnd
+        SetCleanseErrors --> InitEnd
+        SetDecisionErrors --> InitEnd
+        SetRouteErrors --> InitEnd
+        SetTryCatchErrors --> InitEnd
+        SetReturnErrors --> InitEnd
+        SetGeneralErrors --> InitEnd
+    end
+
+    subgraph WhereClause["Dynamic Filter Construction"]
+        WhereStart(("Sub_Process Start")):::event
+        CheckDelta{"Delta Processing?"}:::gateway
+        CheckLegalEntity{"Legal Entity<br/>Filter Set?"}:::gateway
+        CheckEmployeeClass{"Employee Class<br/>Filter Set?"}:::gateway
+        CheckTerritory{"Territory Code<br/>Filter Set?"}:::gateway
+        CheckGPID{"GPID Filter Set?"}:::gateway
+        
+        SetLegalEntityFilter["Content Modifier:<br/>Add Legal Entity Filter"]:::contentModifier
+        SetEmployeeClassFilter["Content Modifier:<br/>Add Employee Class Filter"]:::contentModifier
+        SetTerritoryFilter["Content Modifier:<br/>Add Territory Filter"]:::contentModifier
+        SetGPIDFilter["Content Modifier:<br/>Add GPID Filter"]:::contentModifier
+        SetDateFilter["Content Modifier:<br/>Add Date Range Filter"]:::contentModifier
+        SetEffectiveDateFilter["Content Modifier:<br/>Add Effective Date Filter"]:::contentModifier
+        
+        FormatSQL["Groovy Script:<br/>Format SQL Syntax"]:::mapping
+        SetWhereClause["Content Modifier:<br/>Finalize WHERE Clause"]:::contentModifier
+        WhereEnd(("Sub_Process End")):::event
+        
+        WhereStart --> CheckDelta
+        CheckDelta -->|"Yes"| SetDateFilter
+        CheckDelta -->|"Yes"| SetEffectiveDateFilter
+        CheckDelta -->|"No"| CheckLegalEntity
+        SetDateFilter --> CheckLegalEntity
+        SetEffectiveDateFilter --> CheckLegalEntity
+        
+        CheckLegalEntity -->|"Yes"| SetLegalEntityFilter
+        CheckLegalEntity -->|"No"| CheckEmployeeClass
+        SetLegalEntityFilter --> CheckEmployeeClass
+        
+        CheckEmployeeClass -->|"Yes"| SetEmployeeClassFilter
+        CheckEmployeeClass -->|"No"| CheckTerritory
+        SetEmployeeClassFilter --> CheckTerritory
+        
+        CheckTerritory -->|"Yes"| SetTerritoryFilter
+        CheckTerritory -->|"No"| CheckGPID
+        SetTerritoryFilter --> CheckGPID
+        
+        CheckGPID -->|"Yes"| SetGPIDFilter
+        CheckGPID -->|"No"| FormatSQL
+        SetGPIDFilter --> FormatSQL
+        
+        FormatSQL --> SetWhereClause
+        SetWhereClause --> WhereEnd
+    end
+
+    subgraph DataExtraction["Employee Data Extraction"]
+        ExtractStart(("Sub_Process Start")):::event
+        SFQuery["SuccessFactors Adapter:<br/>Query Employee Demographics"]:::adapter
+        ProcessParallel["Parallel Gateway:<br/>Process Data Streams"]:::gateway
+        
+        SplitEmployees["General Splitter:<br/>Split Employee Records"]:::mapping
+        TransformDemographics["Message Mapping:<br/>Transform to NAVEX Format"]:::mapping
+        ProcessExpats["Message Mapping:<br/>Process Expat Hire Dates"]:::mapping
+        
+        ValidateEndDate{"Validate End Date<br/>Criteria"}:::gateway
+        ProcessErrors["Exception Subprocess:<br/>Handle Data Errors"]:::errorHandler
+        SetErrorCount["Content Modifier:<br/>Set Error Statistics"]:::contentModifier
+        SetSuccessCount["Content Modifier:<br/>Set Success Statistics"]:::contentModifier
+        
+        AggregateErrors["Aggregator:<br/>Total Error Counts"]:::mapping
+        AggregateSuccess["Aggregator:<br/>Total Success Counts"]:::mapping
+        
+        SetOutputFileName["Content Modifier:<br/>Configure Output File"]:::contentModifier
+        
+        ExtractEnd(("Sub_Process End")):::event
+        ErrorNotification["Mail Adapter:<br/>Send Error Notifications"]:::adapter
+        
+        ExtractStart --> SFQuery
+        SFQuery --> ProcessParallel
+        ProcessParallel --> SplitEmployees
+        ProcessParallel --> ProcessExpats
+        
+        SplitEmployees --> TransformDemographics
+        TransformDemographics --> ValidateEndDate
+        ValidateEndDate -->|"Valid"| SetSuccessCount
+        ValidateEndDate -->|"Invalid"| ProcessErrors
+        
+        ProcessErrors --> SetErrorCount
+        SetErrorCount --> AggregateErrors
+        AggregateErrors --> ErrorNotification
+        
+        SetSuccessCount --> AggregateSuccess
+        AggregateSuccess --> SetOutputFileName
+        ProcessExpats --> SetOutputFileName
+        
+        SetOutputFileName --> ExtractEnd
+        ErrorNotification --> ExtractEnd
+    end
+
+    %% Main Flow Continuation
+    InitErrorReporting --> ParallelJoin["Parallel Gateway:<br/>Join Processing Results"]:::gateway
+    BuildWhereClause --> ParallelJoin
+    QueryPicklists --> ParallelJoin
+    ExtractData --> ParallelJoin
+    SetFileName --> ParallelJoin
+    
+    ParallelJoin --> DeliverFiles["Process Call:<br/>Secure File Delivery"]:::subprocess
+
+    subgraph FileDelivery["SFTP File Delivery"]
+        DeliveryStart(("Sub_Process Start")):::event
+        DeliveryParallel["Parallel Gateway:<br/>Prepare Deliveries"]:::gateway
+        
+        SendToVendor{"Send to NAVEX<br/>Vendor?"}:::gateway
+        SendToArchive{"Archive to<br/>PepsiCo SFTP?"}:::gateway
+        EncryptArchive{"Encrypt Archive<br/>File?"}:::gateway
+        
+        PGPEncryptVendor["PGP Encryptor:<br/>Encrypt for NAVEX"]:::mapping
+        PGPEncryptArchive["PGP Encryptor:<br/>Encrypt for Archive"]:::mapping
+        
+        SetNAVEXDir["Content Modifier:<br/>Set NAVEX Directory"]:::contentModifier
+        SetArchiveDir["Content Modifier:<br/>Set Archive Directory"]:::contentModifier
+        
+        NAVEXDelivery["SFTP Adapter:<br/>Deliver to NAVEX"]:::adapter
+        ArchiveDelivery["SFTP Adapter:<br/>Archive to PepsiCo"]:::adapter
+        
+        PrepareNotification["Message Mapping:<br/>Prepare Success Message"]:::mapping
+        SetMailProps["Content Modifier:<br/>Set Email Properties"]:::contentModifier
+        SendNotification["Mail Adapter:<br/>Send Success Notification"]:::adapter
+        
+        NAVEXErrorHandler["Exception Subprocess:<br/>Handle NAVEX Errors"]:::errorHandler
+        ArchiveErrorHandler["Exception Subprocess:<br/>Handle Archive Errors"]:::errorHandler
+        
+        DeliveryEnd(("Sub_Process End")):::event
+        
+        DeliveryStart --> DeliveryParallel
+        DeliveryParallel --> SendToVendor
+        DeliveryParallel --> SendToArchive
+        
+        SendToVendor -->|"Yes"| PGPEncryptVendor
+        SendToVendor -->|"No"| DeliveryEnd
+        PGPEncryptVendor --> SetNAVEXDir
+        SetNAVEXDir --> NAVEXDelivery
+        NAVEXDelivery --> PrepareNotification
+        NAVEXDelivery -->|"Error"| NAVEXErrorHandler
+        
+        SendToArchive -->|"Yes"| EncryptArchive
+        SendToArchive -->|"No"| DeliveryEnd
+        EncryptArchive -->|"Yes"| PGPEncryptArchive
+        EncryptArchive -->|"No"| SetArchiveDir
+        PGPEncryptArchive --> SetArchiveDir
+        SetArchiveDir --> ArchiveDelivery
+        ArchiveDelivery --> PrepareNotification
+        ArchiveDelivery -->|"Error"| ArchiveErrorHandler
+        
+        PrepareNotification --> SetMailProps
+        SetMailProps --> SendNotification
+        SendNotification --> DeliveryEnd
+        NAVEXErrorHandler --> DeliveryEnd
+        ArchiveErrorHandler --> DeliveryEnd
+    end
+
+    DeliverFiles --> GenerateReports["Process Call:<br/>Generate Control Reports"]:::subprocess
+    GenerateReports --> IntegrationEnd(("Integration Complete")):::event
+
+    %% Apply styles to components
+    class InitErrorReporting,BuildWhereClause,QueryPicklists,ExtractData,DeliverFiles,GenerateReports subprocess
+    class SFQuery,NAVEXDelivery,ArchiveDelivery,SendNotification,ErrorNotification adapter
+    class TransformDemographics,ProcessExpats,AggregateErrors,AggregateSuccess,SplitEmployees,PGPEncryptVendor,PGPEncryptArchive,PrepareNotification,FormatSQL mapping
+    class SetDeltaDates,SetFullDates,SetExtensions,SetFileName,SetBRuleErrors,SetCleanseErrors,SetDecisionErrors,SetRouteErrors,SetTryCatchErrors,SetReturnErrors,SetGeneralErrors,SetLegalEntityFilter,SetEmployeeClassFilter,SetTerritoryFilter,SetGPIDFilter,SetDateFilter,SetEffectiveDateFilter,SetWhereClause,SetErrorCount,SetSuccessCount,SetOutputFileName,SetNAVEXDir,SetArchiveDir,SetMailProps contentModifier
+    class DeltaDecision,LSRDCheck,ParallelStart,ParallelJoin,InitParallel,ProcessParallel,ValidateEndDate,CheckDelta,CheckLegalEntity,CheckEmployeeClass,CheckTerritory,CheckGPID,SendToVendor,SendToArchive,EncryptArchive,DeliveryParallel gateway
+    class ProcessErrors,NAVEXErrorHandler,ArchiveErrorHandler errorHandler
+    class Start,IntegrationEnd,InitStart,InitEnd,WhereStart,WhereEnd,ExtractStart,ExtractEnd,DeliveryStart,DeliveryEnd event
+</pre>
+<h3 id="configuration-details">Configuration Details</h3>
+<p><strong>SuccessFactors Adapter Configuration:</strong>
+- <strong>Connection:</strong> SuccessFactors Employee Central system connection
+- <strong>Authentication:</strong> OAuth 2.0 or Basic Authentication (as configured)
+- <strong>Query Entity:</strong> Employee demographics and job information entities
+- <strong>Filter Configuration:</strong> Dynamic WHERE clause construction based on process properties</p>
+<p><strong>SFTP Adapter Configuration (NAVEX):</strong>
+- <strong>Host:</strong> NAVEX vendor SFTP server (configured via process properties)
+- <strong>Authentication:</strong> SSH key-based authentication
+- <strong>Directory:</strong> Dynamic directory path based on NAVEXSFTPDirectory property
+- <strong>File Naming:</strong> Timestamp-based naming with process identifier prefix</p>
+<p><strong>SFTP Adapter Configuration (PepsiCo Archive):</strong>
+- <strong>Host:</strong> PepsiCo internal SFTP server
+- <strong>Authentication:</strong> SSH key-based authentication<br />
+- <strong>Directory:</strong> Archive path configured via process properties
+- <strong>Encryption:</strong> Optional PGP encryption based on process flag</p>
+<p><strong>PGP Encryption Configuration:</strong>
+- <strong>NAVEX Public Key:</strong> EC-372 NAVEX encryption key for vendor delivery
+- <strong>PepsiCo Public Key:</strong> SF Integrations - Pepsi QA public key for internal archive
+- <strong>Clear Sign:</strong> Enabled for signature verification</p>
+<p><strong>Mail Adapter Configuration:</strong>
+- <strong>SMTP Server:</strong> Corporate mail server configuration
+- <strong>Authentication:</strong> System-based authentication
+- <strong>Success Notifications:</strong> Configurable recipient list via process properties
+- <strong>Error Notifications:</strong> Separate recipient configuration for error scenarios</p>
+<p><strong>Content Modifier Configurations:</strong>
+- <strong>Date Range Properties:</strong> Dynamic calculation based on processing mode
+- <strong>File Naming Properties:</strong> Timestamp and process identifier concatenation
+- <strong>Error Tracking Properties:</strong> Comprehensive counter initialization and management
+- <strong>WHERE Clause Properties:</strong> Dynamic SQL construction with parameter substitution</p>
+<p><strong>Router/Gateway Configurations:</strong>
+- <strong>Delta Processing Decision:</strong> Based on Filter_LSRD property evaluation
+- <strong>File Delivery Decisions:</strong> Based on vendor delivery and archive flags
+- <strong>Encryption Decisions:</strong> Based on encryption requirement flags
+- <strong>Filter Application Decisions:</strong> Based on presence of filter configuration values</p>
+<h2 id="environment-configuration">Environment Configuration</h2>
+<p><strong>Process Properties Configuration:</strong>
+- <strong>Archive path on SFTP server (6c4f4625-a39d-4368-b986-85499c5dd7d2):</strong> File archiving path configuration
+- <strong>Employee Status (6236f705-e6ba-4f9c-8dcf-bacffe65d640):</strong> Active/Terminated employee filtering
+- <strong>Encrypt Archive File (60304a50-7a2a-412a-932c-db44d28dbdc4):</strong> Boolean flag for archive encryption
+- <strong>FileType (d0c9f73d-8faa-47c1-adda-3abd94033ac9):</strong> Delta/Full processing mode indicator
+- <strong>Filter_EmployeeClass (5373d17c-a180-4aab-bc91-e91f8689b86c):</strong> Employee classification filtering
+- <strong>Filter_GPID (c7175bc9-9ed8-4da3-97ad-e2147208110f):</strong> Global Person ID specific filtering
+- <strong>Filter_LSRD (bdf17f77-c75b-4777-bc49-2ce59e2286d9):</strong> Last Successful Run Date tracking
+- <strong>Filter_LegalEntity (8caddbc7-67c5-41dc-afb1-ce06fa7d9e8e):</strong> Legal entity organizational filtering
+- <strong>Filter_company_territory_code (a92b59a7-bbfb-4ee5-8a4c-e32d7727fbb4):</strong> Geographic territory filtering
+- <strong>Full File Start Date (2d3d973b-7bee-4b79-9512-f52a5021a00e):</strong> Start date for full extraction mode
+- <strong>NAVEXSFTPDirectory (729bf863-ed8a-4863-85e7-f6a69f337c8b):</strong> NAVEX vendor SFTP target directory
+- <strong>Send Output To Vendor ? (9649296e-66e0-4bf8-9041-cd438ad4167b):</strong> Vendor delivery control flag
+- <strong>SendFilesToPepsoSFTP (b2157951-1c8b-4e53-96fe-70de4e1be1b3):</strong> Internal archive control flag</p>
+<p><strong>Email Notification Configuration:</strong>
+- <strong>fromEmailAddressForErrors (a6b2e057-49d9-4cbc-9c94-16fe27cf011b):</strong> Error notification sender
+- <strong>fromEmailAddressForSuccess (9a653915-1d4f-464a-b613-f20c8958f652):</strong> Success notification sender
+- <strong>toEmailAddressForErrors (630bd0e1-a257-4ac9-b3c6-b4213140f7ff):</strong> Error notification recipients
+- <strong>toEmailAddressForSuccess (e6c11e22-d87f-4570-975b-f39b8012be6e):</strong> Success notification recipients</p>
+<p><strong>Security and Encryption:</strong>
+- <strong>PGP Public Key- EC-372 NAVEX:</strong> Vendor-specific encryption key for secure file delivery
+- <strong>SF Integrations - Pepsi (QA Pub Key):</strong> Internal encryption key for QA environment testing
+- <strong>Clear Sign Configuration:</strong> Enabled for PGP signature verification</p>
+<p><strong>External System Dependencies:</strong>
+- <strong>SuccessFactors Employee Central:</strong> Primary data source requiring system connection and authentication
+- <strong>NAVEX Vendor SFTP Server:</strong> External delivery destination requiring network connectivity and SSH authentication
+- <strong>PepsiCo Internal SFTP Server:</strong> Archive destination requiring internal network access
+- <strong>Corporate SMTP Server:</strong> Email notification delivery requiring mail server connectivity</p>
+<p><strong>Runtime Resource Requirements:</strong>
+- <strong>Memory:</strong> Sufficient heap space for large employee dataset processing (recommended minimum 2GB)
+- <strong>CPU:</strong> Multi-core processing capability for parallel execution paths
+- <strong>Network:</strong> Reliable connectivity to SuccessFactors cloud and SFTP endpoints
+- <strong>Storage:</strong> Temporary space for file generation and PGP encryption operations</p>
+<p><strong>Deployment Considerations:</strong>
+- <strong>Scheduling:</strong> Typically configured for off-hours execution to minimize SuccessFactors system impact
+- <strong>Error Handling:</strong> Comprehensive exception management with detailed logging and notification
+- <strong>Monitoring:</strong> Process execution tracking with success/failure metrics and audit trail
+- <strong>Backup:</strong> Archive file retention policy for regulatory compliance and audit requirements</p>
+<h2 id="api-reference">API Reference</h2>
+<h3 id="successfactors-employee-central-api">SuccessFactors Employee Central API</h3>
+<p><strong>Base URL:</strong> <code>https://{tenant}.successfactors.com/odata/v2/</code></p>
+<p><strong>Authentication:</strong> OAuth 2.0 or Basic Authentication (system configured)</p>
+<h4 id="get-empemployment">GET /EmpEmployment</h4>
+<p><strong>Purpose:</strong> Extract employee employment information with demographic data
+<strong>Method:</strong> GET
+<strong>Authentication:</strong> SuccessFactors system authentication</p>
+<p><strong>Query Parameters:</strong>
+- <code>$filter</code>: Dynamic WHERE clause with multiple criteria:
+  - Legal entity filtering: <code>legal_entity_code in ('entity1','entity2')</code>
+  - Employee class filtering: <code>employee_class in ('class1','class2')</code>
+  - Territory filtering: <code>company_territory_code in ('territory1','territory2')</code>
+  - GPID filtering: <code>person_id_external in ('gpid1','gpid2')</code>
+  - Date range filtering: <code>last_modified_on gt datetime'YYYY-MM-DDTHH:mm:ss'</code>
+  - Effective date filtering: <code>end_date ge datetime'YYYY-MM-DDTHH:mm:ss'</code>
+- <code>$select</code>: Employee demographic field selection
+- <code>$expand</code>: Related entity expansion for complete employee profile</p>
+<p><strong>Request Headers:</strong>
+- <code>Authorization</code>: Bearer token or Basic authentication
+- <code>Accept</code>: application/json
+- <code>Content-Type</code>: application/json</p>
+<p><strong>Response Format:</strong></p>
+<pre class="codehilite"><code class="language-json">{
+  &quot;d&quot;: {
+    &quot;results&quot;: [
+      {
+        &quot;person_id_external&quot;: &quot;Global Person ID&quot;,
+        &quot;first_name&quot;: &quot;Employee First Name&quot;, 
+        &quot;last_name&quot;: &quot;Employee Last Name&quot;,
+        &quot;employment_status&quot;: &quot;Active/Inactive&quot;,
+        &quot;employee_class&quot;: &quot;Employee Classification&quot;,
+        &quot;pay_grade&quot;: &quot;Pay Grade Level&quot;,
+        &quot;position_title&quot;: &quot;Job Title&quot;,
+        &quot;email_address&quot;: &quot;business.email@company.com&quot;,
+        &quot;country&quot;: &quot;Work Location Country&quot;,
+        &quot;manager_id&quot;: &quot;Manager Global Person ID&quot;,
+        &quot;original_hire_date&quot;: &quot;2020-01-15T00:00:00&quot;,
+        &quot;end_date&quot;: &quot;2023-12-31T00:00:00&quot;,
+        &quot;location&quot;: &quot;Office Location&quot;,
+        &quot;region&quot;: &quot;Geographic Region&quot;,
+        &quot;sector&quot;: &quot;Business Sector&quot;,
+        &quot;last_modified_on&quot;: &quot;2023-12-01T10:30:00&quot;
+      }
+    ]
+  }
+}
+</code></pre>
+
+<p><strong>Error Response:</strong></p>
+<pre class="codehilite"><code class="language-json">{
+  &quot;error&quot;: {
+    &quot;code&quot;: &quot;INVALID_REQUEST&quot;,
+    &quot;message&quot;: &quot;Invalid filter expression or authentication failure&quot;,
+    &quot;details&quot;: &quot;Detailed error description&quot;
+  }
+}
+</code></pre>
+
+<p><strong>Rate Limiting:</strong> 1000 requests per hour (SuccessFactors standard limits)</p>
+<p><strong>Pagination:</strong> Uses <code>$skip</code> and <code>$top</code> parameters for large result sets</p>
+<h3 id="navex-vendor-sftp-api">NAVEX Vendor SFTP API</h3>
+<p><strong>Protocol:</strong> SFTP (SSH File Transfer Protocol)
+<strong>Host:</strong> Configured via NAVEXSFTPDirectory process property
+<strong>Authentication:</strong> SSH key-based authentication</p>
+<h4 id="put-uploaddirectoryfilename">PUT /upload/{directory}/{filename}</h4>
+<p><strong>Purpose:</strong> Deliver encrypted CSV employee data file to NAVEX platform
+<strong>Protocol:</strong> SFTP PUT operation
+<strong>Authentication:</strong> SSH private key authentication</p>
+<p><strong>Path Parameters:</strong>
+- <code>directory</code>: Target directory path (configured via process properties)
+- <code>filename</code>: Generated filename with timestamp and process identifier</p>
+<p><strong>File Requirements:</strong>
+- <strong>Format:</strong> CSV with specific NAVEX field structure
+- <strong>Encryption:</strong> PGP encrypted using NAVEX public key
+- <strong>Naming Convention:</strong> <code>EC372_NAVEX_YYYYMMDD_HHMMSS.csv.pgp</code></p>
+<p><strong>Upload Process:</strong>
+1. Establish SFTP connection using SSH key authentication
+2. Navigate to configured target directory
+3. Upload PGP-encrypted CSV file
+4. Verify successful transfer and file integrity
+5. Close SFTP connection</p>
+<p><strong>Error Handling:</strong>
+- Connection failures: Retry logic with exponential backoff
+- Authentication failures: Alert system administrators
+- Transfer failures: Detailed error logging and notification</p>
+<h3 id="pepsico-internal-sftp-archive-api">PepsiCo Internal SFTP Archive API</h3>
+<p><strong>Protocol:</strong> SFTP (SSH File Transfer Protocol)<br />
+<strong>Host:</strong> Internal PepsiCo SFTP server
+<strong>Authentication:</strong> SSH key-based authentication</p>
+<h4 id="put-archivepathfilename">PUT /archive/{path}/{filename}</h4>
+<p><strong>Purpose:</strong> Archive processed employee data files for audit and compliance
+<strong>Protocol:</strong> SFTP PUT operation
+<strong>Authentication:</strong> SSH private key authentication</p>
+<p><strong>Path Parameters:</strong>
+- <code>path</code>: Archive directory path (configured via process properties)
+- <code>filename</code>: Original filename with archive timestamp</p>
+<p><strong>File Options:</strong>
+- <strong>Encryption:</strong> Optional PGP encryption based on process flag
+- <strong>Format:</strong> Original CSV format (unencrypted) or PGP encrypted
+- <strong>Retention:</strong> Configurable retention period for compliance requirements</p>
+<h3 id="email-notification-api">Email Notification API</h3>
+<p><strong>Protocol:</strong> SMTP
+<strong>Server:</strong> Corporate SMTP server (system configured)
+<strong>Authentication:</strong> System-based authentication</p>
+<h4 id="post-send-notification">POST /send-notification</h4>
+<p><strong>Purpose:</strong> Send process execution notifications to configured recipients
+<strong>Method:</strong> SMTP email transmission
+<strong>Authentication:</strong> Corporate email system authentication</p>
+<p><strong>Email Types:</strong>
+1. <strong>Success Notifications:</strong>
+   - Recipients: Configured via process properties
+   - Subject: Process completion with record counts
+   - Body: Detailed processing summary with timestamps
+   - Attachments: Control report files</p>
+<ol>
+<li><strong>Error Notifications:</strong></li>
+<li>Recipients: Configured error notification list</li>
+<li>Subject: Process failure with error classification</li>
+<li>Body: Detailed error information and troubleshooting guidance</li>
+<li>Attachments: Error report files with detailed error records</li>
+</ol>
+<p><strong>Message Structure:</strong>
+- <strong>From:</strong> Configured system email address
+- <strong>To:</strong> Process property-defined recipient lists
+- <strong>Subject:</strong> Dynamic subject with process identifier and status
+- <strong>Body:</strong> HTML-formatted message with processing details
+- <strong>Attachments:</strong> Relevant report files (CSV format)</p>
+<p><strong>Delivery Confirmation:</strong> SMTP delivery receipt tracking for audit purposes</p>
+    
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'default',
+            flowchart: {
+                useMaxWidth: false,
+                htmlLabels: true,
+                curve: 'basis'
+            }
+        });
+    </script>
+
+        <div class="document-footer">
+            Generated on 2025-08-15 07:37:07 | Technical Design Document
+        </div>
+    </div></body>
+</html>

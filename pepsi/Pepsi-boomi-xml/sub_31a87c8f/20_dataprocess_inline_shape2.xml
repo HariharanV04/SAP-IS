@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>
+<shape image="dataprocess_icon" name="shape2" shapetype="dataprocess" userlabel="PGP Encryption" x="608.0" y="400.0">
+  <configuration>
+    <dataprocess>
+      <step index="1" key="1" name="PGP Encrypt" processtype="2">
+        <dataprocesspgpencrypt clearSign="true" connectorType="" encryptalias="97e0fea3-d795-41e7-a8e5-71a8a4d1d392" queuesecurity="encrypted"/>
+      </step>
+    </dataprocess>
+  </configuration>
+  <dragpoints>
+    <dragpoint name="shape2.dragpoint1" toShape="shape4" x="720.0" y="488.0">
+      <linesegment length="0" name="shape2.dragpoint1.lineseg1" orient="horizontal" x="641.0" y="414.0"/>
+      <linesegment length="0" name="shape2.dragpoint1.lineseg2" orient="vertical" x="641.0" y="414.0"/>
+      <linesegment length="47" name="shape2.dragpoint1.lineseg3" orient="horizontal" x="641.0" y="414.0"/>
+      <linesegment length="80" name="shape2.dragpoint1.lineseg4" orient="vertical" x="688.0" y="414.0"/>
+      <linesegment length="32" name="shape2.dragpoint1.lineseg5" orient="horizontal" x="688.0" y="494.0"/>
+    </dragpoint>
+  </dragpoints>
+</shape>

@@ -62,3 +62,9 @@ Write-Host "   ✅ IMigrate/MuleToIS-API/.env"
 Write-Host "   ✅ IMigrate/BoomiToIS-API/.env"
 Write-Host "   ✅ IMigrate/IFA-Project/frontend/.env"
 
+
+
+
+
+
+

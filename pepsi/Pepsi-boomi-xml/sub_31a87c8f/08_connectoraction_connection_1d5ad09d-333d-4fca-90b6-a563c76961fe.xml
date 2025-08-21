@@ -1,0 +1,16 @@
+<?xml version="1.0" ?>
+<bns:Component xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bns="http://api.platform.boomi.com/" folderFullPath="PepsiCo/2.0 Development/2.1 Global Integrations/EC372 - EC to NAVEX (OB)" componentId="1d5ad09d-333d-4fca-90b6-a563c76961fe" version="3" name="NAVEX SFTP Connection" type="connector-settings" subType="sftp" createdDate="2018-04-25T11:25:00Z" createdBy="Deep.Singh.Chauhan@accenture.com" modifiedDate="2024-05-21T14:04:40Z" modifiedBy="Abhinandan.Srivastav.Contractor@pepsico.com" deleted="false" currentVersion="true" folderName="EC372 - EC to NAVEX (OB)" folderId="RjoxOTM3OTEx" branchName="main" branchId="QjoyOTk5NDY">
+  <bns:encryptedValues>
+    <bns:encryptedValue path="//SFTPSettings/AuthSettings/@password" isSet="true"/>
+  </bns:encryptedValues>
+  <bns:description/>
+  <bns:object>
+    <SFTPSettings xmlns="" host="sftp-test.navexglobal.com" port="22">
+      <AuthSettings password="adf1edb907eac373e24506f2f9ecce9b5286080594752053d015e323b279aee17ca20cc16af2a733a028e6da94e05d80ce3d385eed056664d030d342f488ca5c" user="ep-pepsico"/>
+      <ProxySettings host="" proxyEnabled="false" type="ATOM" user=""/>
+      <SSHOptions dhKeySizeMax1024="false" sshkeyauth="false" sshkeypath="">
+        <knownHostEntry/>
+      </SSHOptions>
+    </SFTPSettings>
+  </bns:object>
+</bns:Component>

@@ -1,0 +1,29 @@
+<?xml version="1.0" ?>
+<shape image="decision_icon" name="shape21" shapetype="decision" userlabel=" employee_class not blank" x="944.0" y="160.0">
+  <configuration>
+    <decision comparison="notequals" name=" employee_class not blank">
+      <decisionvalue valueType="definedparameter">
+        <definedprocessparameter componentId="795e769e-a9c3-442e-bff3-a96b04f9b531" componentName="EC372 - EC to NAVEX (OB)" propertyKey="5373d17c-a180-4aab-bc91-e91f8689b86c" propertyLabel="Filter_EmployeeClass"/>
+      </decisionvalue>
+      <decisionvalue valueType="static">
+        <staticparameter staticproperty=""/>
+      </decisionvalue>
+    </decision>
+  </configuration>
+  <dragpoints>
+    <dragpoint identifier="true" name="shape21.dragpoint1" text="True" toShape="shape10" x="976.0" y="73.0">
+      <linesegment length="0" name="shape21.dragpoint1.lineseg1" orient="horizontal" x="978.0" y="175.0"/>
+      <linesegment length="0" name="shape21.dragpoint1.lineseg2" orient="vertical" x="978.0" y="175.0"/>
+      <linesegment length="7" name="shape21.dragpoint1.lineseg3" orient="horizontal" x="978.0" y="175.0"/>
+      <linesegment length="96" name="shape21.dragpoint1.lineseg4" orient="vertical" x="985.0" y="79.0"/>
+      <linesegment label="True" length="-9" name="shape21.dragpoint1.lineseg5" orient="horizontal" x="985.0" y="79.0"/>
+    </dragpoint>
+    <dragpoint identifier="false" name="shape21.dragpoint2" text="False" toShape="shape3" x="1120.0" y="169.0">
+      <linesegment length="0" name="shape21.dragpoint2.lineseg1" orient="horizontal" x="978.0" y="175.0"/>
+      <linesegment length="0" name="shape21.dragpoint2.lineseg2" orient="vertical" x="978.0" y="175.0"/>
+      <linesegment length="79" name="shape21.dragpoint2.lineseg3" orient="horizontal" x="978.0" y="175.0"/>
+      <linesegment length="0" name="shape21.dragpoint2.lineseg4" orient="vertical" x="1057.0" y="175.0"/>
+      <linesegment label="False" length="63" name="shape21.dragpoint2.lineseg5" orient="horizontal" x="1057.0" y="175.0"/>
+    </dragpoint>
+  </dragpoints>
+</shape>

@@ -73,10 +73,6 @@ const ProgressTracker = ({
 
   // Calculate progress percentage based on status and processing step
   const getProgressPercentage = () => {
-    // Debug logging to see what status we're getting
-    console.log("ProgressTracker - Status:", status, "ProcessingStep:", processingStep, "DeploymentStatus:", deploymentStatus);
-    console.log("ProgressTracker - Deployment Info:", { deployedIflowName, deploymentDetails, statusMessage });
-
     // Check for deployment status first (highest priority)
     if (deploymentStatus === "deploying") {
       return 90 // Deployment in progress
@@ -93,7 +89,33 @@ const ProgressTracker = ({
       return 50 // Document processed and ready for iFlow generation
     } else if (status === "generating_iflow" || status === "iflow_generation_started" || processingStep === "iflow_generation" || processingStep === "generating_iflow") {
       return 75 // iFlow generation in progress
-    } else if (status === "completed" && !deploymentStatus) {
+    } else if (status === "completed") {
+      // Check if this is a deployed job by looking for deployment indicators
+      // Since deploymentStatus can be undefined even after deployment, we need to check other indicators
+      const isDeployed = deployedIflowName ||
+                        deploymentDetails?.iflow_name ||
+                        deploymentDetails?.package_id ||
+                        statusMessage?.includes('deployed') ||
+                        statusMessage?.includes('Deployed') ||
+                        statusMessage?.includes('SAP Integration Suite');
+
+      // Additional check: if the page shows deployment UI elements, assume it's deployed
+      // This is a fallback for when backend doesn't properly set deployment status
+      const deploymentSection = document.querySelector('[class*="bg-green-50"]');
+      const deploymentText = deploymentSection?.textContent?.includes('Deployed to SAP Integration Suite');
+
+      console.log("Deployment check:", {
+        isDeployed,
+        deployedIflowName,
+        deploymentDetails,
+        statusMessage: statusMessage?.substring(0, 50),
+        deploymentText,
+        deploymentStatus
+      });
+
+      if (isDeployed || deploymentText) {
+        return 100 // Deployment completed
+      }
       return 85 // iFlow generation completed, ready for deployment
     } else if (status === "failed" || status === "iflow_generation_failed") {
       return 100 // Failed (but progress bar shows complete)
@@ -140,9 +162,9 @@ const ProgressTracker = ({
                            statusMessage?.match(/iFlow.*?name.*?[:\s](.+?)(?:\s|$)/i)?.[1];
 
       if (deployedName) {
-        return `🚀 Deployed: ${deployedName}`;
+        return `Deployed: ${deployedName}`;
       }
-      return "🚀 Deployed to SAP Integration Suite!";
+      return "Deployed to SAP Integration Suite!";
     } else if (deploymentStatus === "failed") {
       return "Deployment failed"
     }
@@ -155,6 +177,27 @@ const ProgressTracker = ({
     } else if (status === "generating_iflow" || status === "iflow_generation_started" || processingStep === "iflow_generation" || processingStep === "generating_iflow") {
       return "Generating iFlow..."
     } else if (status === "completed" && !deploymentStatus) {
+      // Use same deployment detection logic as progress percentage
+      const isDeployed = deployedIflowName ||
+                        deploymentDetails?.iflow_name ||
+                        deploymentDetails?.package_id ||
+                        statusMessage?.includes('deployed') ||
+                        statusMessage?.includes('Deployed') ||
+                        statusMessage?.includes('SAP Integration Suite');
+
+      const deploymentSection = document.querySelector('[class*="bg-green-50"]');
+      const deploymentText = deploymentSection?.textContent?.includes('Deployed to SAP Integration Suite');
+      
+      // Check for UI indicators of deployment
+      const hasDeploymentUI = Array.from(document.querySelectorAll('*')).some(el => {
+        const text = el.textContent?.toLowerCase() || '';
+        return text.includes('deployed to sap integration suite') || 
+               (text === 'deployed' && el.querySelector('svg, .checkmark, [class*="check"]'));
+      });
+
+      if (isDeployed || deploymentText || hasDeploymentUI) {
+        return "Deployed to SAP Integration Suite!"
+      }
       return "iFlow generated successfully!"
     } else if (status === "failed" || status === "iflow_generation_failed") {
       return "Failed"
@@ -371,7 +414,7 @@ const ProgressTracker = ({
                     : "bg-gray-300 text-gray-600"
                 }`}>
                   {deploymentStatus === "completed" ? "✓" :
-                   deploymentStatus === "deploying" ? "🚀" : "3"}
+                   deploymentStatus === "deploying" ? "⚡" : "3"}
                 </div>
                 <span className={`ml-1 font-medium ${
                   deploymentStatus === "deploying"

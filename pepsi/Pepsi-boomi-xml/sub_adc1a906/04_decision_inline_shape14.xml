@@ -1,0 +1,29 @@
+<?xml version="1.0" ?>
+<shape image="decision_icon" name="shape14" shapetype="decision" userlabel=" company_territory_code not blank" x="512.0" y="160.0">
+  <configuration>
+    <decision comparison="notequals" name=" company_territory_code not blank">
+      <decisionvalue valueType="definedparameter">
+        <definedprocessparameter componentId="795e769e-a9c3-442e-bff3-a96b04f9b531" componentName="EC372 - EC to NAVEX (OB)" propertyKey="a92b59a7-bbfb-4ee5-8a4c-e32d7727fbb4" propertyLabel="Filter_company_territory_code"/>
+      </decisionvalue>
+      <decisionvalue valueType="static">
+        <staticparameter staticproperty=""/>
+      </decisionvalue>
+    </decision>
+  </configuration>
+  <dragpoints>
+    <dragpoint identifier="true" name="shape14.dragpoint1" text="True" toShape="shape16" x="608.0" y="89.0">
+      <linesegment length="0" name="shape14.dragpoint1.lineseg1" orient="horizontal" x="546.0" y="175.0"/>
+      <linesegment length="0" name="shape14.dragpoint1.lineseg2" orient="vertical" x="546.0" y="175.0"/>
+      <linesegment length="39" name="shape14.dragpoint1.lineseg3" orient="horizontal" x="546.0" y="175.0"/>
+      <linesegment length="80" name="shape14.dragpoint1.lineseg4" orient="vertical" x="585.0" y="95.0"/>
+      <linesegment label="True" length="23" name="shape14.dragpoint1.lineseg5" orient="horizontal" x="585.0" y="95.0"/>
+    </dragpoint>
+    <dragpoint identifier="false" name="shape14.dragpoint2" text="False" toShape="shape22" x="736.0" y="169.0">
+      <linesegment length="0" name="shape14.dragpoint2.lineseg1" orient="horizontal" x="546.0" y="175.0"/>
+      <linesegment length="0" name="shape14.dragpoint2.lineseg2" orient="vertical" x="546.0" y="175.0"/>
+      <linesegment length="103" name="shape14.dragpoint2.lineseg3" orient="horizontal" x="546.0" y="175.0"/>
+      <linesegment length="0" name="shape14.dragpoint2.lineseg4" orient="vertical" x="649.0" y="175.0"/>
+      <linesegment label="False" length="87" name="shape14.dragpoint2.lineseg5" orient="horizontal" x="649.0" y="175.0"/>
+    </dragpoint>
+  </dragpoints>
+</shape>

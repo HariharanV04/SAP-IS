@@ -1,0 +1,29 @@
+<?xml version="1.0" ?>
+<shape image="documentproperties_icon" name="shape28" shapetype="documentproperties" userlabel="Set effective_end_date &gt;=" x="288.0" y="288.0">
+  <configuration>
+    <documentproperties>
+      <documentproperty defaultValue="" isTradingPartner="false" name="Dynamic Process Property - where" persist="false" propertyId="process.where">
+        <sourcevalues>
+          <parametervalue key="1" valueType="static">
+            <staticparameter staticproperty="effective_end_date = to_date('"/>
+          </parametervalue>
+          <parametervalue key="2" valueType="process">
+            <processparameter processproperty="EDATE" processpropertydefaultvalue=""/>
+          </parametervalue>
+          <parametervalue key="3" valueType="static">
+            <staticparameter staticproperty="')"/>
+          </parametervalue>
+        </sourcevalues>
+      </documentproperty>
+    </documentproperties>
+  </configuration>
+  <dragpoints>
+    <dragpoint name="shape28.dragpoint1" toShape="shape14" x="496.0" y="169.0">
+      <linesegment length="0" name="shape28.dragpoint1.lineseg1" orient="horizontal" x="322.0" y="303.0"/>
+      <linesegment length="0" name="shape28.dragpoint1.lineseg2" orient="vertical" x="322.0" y="303.0"/>
+      <linesegment length="95" name="shape28.dragpoint1.lineseg3" orient="horizontal" x="322.0" y="303.0"/>
+      <linesegment length="128" name="shape28.dragpoint1.lineseg4" orient="vertical" x="417.0" y="175.0"/>
+      <linesegment length="79" name="shape28.dragpoint1.lineseg5" orient="horizontal" x="417.0" y="175.0"/>
+    </dragpoint>
+  </dragpoints>
+</shape>

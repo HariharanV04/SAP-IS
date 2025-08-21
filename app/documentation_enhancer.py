@@ -242,6 +242,112 @@ class DocumentationEnhancer:
 - **Transformation Logic:** [Key transformation rules]
 - **Function Steps:** [Any special functions used]
 
+**IMPORTANT FORMATTING REQUIREMENTS:**
+
+1. **Error Property Categories:** When documenting error properties, use structured tables:
+   ```
+   | Category | Property Names | Description |
+   |----------|----------------|-------------|
+   | Business Rule Errors | RPT_INT_ALL_BRULE_ERR_CNT, RPT_INT_ALL_BRULE_WRN_CNT, RPT_INT_ALL_BRULE_SKP_CNT | Error tracking for business rule violations |
+   | Cleanse Errors | RPT_INT_ALL_CLNS_ERR_CNT, RPT_INT_ALL_CLNS_WRN_CNT, RPT_INT_ALL_CLNS_SKP_CNT | Data cleansing error tracking |
+   ```
+
+2. **Input Profile Details:** Use structured tables for field mappings:
+   ```
+   | Field Path | Description | Data Type | Business Purpose |
+   |------------|-------------|-----------|------------------|
+   | CompoundEmployee/person/person_id_external | Global Person ID | String | Unique employee identifier |
+   | CompoundEmployee/person/employment_information/email_address | Corporate email address | String | Employee contact information |
+   ```
+
+3. **Output Profile Details:** Use structured tables for target fields:
+   ```
+   | Target Field | Description | Source Mapping | Business Purpose |
+   |--------------|-------------|----------------|------------------|
+   | Record/Elements/GPID | Global Person ID | CompoundEmployee/person/person_id_external | Employee identification |
+   | Record/Elements/First Name | Employee first name | CompoundEmployee/person/personal_information/first_name | Employee identification |
+   ```
+
+4. **Property Lists:** When listing multiple properties, use organized bullet points:
+   ```
+   **Business Rule Errors:**
+   - RPT_INT_ALL_BRULE_ERR_CNT: Error count for business rule violations
+   - RPT_INT_ALL_BRULE_WRN_CNT: Warning count for business rule issues
+   - RPT_INT_ALL_BRULE_SKP_CNT: Skip count for business rule processing
+   ```
+
+5. **Dense Property Sections:** When documenting error property categories, use structured tables instead of dense lists:
+   ```
+   **Before (Poor Formatting):**
+   - **Business Rule Errors:** RPT_INT_ALL_BRULE_ERR_CNT, RPT_INT_ALL_BRULE_WRN_CNT, RPT_INT_ALL_BRULE_SKP_CNT
+   - **Cleanse Errors:** RPT_INT_ALL_CLNS_ERR_CNT, RPT_INT_ALL_CLNS_WRN_CNT, RPT_INT_ALL_CLNS_SKP_CNT
+   
+   **After (Improved Formatting):**
+   | Category | Property Names | Description |
+   |----------|----------------|-------------|
+   | Business Rule Errors | RPT_INT_ALL_BRULE_ERR_CNT, RPT_INT_ALL_BRULE_WRN_CNT, RPT_INT_ALL_BRULE_SKP_CNT | Error tracking for business rule violations |
+   | Cleanse Errors | RPT_INT_ALL_CLNS_ERR_CNT, RPT_INT_ALL_CLNS_WRN_CNT, RPT_INT_ALL_CLNS_SKP_CNT | Data cleansing error tracking |
+   ```
+
+6. **Input/Output Profile Sections:** Use structured tables for field mappings instead of continuous text:
+   ```
+   **Before (Poor Formatting):**
+   Record/Elements/GPID: Global Person ID - Record/Elements/First Name: Employee first name - Record/Elements/Last Name: Employee last name
+   
+   **After (Improved Formatting):**
+   | Target Field | Description | Source Mapping | Business Purpose |
+   |--------------|-------------|----------------|------------------|
+   | Record/Elements/GPID | Global Person ID | CompoundEmployee/person/person_id_external | Employee identification |
+   | Record/Elements/First Name | Employee first name | CompoundEmployee/person/personal_information/first_name | Employee identification |
+   | Record/Elements/Last Name | Employee last name | CompoundEmployee/person/personal_information/last_name | Employee identification |
+   ```
+
+7. **Specific Formatting Examples for Common Sections:**
+   
+   **Error Property Categories (Improved):**
+   ```
+   | Category | Property Names | Description |
+   |----------|----------------|-------------|
+   | Business Rule Errors | RPT_INT_ALL_BRULE_ERR_CNT, RPT_INT_ALL_BRULE_WRN_CNT, RPT_INT_ALL_BRULE_SKP_CNT | Error tracking for business rule violations |
+   | Cleanse Errors | RPT_INT_ALL_CLNS_ERR_CNT, RPT_INT_ALL_CLNS_WRN_CNT, RPT_INT_ALL_CLNS_SKP_CNT | Data cleansing error tracking |
+   | Decision Errors | RPT_INT_ALL_DCN_ERR_CNT, RPT_INT_ALL_DCN_WRN_CNT, RPT_INT_ALL_DCN_SKP_CNT | Decision point error tracking |
+   | Route Errors | RPT_INT_ALL_ROUTE_ERR_CNT, RPT_INT_ALL_ROUTE_WRN_CNT, RPT_INT_ALL_ROUTE_SKP_CNT | Routing error tracking |
+   | TryCatch Errors | RPT_INT_ALL_TRYCATCH_ERR_CNT, RPT_INT_ALL_TRYCATCH_WRN_CNT, RPT_INT_ALL_TRYCATCH_SKP_CNT | Exception handling tracking |
+   | Return Errors | RPT_INT_ALL_RETURN_ERR_CNT, RPT_INT_ALL_RETURN_WRN_CNT, RPT_INT_ALL_RETURN_SKP_CNT | Return value tracking |
+   | General Errors | RPT_INT_ALL_ERR_CNT, RPT_INT_INTERFACE_START_TIME, RPT_INT_ALL_WRN_CNT | Overall error tracking |
+   ```
+   
+   **Input Profile (Improved):**
+   ```
+   | Field Path | Description | Data Type | Business Purpose |
+   |------------|-------------|-----------|------------------|
+   | CompoundEmployee/person/person_id_external | Global Person ID | String | Unique employee identifier |
+   | CompoundEmployee/person/employment_information/email_address | Corporate email address | String | Employee contact information |
+   | CompoundEmployee/person/employment_information/employment_status | Employment status code | String | Current employment status |
+   | CompoundEmployee/person/employment_information/employee_class | Employee classification | String | Employee role classification |
+   | CompoundEmployee/person/employment_information/pay_grade | Pay grade level | String | Compensation hierarchy |
+   | CompoundEmployee/person/employment_information/position | Position title | String | Job role description |
+   | CompoundEmployee/person/employment_information/location | Location code | String | Work location identifier |
+   | CompoundEmployee/person/employment_information/territory | Territory code | String | Geographic territory |
+   ```
+   
+   **Output Profile (Improved):**
+   ```
+   | Target Field | Description | Source Mapping | Business Purpose |
+   |--------------|-------------|----------------|------------------|
+   | Record/Elements/GPID | Global Person ID | CompoundEmployee/person/person_id_external | Employee identification |
+   | Record/Elements/First Name | Employee first name | CompoundEmployee/person/personal_information/first_name | Employee identification |
+   | Record/Elements/Last Name | Employee last name | CompoundEmployee/person/personal_information/last_name | Employee identification |
+   | Record/Elements/Email Address | Corporate email address | CompoundEmployee/person/employment_information/email_address | Employee contact information |
+   | Record/Elements/emplStatus | Employment status description | CompoundEmployee/person/employment_information/employment_status | Employment status tracking |
+   | Record/Elements/employee-class | Employee class description | CompoundEmployee/person/employment_information/employee_class | Employee role tracking |
+   | Record/Elements/Country | Country name | CompoundEmployee/person/employment_information/location/country | Geographic information |
+   | Record/Elements/Location | Location name | CompoundEmployee/person/employment_information/location/name | Work location information |
+   | Record/Elements/Manager name | Manager full name | CompoundEmployee/person/employment_information/manager/name | Organizational hierarchy |
+   | Record/Elements/Termination Date | Employment end date | CompoundEmployee/person/employment_information/termination_date | Employment history |
+   | Record/Elements/Original Hire Date | First hire date | CompoundEmployee/person/employment_information/hire_date | Employment tenure |
+   ```
+
     **Input Data Structure:**
 
     | Field Name | Data Type | Description |
@@ -623,6 +729,61 @@ class DocumentationEnhancer:
     - Rate limiting information
     - Pagination details (if applicable)
     - Versioning information
+    
+    ### Query Parameters Formatting
+         For API endpoints with query parameters, format them in organized tables with clear categorization:
+     
+     #### **Standard OData Parameters**
+     | Parameter | Type | Required | Default | Description | Example Value |
+     |-----------|------|----------|---------|-------------|---------------|
+     | `$filter` | String | No | None | Dynamic WHERE clause with multiple criteria | See filtering examples below |
+     | `$select` | String | No | All fields | Employee demographic field selection | `first_name,last_name,email` |
+     | `$expand` | String | No | None | Related entity expansion | `PersonalInformation,Employment` |
+     | `$top` | Integer | No | 1000 | Maximum number of records to return | `500` |
+     | `$skip` | Integer | No | 0 | Number of records to skip for pagination | `1000` |
+     | `$orderby` | String | No | None | Sort order for results | `last_modified_on desc` |
+     | `$format` | String | No | JSON | Response format specification | `json` |
+     
+     #### **SuccessFactors-Specific Parameters**
+     | Parameter | Type | Required | Description | Example Value |
+     |-----------|------|----------|-------------|---------------|
+     | `$filter` | String | No | Complex filtering with SuccessFactors syntax | See detailed examples below |
+     | `$select` | String | No | Field selection for performance optimization | `person_id_external,first_name,last_name` |
+     | `$expand` | String | No | Related entity expansion for nested data | `employment_information,personal_information` |
+     
+     ### **Advanced Filtering Examples**
+     For complex filtering parameters like SuccessFactors `$filter`, organize them clearly with business context:
+     
+     #### **Entity-Based Filtering**
+     | Filter Type | Filter Expression | Business Purpose | Example Values |
+     |-------------|-------------------|------------------|----------------|
+     | **Legal Entity** | `legal_entity_code in ('entity1','entity2')` | Filter by organizational structure | `'PEP01','PEP02','PEP03'` |
+     | **Employee Class** | `employee_class in ('class1','class2')` | Filter by employee role/level | `'REG','CON','TEMP'` |
+     | **Territory** | `company_territory_code in ('territory1','territory2')` | Filter by geographic region | `'US','CA','MX'` |
+     | **Employment Status** | `employment_status eq 'A'` | Filter active employees only | `'A' (Active), 'T' (Terminated)` |
+     
+     #### **Date-Based Filtering**
+     | Filter Type | Filter Expression | Business Purpose | Example Values |
+     |-------------|-------------------|------------------|----------------|
+     | **Last Modified** | `last_modified_on gt datetime'2024-01-01T00:00:00'` | Delta processing since last run | `2024-01-01T00:00:00` |
+     | **End Date Range** | `end_date ge datetime'2024-01-01' and end_date le datetime'2024-12-31'` | Fiscal year filtering | `2024-01-01 to 2024-12-31` |
+     | **Hire Date** | `hire_date ge datetime'2020-01-01'` | New employee filtering | `2020-01-01` |
+     | **Termination Date** | `termination_date ne null` | Recently terminated employees | `null` (not terminated) |
+     
+     #### **Complex Filter Combinations**
+     | Business Scenario | Filter Expression | Description |
+     |-------------------|-------------------|-------------|
+     | **Active US Employees** | `employment_status eq 'A' and company_territory_code eq 'US'` | Filter active employees in US territory |
+     | **Recent Changes** | `last_modified_on gt datetime'2024-01-01T00:00:00' and (employment_status eq 'A' or employment_status eq 'T')` | Recent employment status changes |
+     | **Specific Departments** | `employee_class in ('REG','CON') and legal_entity_code eq 'PEP01'` | Regular and contract employees in specific entity |
+     
+     #### **Performance Optimization Tips**
+     | Optimization | Description | Example |
+     |--------------|-------------|---------|
+     | **Field Selection** | Use `$select` to limit returned fields | `$select=person_id_external,first_name,last_name,email` |
+     | **Pagination** | Use `$top` and `$skip` for large datasets | `$top=500&$skip=1000` |
+     | **Sorting** | Use `$orderby` for consistent data ordering | `$orderby=last_modified_on desc` |
+     | **Expansion Control** | Limit `$expand` to required entities only | `$expand=employment_information($select=employee_class,status)` |
 
     Make sure the final document has:
     1. A descriptive title that reflects the purpose of the Dell Boomi integration
@@ -1279,6 +1440,34 @@ def Message processData(Message message) {
     | POST | /api/customers | Create new customer | Customer object | Created customer | Bearer token |
     | PUT | /api/customers/{{id}} | Update customer | Customer object | Updated customer | Bearer token |
     | DELETE | /api/customers/{{id}} | Delete customer | None | Success message | Bearer token |
+    
+    ### Query Parameters
+    For endpoints with query parameters, format them in organized tables:
+    
+    | Parameter | Type | Required | Description | Example |
+    |-----------|------|----------|-------------|---------|
+    | limit | Integer | No | Maximum number of records to return | 100 |
+    | offset | Integer | No | Number of records to skip | 0 |
+    | sort | String | No | Sort field and direction | name:asc |
+    | filter | String | No | Filter criteria | status='active' |
+    
+    ### Complex Filter Examples
+    For complex filtering parameters, organize them clearly with code blocks:
+    
+    **Date Range Filtering:**
+    ```
+    startDate=2023-01-01&endDate=2023-12-31
+    ```
+    
+    **Status Filtering:**
+    ```
+    status in ('active','pending')
+    ```
+    
+    **Multi-field Filtering:**
+    ```
+    category=electronics AND price>100
+    ```
 
     ### Request/Response Schemas
     #### Customer Object

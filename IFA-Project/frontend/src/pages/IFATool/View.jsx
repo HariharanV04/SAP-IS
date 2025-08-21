@@ -33,7 +33,7 @@ const mockJobsHistory = [
     name: "Payment Gateway Integration",
     platform: "boomi",
     type: "documentation",
-    status: "processing",
+    status: "completed",
     created: "2025-01-11T11:15:00Z",
     duration: "1m 20s",
     files: 1
@@ -784,10 +784,7 @@ const View = () => {
               </p>
             </div>
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2 text-sm text-gray-500">
-                <User className="w-4 h-4" />
-                <span>Enterprise Edition</span>
-              </div>
+
               <button
                 onClick={() => setShowLLMSelector(!showLLMSelector)}
                 className="px-4 py-2 text-sm bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors flex items-center gap-2"
@@ -826,18 +823,9 @@ const View = () => {
               </Card>
             )}
 
-            {/* Upload Configuration Section */}
+            {/* Essential Configuration */}
             <Card>
-              <CardBody className="p-6">
-                <div className="flex items-center gap-2 mb-6">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <Upload className="w-5 h-5 text-blue-600" />
-                  </div>
-                  <div>
-                    <h2 className="text-lg font-semibold text-gray-900">Configuration</h2>
-                    <p className="text-sm text-gray-600">Set up your migration parameters</p>
-                  </div>
-                </div>
+              <CardBody className="p-4">
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Upload Type Selection */}

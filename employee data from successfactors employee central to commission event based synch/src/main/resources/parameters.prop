@@ -1,0 +1,26 @@
+#Tue Jun 13 09:07:57 UTC 2023
+SFTP_PrivateKeyAlias=<SFTP Private key alias>
+SFTP_CredentialName=<SFTP Credential Name>
+SFTP_LocationID=<Cloud Connector Location ID>
+Email_Flag=N
+SFTP_FileName=<SFTP File Name, e.g. ParticipantIntegration_ValidationErrors>
+SuccessFactors_URL=&lt;SuccessFactors URL, e.g. https\://apisalesdemo4.successfactors.com&gt;
+SFTP_USerName=
+SFTP_Address=<SFTP Address>
+SAP\ SuccessFactors\ API\ URL=https\://<successfactors tenant>.successfactors.com
+Commission_URL=&lt;Commission URL for participants API&gt;/api/v2/participants
+PayloadAttach=false
+Commission_Authentication=Client Certificate
+Commission_PrivateKeyAlias=<Commissions PrivateKeyAlias>
+Sender_Address=/employeejobinfo
+CallidusCloud_Authentication=Client Certificate
+SFTP_ProxyType=sapcc
+Receiver_ProcessDirect=/positionjobinfo
+SAP\ SuccessFactors\ Credential=<SAP SuccessFactors Credential>
+Commission_CredentialName=<Commissions Credential Name>
+SFTP_Directory=<SFTP directory, e.g. /inbound>
+CallidusCloud_CredentialName=<Callidus Cloud Credential Name>
+SFTP_Authentication=dual
+CallidusCloud_Address=<CallidusCloud Address>
+SFSF_AuthenticationType=OAuth2SAMLBearer
+CallidusCloud_PrivateKeyAlias=<Callidus Cloud PrivateKeyAlias>
