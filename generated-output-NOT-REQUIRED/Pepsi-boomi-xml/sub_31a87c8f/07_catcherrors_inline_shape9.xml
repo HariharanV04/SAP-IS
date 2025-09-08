@@ -1,0 +1,22 @@
+<?xml version="1.0" ?>
+<shape image="catcherrors_icon" name="shape9" shapetype="catcherrors" userlabel="" x="896.0" y="176.0">
+  <configuration>
+    <catcherrors catchAll="true" retryCount="3"/>
+  </configuration>
+  <dragpoints>
+    <dragpoint identifier="default" name="shape9.dragpoint1" text="Try" toShape="shape24" x="1120.0" y="184.0">
+      <linesegment length="0" name="shape9.dragpoint1.lineseg1" orient="horizontal" x="929.0" y="190.0"/>
+      <linesegment length="0" name="shape9.dragpoint1.lineseg2" orient="vertical" x="929.0" y="190.0"/>
+      <linesegment length="103" name="shape9.dragpoint1.lineseg3" orient="horizontal" x="929.0" y="190.0"/>
+      <linesegment length="0" name="shape9.dragpoint1.lineseg4" orient="vertical" x="1032.0" y="190.0"/>
+      <linesegment label="Try" length="88" name="shape9.dragpoint1.lineseg5" orient="horizontal" x="1032.0" y="190.0"/>
+    </dragpoint>
+    <dragpoint identifier="error" name="shape9.dragpoint2" text="Catch" toShape="shape23" x="1040.0" y="72.0">
+      <linesegment length="0" name="shape9.dragpoint2.lineseg1" orient="horizontal" x="929.0" y="190.0"/>
+      <linesegment length="0" name="shape9.dragpoint2.lineseg2" orient="vertical" x="929.0" y="190.0"/>
+      <linesegment length="63" name="shape9.dragpoint2.lineseg3" orient="horizontal" x="929.0" y="190.0"/>
+      <linesegment length="112" name="shape9.dragpoint2.lineseg4" orient="vertical" x="992.0" y="78.0"/>
+      <linesegment label="Catch" length="48" name="shape9.dragpoint2.lineseg5" orient="horizontal" x="992.0" y="78.0"/>
+    </dragpoint>
+  </dragpoints>
+</shape>

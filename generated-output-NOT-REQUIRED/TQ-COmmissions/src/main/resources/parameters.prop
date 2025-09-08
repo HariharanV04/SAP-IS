@@ -1,0 +1,28 @@
+#Fri Aug 08 09:18:45 UTC 2025
+XDL_DropboxUsername=<xdl_sftp_user>
+PrivateKeyAlias=<xdl_private_key_alias>
+IsCloudDeployment=true
+IM_UserCredentials=IMUser
+TXTA=TXTA_${date\:now\:yyyyMMdd}.txt
+IM_EventTypesAPI=/mtsvc/tcmp/rest/v2/eventTypes
+XDL_HostAndPort=<xdl_sftp_host>\:<xdl_sftp_port>
+ManageQuotaEndpoint=/TqcommissionSyncHighVolume
+IM_AuthenticationType=OAuth2 Client Credentials
+IM_SalesOrdersUpsertAPI=/mtsvc/tcmp/rest/v2/upsert/salesOrders
+TQ_UserCredentials=TQUser
+TQ_QueryAPI=/TerritoryQuotaMgr/services/rest/cobjects/query
+IM_Host=https\://<tenanturl>
+TQ_Host=https\://<tenanturl>
+IM_EventTypesUpsertAPI=/mtsvc/tcmp/rest/v2/upsert/eventTypes
+TQ_UpsertAPI=/TerritoryQuotaMgr/services/rest/bean/upsert
+TQ_CountQueryAPI=/TerritoryQuotaMgr/services/rest/cobjects/countQuery
+TQ_FilterAPI=/TerritoryQuotaMgr/services/rest/bean/filter
+TXSTA=TXSTA_${date\:now\:yyyyMMdd}.txt
+UserRole=ESBMessaging.send
+IM_SalesOrdersQueryParams=$filter\=genericAttribute1 eq "${property.territoryProgramName}" and genericAttribute6 eq Active&select\=salesOrderSeq,orderId,businessUnits,genericAttribute6
+IM_SalesOrdersAPI=/mtsvc/tcmp/rest/v2/salesOrders
+TQ_AuthenticationType=OAuth2 Client Credentials
+TXOH=TXOH_${date\:now\:yyyyMMdd}.txt
+IM_SalesTransactionsUpsertAPI=/mtsvc/tcmp/rest/v2/upsert/salesTransactions
+AuthorizationType=RoleBased
+XDL_CSV_Delimiter=|

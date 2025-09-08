@@ -755,7 +755,7 @@ def fix_iflow():
         create_backup = data.get('create_backup', True)
 
         # Initialize the iFlow generator API
-        generator_api = IFlowGeneratorAPI(api_key=ANTHROPIC_API_KEY)
+        generator_api = IFlowGeneratorAPI(api_key=ANTHROPIC_API_KEY, use_converter=True)
 
         # Fix the iFlow file
         result = generator_api.fix_iflow_file(file_path, create_backup)

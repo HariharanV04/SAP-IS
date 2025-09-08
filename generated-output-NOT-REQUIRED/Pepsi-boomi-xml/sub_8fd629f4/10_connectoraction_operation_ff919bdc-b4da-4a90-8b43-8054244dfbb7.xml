@@ -1,0 +1,17 @@
+<?xml version="1.0" ?>
+<bns:Component xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bns="http://api.platform.boomi.com/" folderFullPath="PepsiCo/1.1 Common Components/Payroll Common Components/CommonExtractForBasicPlusV2.0" componentId="ff919bdc-b4da-4a90-8b43-8054244dfbb7" version="1" name="Notification mail message" type="connector-action" subType="mail" createdDate="2014-09-30T13:14:27Z" createdBy="gopi.banka@accenture.com" modifiedDate="2014-09-30T13:14:27Z" modifiedBy="gopi.banka@accenture.com" deleted="false" currentVersion="true" folderName="CommonExtractForBasicPlusV2.0" folderId="Rjo1MjQ0NjE" branchName="main" branchId="QjoyOTk5NDY">
+  <bns:encryptedValues/>
+  <bns:description>Notification mail message for Cost Center</bns:description>
+  <bns:object>
+    <Operation xmlns="">
+      <Archiving directory="" enabled="false"/>
+      <Configuration>
+        <MailSendAction bodyContentType="text/plain" dataContentType="text/html" disposition="attachment" from="" subject="" to=""/>
+      </Configuration>
+      <Tracking>
+        <TrackedFields/>
+      </Tracking>
+      <Caching/>
+    </Operation>
+  </bns:object>
+</bns:Component>

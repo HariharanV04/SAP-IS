@@ -1,0 +1,29 @@
+<?xml version="1.0" ?>
+<bns:Component xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bns="http://api.platform.boomi.com/" folderFullPath="PepsiCo" componentId="8748a325-5df6-46f4-a828-4f9e1d5e4398" version="160" name="SFAPI  Connection (DC8/PepsiCo)" type="connector-settings" subType="successfactorsmaster-Q2Q93V-SFSF-priv_prod" createdDate="2013-09-06T14:08:52Z" createdBy="bgogineni@successfactors.com" modifiedDate="2022-06-16T06:44:30Z" modifiedBy="abhineet.verma.Contractor@pepsico.com" deleted="false" currentVersion="true" folderName="PepsiCo" folderId="RjoyOTQ1MTc" branchName="main" branchId="QjoyOTk5NDY">
+  <bns:encryptedValues>
+    <bns:encryptedValue path="//GenericConnectionConfig/field[@type='password']" isSet="true"/>
+  </bns:encryptedValues>
+  <bns:description>Connector used to authenticating with SF API.</bns:description>
+  <bns:object>
+    <GenericConnectionConfig xmlns="">
+      <field id="url" type="string" value="https://api8.successfactors.com"/>
+      <field id="alternateUrl" type="string" value=""/>
+      <field id="companyId" type="string" value="PepsiCoECDEV"/>
+      <field id="username" type="string" value="SFapi"/>
+      <field id="password" type="password" value=""/>
+      <field id="batchSize" type="integer" value="100"/>
+      <field id="timeout" type="integer" value="120"/>
+      <field id="sleep" type="integer" value="15"/>
+      <field id="pageSize" type="integer" value="100"/>
+      <field id="objectTypeIDList" type="string" value=""/>
+      <field id="httpTimeout" type="integer" value="10"/>
+      <field id="sfapiUrlSuffix" type="string" value="/sfapi/v1/soap"/>
+      <field id="enableOData" type="boolean" value="true"/>
+      <field id="odataUrlSuffix" type="string" value="/odata/v2/"/>
+      <field id="clientId" type="string" value="NDA3NjEzZWUxMDYzYzc4OGEwZGVkZmNmNzY1ZA"/>
+      <field id="privateKey" type="password" value="33889d67912e7ea96c98ba2138833e966339af7fafed7d0ee9c519ef984b240a86fd4ac0cf4332addd0ed4d5fa5afe738f1ce784d998794dfcbbe6c70e954a32"/>
+      <field id="samlAssertionField" type="string" value=""/>
+      <field id="samlAssertionValue" type="password"/>
+    </GenericConnectionConfig>
+  </bns:object>
+</bns:Component>

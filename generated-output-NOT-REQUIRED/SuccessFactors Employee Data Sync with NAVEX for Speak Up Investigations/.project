@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?><projectDescription>
+   <name>SuccessFactors_Employee_Data_Sync_with_NAVEX_for_Speak_Up_Investigations</name>
+   <comment/>
+   <projects/>
+   <buildSpec>
+      <buildCommand>
+         <name>org.eclipse.jdt.core.javabuilder</name>
+         <arguments/>
+      </buildCommand>
+   </buildSpec>
+   <natures>
+      <nature>org.eclipse.jdt.core.javanature</nature>
+      <nature>com.sap.ide.ifl.project.support.project.nature</nature>
+      <nature>com.sap.ide.ifl.bsn</nature>
+   </natures>
+</projectDescription>

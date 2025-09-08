@@ -1,1 +1,0 @@
-This iFlow provides a simple default endpoint that returns a response when the root path is accessed. It serves as a basic health check or landing page for the API. The implementation is minimal with no complex transformations or processing logic.

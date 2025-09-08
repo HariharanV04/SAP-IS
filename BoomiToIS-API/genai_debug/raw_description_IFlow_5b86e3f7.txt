@@ -1,1 +1,0 @@
-This iFlow extracts employee data from SAP SuccessFactors via OData, validates it using Groovy scripts, transforms it to Kafka Avro format, and uploads it to an SFTP server. It includes error handling with email notifications for invalid data and comprehensive logging of error details. The process follows a conditional flow based on data validation results.

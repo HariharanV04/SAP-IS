@@ -1,0 +1,512 @@
+<?xml version="1.0" ?>
+<bns:Component xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bns="http://api.platform.boomi.com/" folderFullPath="PepsiCo/2.0 Development/2.1 Global Integrations/EC372 - EC to NAVEX (OB)" componentId="3c0b145b-dd1a-45f4-9289-9aaf7d592a9a" version="75" name="EC372 - EC to NAVEX (OB)" type="process" createdDate="2018-04-11T03:58:42Z" createdBy="Deep.Singh.Chauhan@accenture.com" modifiedDate="2022-02-16T13:41:22Z" modifiedBy="Geetanjali.Kumari.Contractor@pepsico.com" deleted="false" currentVersion="true" folderName="EC372 - EC to NAVEX (OB)" folderId="RjoxOTM3OTEx" branchName="main" branchId="QjoyOTk5NDY">
+  <bns:encryptedValues/>
+  <bns:description/>
+  <bns:object>
+    <process xmlns="" allowSimultaneous="false" enableUserLog="false" processLogOnErrorOnly="false" purgeDataImmediately="false" updateRunDates="true" workload="general">
+      <shapes>
+        <shape image="start" name="shape1" shapetype="start" userlabel="" x="16.0" y="400.0">
+          <configuration>
+            <noaction/>
+          </configuration>
+          <dragpoints>
+            <dragpoint name="shape1.dragpoint1" toShape="shape15" x="96.0" y="409.0">
+              <linesegment length="0" name="shape1.dragpoint1.lineseg1" orient="horizontal" x="50.0" y="415.0"/>
+              <linesegment length="0" name="shape1.dragpoint1.lineseg2" orient="vertical" x="50.0" y="415.0"/>
+              <linesegment length="31" name="shape1.dragpoint1.lineseg3" orient="horizontal" x="50.0" y="415.0"/>
+              <linesegment length="0" name="shape1.dragpoint1.lineseg4" orient="vertical" x="81.0" y="415.0"/>
+              <linesegment length="15" name="shape1.dragpoint1.lineseg5" orient="horizontal" x="81.0" y="415.0"/>
+            </dragpoint>
+          </dragpoints>
+        </shape>
+        <shape image="decision_icon" name="shape3" shapetype="decision" userlabel="Filter LSRD is NULL " x="256.0" y="304.0">
+          <configuration>
+            <decision comparison="equals" name="Filter LSRD is NULL ">
+              <decisionvalue valueType="definedparameter">
+                <definedprocessparameter componentId="795e769e-a9c3-442e-bff3-a96b04f9b531" componentName="EC372 - EC to NAVEX (OB)" propertyKey="bdf17f77-c75b-4777-bc49-2ce59e2286d9" propertyLabel="Filter_LSRD"/>
+              </decisionvalue>
+              <decisionvalue valueType="static">
+                <staticparameter staticproperty=""/>
+              </decisionvalue>
+            </decision>
+          </configuration>
+          <dragpoints>
+            <dragpoint identifier="true" name="shape3.dragpoint1" text="True" toShape="shape5" x="400.0" y="409.0">
+              <linesegment length="0" name="shape3.dragpoint1.lineseg1" orient="horizontal" x="290.0" y="319.0"/>
+              <linesegment length="0" name="shape3.dragpoint1.lineseg2" orient="vertical" x="290.0" y="319.0"/>
+              <linesegment length="63" name="shape3.dragpoint1.lineseg3" orient="horizontal" x="290.0" y="319.0"/>
+              <linesegment length="96" name="shape3.dragpoint1.lineseg4" orient="vertical" x="353.0" y="319.0"/>
+              <linesegment label="True" length="47" name="shape3.dragpoint1.lineseg5" orient="horizontal" x="353.0" y="415.0"/>
+            </dragpoint>
+            <dragpoint identifier="false" name="shape3.dragpoint2" text="False" toShape="shape2" x="400.0" y="217.0">
+              <linesegment length="0" name="shape3.dragpoint2.lineseg1" orient="horizontal" x="290.0" y="319.0"/>
+              <linesegment length="0" name="shape3.dragpoint2.lineseg2" orient="vertical" x="290.0" y="319.0"/>
+              <linesegment length="63" name="shape3.dragpoint2.lineseg3" orient="horizontal" x="290.0" y="319.0"/>
+              <linesegment length="96" name="shape3.dragpoint2.lineseg4" orient="vertical" x="353.0" y="223.0"/>
+              <linesegment label="False" length="47" name="shape3.dragpoint2.lineseg5" orient="horizontal" x="353.0" y="223.0"/>
+            </dragpoint>
+          </dragpoints>
+        </shape>
+        <shape image="documentproperties_icon" name="shape2" shapetype="documentproperties" userlabel="SetLastSuccessRunDate" x="416.0" y="208.0">
+          <configuration>
+            <documentproperties>
+              <documentproperty defaultValue="" isTradingPartner="false" name="Dynamic Process Property - SDATE" persist="false" propertyId="process.SDATE">
+                <sourcevalues>
+                  <parametervalue key="1" valueType="definedparameter">
+                    <definedprocessparameter componentId="795e769e-a9c3-442e-bff3-a96b04f9b531" componentName="EC372 - EC to NAVEX (OB)" propertyKey="bdf17f77-c75b-4777-bc49-2ce59e2286d9" propertyLabel="Filter_LSRD"/>
+                  </parametervalue>
+                </sourcevalues>
+              </documentproperty>
+              <documentproperty defaultValue="" isTradingPartner="false" name="Dynamic Process Property - EDATE" persist="false" propertyId="process.EDATE">
+                <sourcevalues>
+                  <parametervalue key="2" valueType="date">
+                    <dateparameter dateparametertype="current" datetimemask="yyyy-MM-dd"/>
+                  </parametervalue>
+                </sourcevalues>
+              </documentproperty>
+              <documentproperty defaultValue="" isTradingPartner="false" name="Dynamic Process Property - LSRD" persist="false" propertyId="process.LSRD">
+                <sourcevalues>
+                  <parametervalue key="3" valueType="definedparameter">
+                    <definedprocessparameter componentId="795e769e-a9c3-442e-bff3-a96b04f9b531" componentName="EC372 - EC to NAVEX (OB)" propertyKey="bdf17f77-c75b-4777-bc49-2ce59e2286d9" propertyLabel="Filter_LSRD"/>
+                  </parametervalue>
+                  <parametervalue key="7" valueType="static">
+                    <staticparameter staticproperty="T00:00:00Z"/>
+                  </parametervalue>
+                </sourcevalues>
+              </documentproperty>
+              <documentproperty defaultValue="" isTradingPartner="false" name="Dynamic Process Property - DemographicTotalCount" persist="false" propertyId="process.DemographicTotalCount">
+                <sourcevalues>
+                  <parametervalue key="8" valueType="static">
+                    <staticparameter staticproperty="0"/>
+                  </parametervalue>
+                </sourcevalues>
+              </documentproperty>
+              <documentproperty defaultValue="" isTradingPartner="false" name="Dynamic Process Property - DemographicErrorCount" persist="false" propertyId="process.DemographicErrorCount">
+                <sourcevalues>
+                  <parametervalue key="9" valueType="static">
+                    <staticparameter staticproperty="0"/>
+                  </parametervalue>
+                </sourcevalues>
+              </documentproperty>
+            </documentproperties>
+          </configuration>
+          <dragpoints>
+            <dragpoint name="shape2.dragpoint1" toShape="shape4" x="592.0" y="313.0">
+              <linesegment length="0" name="shape2.dragpoint1.lineseg1" orient="horizontal" x="450.0" y="223.0"/>
+              <linesegment length="0" name="shape2.dragpoint1.lineseg2" orient="vertical" x="450.0" y="223.0"/>
+              <linesegment length="79" name="shape2.dragpoint1.lineseg3" orient="horizontal" x="450.0" y="223.0"/>
+              <linesegment length="96" name="shape2.dragpoint1.lineseg4" orient="vertical" x="529.0" y="223.0"/>
+              <linesegment length="63" name="shape2.dragpoint1.lineseg5" orient="horizontal" x="529.0" y="319.0"/>
+            </dragpoint>
+          </dragpoints>
+        </shape>
+        <shape image="branch_icon" name="shape4" shapetype="branch" userlabel="" x="608.0" y="304.0">
+          <configuration>
+            <branch numBranches="5"/>
+          </configuration>
+          <dragpoints>
+            <dragpoint identifier="1" name="shape4.dragpoint1" text="1" toShape="shape6" x="768.0" y="105.0">
+              <linesegment length="0" name="shape4.dragpoint1.lineseg1" orient="horizontal" x="642.0" y="319.0"/>
+              <linesegment length="0" name="shape4.dragpoint1.lineseg2" orient="vertical" x="642.0" y="319.0"/>
+              <linesegment length="71" name="shape4.dragpoint1.lineseg3" orient="horizontal" x="642.0" y="319.0"/>
+              <linesegment length="208" name="shape4.dragpoint1.lineseg4" orient="vertical" x="713.0" y="111.0"/>
+              <linesegment label="1" length="55" name="shape4.dragpoint1.lineseg5" orient="horizontal" x="713.0" y="111.0"/>
+            </dragpoint>
+            <dragpoint identifier="2" name="shape4.dragpoint2" text="2" toShape="shape7" x="768.0" y="201.0">
+              <linesegment length="0" name="shape4.dragpoint2.lineseg1" orient="horizontal" x="642.0" y="319.0"/>
+              <linesegment length="0" name="shape4.dragpoint2.lineseg2" orient="vertical" x="642.0" y="319.0"/>
+              <linesegment length="71" name="shape4.dragpoint2.lineseg3" orient="horizontal" x="642.0" y="319.0"/>
+              <linesegment length="112" name="shape4.dragpoint2.lineseg4" orient="vertical" x="713.0" y="207.0"/>
+              <linesegment label="2" length="55" name="shape4.dragpoint2.lineseg5" orient="horizontal" x="713.0" y="207.0"/>
+            </dragpoint>
+            <dragpoint identifier="3" name="shape4.dragpoint3" text="3" toShape="shape8" x="768.0" y="297.0">
+              <linesegment length="0" name="shape4.dragpoint3.lineseg1" orient="horizontal" x="642.0" y="319.0"/>
+              <linesegment length="0" name="shape4.dragpoint3.lineseg2" orient="vertical" x="642.0" y="319.0"/>
+              <linesegment length="71" name="shape4.dragpoint3.lineseg3" orient="horizontal" x="642.0" y="319.0"/>
+              <linesegment length="16" name="shape4.dragpoint3.lineseg4" orient="vertical" x="713.0" y="303.0"/>
+              <linesegment label="3" length="55" name="shape4.dragpoint3.lineseg5" orient="horizontal" x="713.0" y="303.0"/>
+            </dragpoint>
+            <dragpoint identifier="4" name="shape4.dragpoint4" text="4" toShape="shape9" x="768.0" y="425.0">
+              <linesegment length="0" name="shape4.dragpoint4.lineseg1" orient="horizontal" x="642.0" y="319.0"/>
+              <linesegment length="0" name="shape4.dragpoint4.lineseg2" orient="vertical" x="642.0" y="319.0"/>
+              <linesegment length="71" name="shape4.dragpoint4.lineseg3" orient="horizontal" x="642.0" y="319.0"/>
+              <linesegment length="112" name="shape4.dragpoint4.lineseg4" orient="vertical" x="713.0" y="319.0"/>
+              <linesegment label="4" length="55" name="shape4.dragpoint4.lineseg5" orient="horizontal" x="713.0" y="431.0"/>
+            </dragpoint>
+            <dragpoint identifier="5" name="shape4.dragpoint5" text="5" toShape="shape14" x="768.0" y="537.0">
+              <linesegment length="0" name="shape4.dragpoint5.lineseg1" orient="horizontal" x="642.0" y="319.0"/>
+              <linesegment length="0" name="shape4.dragpoint5.lineseg2" orient="vertical" x="642.0" y="319.0"/>
+              <linesegment length="71" name="shape4.dragpoint5.lineseg3" orient="horizontal" x="642.0" y="319.0"/>
+              <linesegment length="224" name="shape4.dragpoint5.lineseg4" orient="vertical" x="713.0" y="319.0"/>
+              <linesegment label="5" length="55" name="shape4.dragpoint5.lineseg5" orient="horizontal" x="713.0" y="543.0"/>
+            </dragpoint>
+          </dragpoints>
+        </shape>
+        <shape image="documentproperties_icon" name="shape5" shapetype="documentproperties" userlabel="SetLastSuccessRunDate" x="416.0" y="400.0">
+          <configuration>
+            <documentproperties>
+              <documentproperty defaultValue="" isTradingPartner="false" name="Dynamic Process Property - SDATE" persist="false" propertyId="process.SDATE">
+                <sourcevalues>
+                  <parametervalue key="1" valueType="date">
+                    <dateparameter dateparametertype="lastsuccessful" datetimemask="yyyy-MM-dd"/>
+                  </parametervalue>
+                </sourcevalues>
+              </documentproperty>
+              <documentproperty defaultValue="" isTradingPartner="false" name="Dynamic Process Property - EDATE" persist="false" propertyId="process.EDATE">
+                <sourcevalues>
+                  <parametervalue key="2" valueType="date">
+                    <dateparameter dateparametertype="current" datetimemask="yyyy-MM-dd"/>
+                  </parametervalue>
+                </sourcevalues>
+              </documentproperty>
+              <documentproperty defaultValue="" isTradingPartner="false" name="Dynamic Process Property - LSRD" persist="false" propertyId="process.LSRD">
+                <sourcevalues>
+                  <parametervalue key="3" valueType="date">
+                    <dateparameter dateparametertype="lastsuccessful" datetimemask="yyyy-MM-dd'T'HH:mm:ss'Z'"/>
+                  </parametervalue>
+                </sourcevalues>
+              </documentproperty>
+              <documentproperty defaultValue="" isTradingPartner="false" name="Dynamic Process Property - DemographicTotalCount" persist="false" propertyId="process.DemographicTotalCount">
+                <sourcevalues>
+                  <parametervalue key="4" valueType="static">
+                    <staticparameter staticproperty="0"/>
+                  </parametervalue>
+                </sourcevalues>
+              </documentproperty>
+              <documentproperty defaultValue="" isTradingPartner="false" name="Dynamic Process Property - DemographicErrorCount" persist="false" propertyId="process.DemographicErrorCount">
+                <sourcevalues>
+                  <parametervalue key="5" valueType="static">
+                    <staticparameter staticproperty="0"/>
+                  </parametervalue>
+                </sourcevalues>
+              </documentproperty>
+            </documentproperties>
+          </configuration>
+          <dragpoints>
+            <dragpoint name="shape5.dragpoint1" toShape="shape4" x="592.0" y="313.0">
+              <linesegment length="0" name="shape5.dragpoint1.lineseg1" orient="horizontal" x="450.0" y="415.0"/>
+              <linesegment length="0" name="shape5.dragpoint1.lineseg2" orient="vertical" x="450.0" y="415.0"/>
+              <linesegment length="79" name="shape5.dragpoint1.lineseg3" orient="horizontal" x="450.0" y="415.0"/>
+              <linesegment length="96" name="shape5.dragpoint1.lineseg4" orient="vertical" x="529.0" y="319.0"/>
+              <linesegment length="63" name="shape5.dragpoint1.lineseg5" orient="horizontal" x="529.0" y="319.0"/>
+            </dragpoint>
+          </dragpoints>
+        </shape>
+        <shape image="processcall_icon" name="shape6" shapetype="processcall" userlabel="" x="784.0" y="96.0">
+          <configuration>
+            <processcall abort="true" processId="ebc70e9d-c152-4554-a4da-e65ee997099a" wait="true">
+              <parameters/>
+              <returnpaths/>
+            </processcall>
+          </configuration>
+          <dragpoints/>
+        </shape>
+        <shape image="processcall_icon" name="shape7" shapetype="processcall" userlabel="" x="784.0" y="192.0">
+          <configuration>
+            <processcall abort="true" processId="adc1a906-cd59-42e9-b466-f69e1993d1ce" wait="true">
+              <parameters/>
+              <returnpaths/>
+            </processcall>
+          </configuration>
+          <dragpoints/>
+        </shape>
+        <shape image="processcall_icon" name="shape8" shapetype="processcall" userlabel="" x="784.0" y="288.0">
+          <configuration>
+            <processcall abort="true" processId="20802acd-e6e5-44fc-8824-829f891c2469" wait="true">
+              <parameters/>
+              <returnpaths/>
+            </processcall>
+          </configuration>
+          <dragpoints/>
+        </shape>
+        <shape image="processcall_icon" name="shape9" shapetype="processcall" userlabel="" x="784.0" y="416.0">
+          <configuration>
+            <processcall abort="true" processId="4fef22a1-66b8-4874-bab0-74afe13bed36" wait="true">
+              <parameters/>
+              <returnpaths>
+                <returnpaths childShapeName="shape34" returnLabel="Demographic Data"/>
+              </returnpaths>
+            </processcall>
+          </configuration>
+          <dragpoints>
+            <dragpoint identifier="shape34" name="shape9.dragpoint1" text="Demographic Data" toShape="shape11" x="1024.0" y="425.0">
+              <linesegment length="0" name="shape9.dragpoint1.lineseg1" orient="horizontal" x="818.0" y="431.0"/>
+              <linesegment length="0" name="shape9.dragpoint1.lineseg2" orient="vertical" x="818.0" y="431.0"/>
+              <linesegment length="111" name="shape9.dragpoint1.lineseg3" orient="horizontal" x="818.0" y="431.0"/>
+              <linesegment length="0" name="shape9.dragpoint1.lineseg4" orient="vertical" x="929.0" y="431.0"/>
+              <linesegment label="Demographic Data" length="95" name="shape9.dragpoint1.lineseg5" orient="horizontal" x="929.0" y="431.0"/>
+            </dragpoint>
+          </dragpoints>
+        </shape>
+        <shape image="documentproperties_icon" name="shape11" shapetype="documentproperties" userlabel="Set SFTP fileName" x="1040.0" y="416.0">
+          <configuration>
+            <documentproperties>
+              <documentproperty defaultValue="" isTradingPartner="false" name="SFTP - File Name" persist="false" propertyId="connector.sftp.filename">
+                <sourcevalues>
+                  <parametervalue key="1" valueType="process">
+                    <processparameter processproperty="File_Name" processpropertydefaultvalue=""/>
+                  </parametervalue>
+                  <parametervalue key="3" valueType="static">
+                    <staticparameter staticproperty=".pgp"/>
+                  </parametervalue>
+                </sourcevalues>
+              </documentproperty>
+              <documentproperty defaultValue="" isTradingPartner="false" name="Dynamic Process Property - DPP_FileName" persist="false" propertyId="process.DPP_FileName">
+                <sourcevalues>
+                  <parametervalue key="2" valueType="process">
+                    <processparameter processproperty="File_Name" processpropertydefaultvalue=""/>
+                  </parametervalue>
+                  <parametervalue key="4" valueType="static">
+                    <staticparameter staticproperty=".pgp"/>
+                  </parametervalue>
+                </sourcevalues>
+              </documentproperty>
+            </documentproperties>
+          </configuration>
+          <dragpoints>
+            <dragpoint name="shape11.dragpoint1" toShape="shape13" x="1168.0" y="425.0">
+              <linesegment length="0" name="shape11.dragpoint1.lineseg1" orient="horizontal" x="1074.0" y="431.0"/>
+              <linesegment length="0" name="shape11.dragpoint1.lineseg2" orient="vertical" x="1074.0" y="431.0"/>
+              <linesegment length="55" name="shape11.dragpoint1.lineseg3" orient="horizontal" x="1074.0" y="431.0"/>
+              <linesegment length="0" name="shape11.dragpoint1.lineseg4" orient="vertical" x="1129.0" y="431.0"/>
+              <linesegment length="39" name="shape11.dragpoint1.lineseg5" orient="horizontal" x="1129.0" y="431.0"/>
+            </dragpoint>
+          </dragpoints>
+        </shape>
+        <shape image="processcall_icon" name="shape13" shapetype="processcall" userlabel="Send Files to SFTP" x="1184.0" y="416.0">
+          <configuration>
+            <processcall abort="true" processId="31a87c8f-19d7-4288-a6c7-929e94724a6a" wait="true">
+              <parameters/>
+              <returnpaths/>
+            </processcall>
+          </configuration>
+          <dragpoints/>
+        </shape>
+        <shape image="processcall_icon" name="shape14" shapetype="processcall" userlabel="" x="784.0" y="528.0">
+          <configuration>
+            <processcall abort="true" processId="8fd629f4-f4e8-40f8-ad80-09b839e93255" wait="true">
+              <parameters/>
+              <returnpaths/>
+            </processcall>
+          </configuration>
+          <dragpoints/>
+        </shape>
+        <shape image="decision_icon" name="shape15" shapetype="decision" userlabel="Delta Run?" x="112.0" y="400.0">
+          <configuration>
+            <decision comparison="equals" name="Delta Run?">
+              <decisionvalue valueType="definedparameter">
+                <definedprocessparameter componentId="795e769e-a9c3-442e-bff3-a96b04f9b531" componentName="EC372 - EC to NAVEX (OB)" propertyKey="d0c9f73d-8faa-47c1-adda-3abd94033ac9" propertyLabel="FileType"/>
+              </decisionvalue>
+              <decisionvalue valueType="static">
+                <staticparameter staticproperty="Delta"/>
+              </decisionvalue>
+            </decision>
+          </configuration>
+          <dragpoints>
+            <dragpoint identifier="true" name="shape15.dragpoint1" text="True" toShape="shape3" x="240.0" y="313.0">
+              <linesegment length="0" name="shape15.dragpoint1.lineseg1" orient="horizontal" x="146.0" y="415.0"/>
+              <linesegment length="0" name="shape15.dragpoint1.lineseg2" orient="vertical" x="146.0" y="415.0"/>
+              <linesegment length="55" name="shape15.dragpoint1.lineseg3" orient="horizontal" x="146.0" y="415.0"/>
+              <linesegment length="96" name="shape15.dragpoint1.lineseg4" orient="vertical" x="201.0" y="319.0"/>
+              <linesegment label="True" length="39" name="shape15.dragpoint1.lineseg5" orient="horizontal" x="201.0" y="319.0"/>
+            </dragpoint>
+            <dragpoint identifier="false" name="shape15.dragpoint2" text="False" toShape="shape16" x="480.0" y="537.0">
+              <linesegment length="0" name="shape15.dragpoint2.lineseg1" orient="horizontal" x="146.0" y="415.0"/>
+              <linesegment length="0" name="shape15.dragpoint2.lineseg2" orient="vertical" x="146.0" y="415.0"/>
+              <linesegment length="175" name="shape15.dragpoint2.lineseg3" orient="horizontal" x="146.0" y="415.0"/>
+              <linesegment length="128" name="shape15.dragpoint2.lineseg4" orient="vertical" x="321.0" y="415.0"/>
+              <linesegment label="False" length="159" name="shape15.dragpoint2.lineseg5" orient="horizontal" x="321.0" y="543.0"/>
+            </dragpoint>
+          </dragpoints>
+        </shape>
+        <shape image="documentproperties_icon" name="shape16" shapetype="documentproperties" userlabel="Set extensions" x="496.0" y="528.0">
+          <configuration>
+            <documentproperties>
+              <documentproperty defaultValue="" isTradingPartner="false" name="Dynamic Process Property - EDATE" persist="false" propertyId="process.EDATE">
+                <sourcevalues>
+                  <parametervalue key="1" valueType="date">
+                    <dateparameter dateparametertype="current" datetimemask="yyyy-MM-dd"/>
+                  </parametervalue>
+                </sourcevalues>
+              </documentproperty>
+              <documentproperty defaultValue="" isTradingPartner="false" name="Dynamic Process Property - DemographicTotalCount" persist="false" propertyId="process.DemographicTotalCount">
+                <sourcevalues>
+                  <parametervalue key="2" valueType="static">
+                    <staticparameter staticproperty="0"/>
+                  </parametervalue>
+                </sourcevalues>
+              </documentproperty>
+              <documentproperty defaultValue="" isTradingPartner="false" name="Dynamic Process Property - DemographicErrorCount" persist="false" propertyId="process.DemographicErrorCount">
+                <sourcevalues>
+                  <parametervalue key="3" valueType="static">
+                    <staticparameter staticproperty="0"/>
+                  </parametervalue>
+                </sourcevalues>
+              </documentproperty>
+            </documentproperties>
+          </configuration>
+          <dragpoints>
+            <dragpoint name="shape16.dragpoint1" toShape="shape4" x="592.0" y="313.0">
+              <linesegment length="0" name="shape16.dragpoint1.lineseg1" orient="horizontal" x="530.0" y="543.0"/>
+              <linesegment length="0" name="shape16.dragpoint1.lineseg2" orient="vertical" x="530.0" y="543.0"/>
+              <linesegment length="39" name="shape16.dragpoint1.lineseg3" orient="horizontal" x="530.0" y="543.0"/>
+              <linesegment length="224" name="shape16.dragpoint1.lineseg4" orient="vertical" x="569.0" y="319.0"/>
+              <linesegment length="23" name="shape16.dragpoint1.lineseg5" orient="horizontal" x="569.0" y="319.0"/>
+            </dragpoint>
+          </dragpoints>
+        </shape>
+      </shapes>
+    </process>
+  </bns:object>
+  <bns:processOverrides>
+    <Overrides xmlns="" allowScheduleOverride="false">
+      <Connections>
+        <ConnectionOverride id="f2cafa9e-8850-4b68-b857-d4ee5a1c8b98">
+          <field id="host" label="Host" overrideable="true" xpath="MailSettings/@host"/>
+          <field id="port" label="Port" overrideable="true" xpath="MailSettings/@port"/>
+          <field id="usessl" label="Use SSL" overrideable="true" xpath="MailSettings/@usessl"/>
+          <field id="usesmtpauth" label="Use SMTP AUTH" overrideable="true" xpath="MailSettings/@usesmtpauth"/>
+          <field id="user" label="User" overrideable="true" xpath="MailSettings/AuthSettings/@user"/>
+          <field id="password" label="Password" overrideable="true" xpath="MailSettings/AuthSettings/@password"/>
+        </ConnectionOverride>
+        <ConnectionOverride id="7dcc0c4e-b199-4ed8-a426-7641c92096f3">
+          <field id="host" label="Host" overrideable="true" xpath="SFTPSettings/@host"/>
+          <field id="port" label="Port" overrideable="true" xpath="SFTPSettings/@port"/>
+          <field id="user" label="User" overrideable="true" xpath="SFTPSettings/AuthSettings/@user"/>
+          <field id="password" label="Password" overrideable="true" xpath="SFTPSettings/AuthSettings/@password"/>
+          <field id="proxyEnabled" label="Use Proxy" overrideable="false" xpath="SFTPSettings/ProxySettings/@proxyEnabled"/>
+          <field id="proxyType" label="Choose Proxy Type" overrideable="false" xpath="SFTPSettings/ProxySettings/@type"/>
+          <field id="proxyHost" label="Proxy Host" overrideable="false" xpath="SFTPSettings/ProxySettings/@host"/>
+          <field id="proxyPort" label="Proxy Port" overrideable="false" xpath="SFTPSettings/ProxySettings/@port"/>
+          <field id="proxyUser" label="Proxy User" overrideable="false" xpath="SFTPSettings/ProxySettings/@user"/>
+          <field id="proxyPassword" label="Proxy Password" overrideable="false" xpath="SFTPSettings/ProxySettings/@password"/>
+          <field id="sshkeyauth" label="Use Private Key Authentication" overrideable="false" xpath="SFTPSettings/SSHOptions/@sshkeyauth"/>
+          <field id="sshkeypath" label="Client SSH Key Path" overrideable="false" xpath="SFTPSettings/SSHOptions/@sshkeypath"/>
+          <field id="sshkeypassword" label="Key File Password" overrideable="false" xpath="SFTPSettings/SSHOptions/@sshkeypassword"/>
+          <field id="knownHostEntry" label="Known Hosts Entry" overrideable="false" xpath="SFTPSettings/SSHOptions/knownHostEntry/text()"/>
+          <field id="dhKeySizeMax1024" label="Use Max Key Exchange size of 1024" overrideable="false" xpath="SFTPSettings/SSHOptions/@dhKeySizeMax1024"/>
+        </ConnectionOverride>
+        <ConnectionOverride id="8748a325-5df6-46f4-a828-4f9e1d5e4398">
+          <field id="url" label="Endpoint" overrideable="true"/>
+          <field id="alternateUrl" label="Other Endpoint" overrideable="false"/>
+          <field id="sfapiUrlSuffix" label="SFAPI endpoint suffix" overrideable="false"/>
+          <field id="enableOData" label="Enable SF OData Entity Import" overrideable="false"/>
+          <field id="odataUrlSuffix" label="SF OData endpoint suffix" overrideable="false"/>
+          <field id="companyId" label="Company Id" overrideable="true"/>
+          <field id="username" label="Username" overrideable="true"/>
+          <field id="password" label="Password" overrideable="true"/>
+          <field id="clientId" label="OAuth2 Client Id" overrideable="true"/>
+          <field id="privateKey" label="X.509 Private Key" overrideable="true"/>
+          <field id="samlAssertionField" label="OAuth2 SAML Assertion Field" overrideable="false"/>
+          <field id="samlAssertionValue" label="OAuth2 SAML Assertion" overrideable="false"/>
+          <field id="batchSize" label="Default Batch Size" overrideable="false"/>
+          <field id="pageSize" label="Default Query Page Size" overrideable="false"/>
+          <field id="timeout" label="Default Async Query Timeout time (async query only)" overrideable="false"/>
+          <field id="sleep" label="Default Sleep/Wait time (async query only)" overrideable="false"/>
+          <field id="objectTypeIDList" label="Object ID Type List" overrideable="false"/>
+        </ConnectionOverride>
+        <ConnectionOverride id="1d5ad09d-333d-4fca-90b6-a563c76961fe">
+          <field id="host" label="Host" overrideable="true" xpath="SFTPSettings/@host"/>
+          <field id="port" label="Port" overrideable="true" xpath="SFTPSettings/@port"/>
+          <field id="user" label="User" overrideable="true" xpath="SFTPSettings/AuthSettings/@user"/>
+          <field id="password" label="Password" overrideable="true" xpath="SFTPSettings/AuthSettings/@password"/>
+          <field id="proxyEnabled" label="Use Proxy" overrideable="false" xpath="SFTPSettings/ProxySettings/@proxyEnabled"/>
+          <field id="proxyType" label="Choose Proxy Type" overrideable="false" xpath="SFTPSettings/ProxySettings/@type"/>
+          <field id="proxyHost" label="Proxy Host" overrideable="false" xpath="SFTPSettings/ProxySettings/@host"/>
+          <field id="proxyPort" label="Proxy Port" overrideable="false" xpath="SFTPSettings/ProxySettings/@port"/>
+          <field id="proxyUser" label="Proxy User" overrideable="false" xpath="SFTPSettings/ProxySettings/@user"/>
+          <field id="proxyPassword" label="Proxy Password" overrideable="false" xpath="SFTPSettings/ProxySettings/@password"/>
+          <field id="sshkeyauth" label="Use Private Key Authentication" overrideable="false" xpath="SFTPSettings/SSHOptions/@sshkeyauth"/>
+          <field id="sshkeypath" label="Client SSH Key Path" overrideable="false" xpath="SFTPSettings/SSHOptions/@sshkeypath"/>
+          <field id="sshkeypassword" label="Key File Password" overrideable="false" xpath="SFTPSettings/SSHOptions/@sshkeypassword"/>
+          <field id="knownHostEntry" label="Known Hosts Entry" overrideable="false" xpath="SFTPSettings/SSHOptions/knownHostEntry/text()"/>
+          <field id="dhKeySizeMax1024" label="Use Max Key Exchange size of 1024" overrideable="false" xpath="SFTPSettings/SSHOptions/@dhKeySizeMax1024"/>
+        </ConnectionOverride>
+      </Connections>
+      <PartnerOverrides/>
+      <Properties/>
+      <Extensions>
+        <ObjectDefinitions>
+          <objectDefinition connectionId="8748a325-5df6-46f4-a828-4f9e1d5e4398" connectorType="successfactorsmaster-Q2Q93V-SFSF-priv_prod" id="8748a325-5df6-46f4-a828-4f9e1d5e4398CompoundEmployee" name="SuccessFactors — Partner Connector CompoundEmployee (SFAPI  Connection (DC8/PepsiCo))" objectType="CompoundEmployee" userDefined="false">
+            <profiles>
+              <profile id="b3a5d5ef-2ad2-43a4-98dd-646c12e74af9" name="SuccessFactors CompoundEmployee QUERY Response" operationId="7d3dbaf9-b9f0-4700-810f-df85841cb4b6" operationProfilePath="//GenericOperationConfig/@responseProfile" operationProfileRole="output" operationType="QUERY" type="profile.xml"/>
+              <profile id="86151bf3-aefe-4e88-8350-3123b9059ba3" name="SuccessFactors CompoundEmployee QUERY Response- HR" operationId="b3dace9a-7dcf-4ade-9cc4-4c97f7f1c7db" operationProfilePath="//GenericOperationConfig/@responseProfile" operationProfileRole="output" operationType="QUERY" type="profile.xml"/>
+            </profiles>
+          </objectDefinition>
+          <objectDefinition connectionId="8748a325-5df6-46f4-a828-4f9e1d5e4398" connectorType="successfactorsmaster-Q2Q93V-SFSF-priv_prod" id="8748a325-5df6-46f4-a828-4f9e1d5e4398PicklistOption" name="SuccessFactors — Partner Connector PicklistOption (SFAPI  Connection (DC8/PepsiCo))" objectType="PicklistOption" userDefined="false">
+            <profiles>
+              <profile id="bb983258-66ee-4a8e-9231-ea44bae91ad3" name="SuccessFactors PicklistOption QUERY Response With id Sans Surrogate Key v1.4" operationId="ca198b61-a1d8-4292-bd91-3bb6bc00e080" operationProfilePath="//GenericOperationConfig/@responseProfile" operationProfileRole="output" operationType="QUERY" type="profile.xml"/>
+            </profiles>
+          </objectDefinition>
+          <objectDefinition connectionId="8748a325-5df6-46f4-a828-4f9e1d5e4398" connectorType="successfactorsmaster-Q2Q93V-SFSF-priv_prod" id="8748a325-5df6-46f4-a828-4f9e1d5e4398SFOData.FOEventReason" name="SuccessFactors — Partner Connector SFOData.FOEventReason (SFAPI  Connection (DC8/PepsiCo))" objectType="SFOData.FOEventReason" userDefined="false">
+            <profiles>
+              <profile id="dc68bffd-c716-4b07-a9df-33973b6fd44a" name="SuccessFactors SFOData.FOEventReason QUERY Response" operationId="359290f7-c546-4c06-9e3f-f534c9a1f221" operationProfilePath="//GenericOperationConfig/@responseProfile" operationProfileRole="output" operationType="QUERY" type="profile.xml"/>
+            </profiles>
+          </objectDefinition>
+          <objectDefinition connectionId="8748a325-5df6-46f4-a828-4f9e1d5e4398" connectorType="successfactorsmaster-Q2Q93V-SFSF-priv_prod" id="8748a325-5df6-46f4-a828-4f9e1d5e4398SFOData.FOLocation" name="SuccessFactors — Partner Connector SFOData.FOLocation (SFAPI  Connection (DC8/PepsiCo))" objectType="SFOData.FOLocation" userDefined="false">
+            <profiles>
+              <profile id="5c95f1da-8dbc-46b0-bae1-e8222ac4b7e7" name="SuccessFactors SFOData.FOLocation QUERY Response" operationId="6da5ff7f-69d6-40e1-9aa6-a15cbd17996a" operationProfilePath="//GenericOperationConfig/@responseProfile" operationProfileRole="output" operationType="QUERY" type="profile.xml"/>
+            </profiles>
+          </objectDefinition>
+          <objectDefinition connectionId="8748a325-5df6-46f4-a828-4f9e1d5e4398" connectorType="successfactorsmaster-Q2Q93V-SFSF-priv_prod" id="8748a325-5df6-46f4-a828-4f9e1d5e4398SFOData.cust_Region" name="SuccessFactors — Partner Connector SFOData.cust_Region (SFAPI  Connection (DC8/PepsiCo))" objectType="SFOData.cust_Region" userDefined="false">
+            <profiles>
+              <profile id="fd33c5ae-decc-4b4a-bae7-94155f967795" name="SuccessFactors SFOData.cust_Region QUERY Response" operationId="8df31237-cb8b-4881-9b11-2e80075a29b8" operationProfilePath="//GenericOperationConfig/@responseProfile" operationProfileRole="output" operationType="QUERY" type="profile.xml"/>
+            </profiles>
+          </objectDefinition>
+          <objectDefinition connectionId="8748a325-5df6-46f4-a828-4f9e1d5e4398" connectorType="successfactorsmaster-Q2Q93V-SFSF-priv_prod" id="8748a325-5df6-46f4-a828-4f9e1d5e4398SFOData.cust_Sector" name="SuccessFactors — Partner Connector SFOData.cust_Sector (SFAPI  Connection (DC8/PepsiCo))" objectType="SFOData.cust_Sector" userDefined="false">
+            <profiles>
+              <profile id="81bb0f7e-54c5-4c13-b289-fc5c7f614c32" name="SuccessFactors SFOData.cust_Sector QUERY Response" operationId="b5d50c2d-115f-42fd-8d4d-c5924d0b168e" operationProfilePath="//GenericOperationConfig/@responseProfile" operationProfileRole="output" operationType="QUERY" type="profile.xml"/>
+            </profiles>
+          </objectDefinition>
+          <unusedProfiles/>
+        </ObjectDefinitions>
+        <DataMaps>
+          <dataMap id="8748a325-5df6-46f4-a828-4f9e1d5e4398PicklistOption8748a325-5df6-46f4-a828-4f9e1d5e4398PicklistOption" name="SuccessFactors — Partner Connector PicklistOption (SFAPI  Connection (DC8/PepsiCo)) - SuccessFactors — Partner Connector PicklistOption (SFAPI  Connection (DC8/PepsiCo))">
+            <source connectionId="8748a325-5df6-46f4-a828-4f9e1d5e4398" connectorType="successfactorsmaster-Q2Q93V-SFSF-priv_prod" id="8748a325-5df6-46f4-a828-4f9e1d5e4398PicklistOption" name="SuccessFactors — Partner Connector PicklistOption (SFAPI  Connection (DC8/PepsiCo))" objectType="PicklistOption" userDefined="false">
+              <profiles>
+                <profile id="bb983258-66ee-4a8e-9231-ea44bae91ad3" name="SuccessFactors PicklistOption QUERY Response With id Sans Surrogate Key v1.4" operationId="ca198b61-a1d8-4292-bd91-3bb6bc00e080" operationProfilePath="//GenericOperationConfig/@responseProfile" operationProfileRole="output" operationType="QUERY" type="profile.xml"/>
+              </profiles>
+            </source>
+            <destination connectionId="8748a325-5df6-46f4-a828-4f9e1d5e4398" connectorType="successfactorsmaster-Q2Q93V-SFSF-priv_prod" id="8748a325-5df6-46f4-a828-4f9e1d5e4398PicklistOption" name="SuccessFactors — Partner Connector PicklistOption (SFAPI  Connection (DC8/PepsiCo))" objectType="PicklistOption" userDefined="false">
+              <profiles>
+                <profile id="bb983258-66ee-4a8e-9231-ea44bae91ad3" name="SuccessFactors PicklistOption QUERY Response With id Sans Surrogate Key v1.4" operationId="ca198b61-a1d8-4292-bd91-3bb6bc00e080" operationProfilePath="//GenericOperationConfig/@responseProfile" operationProfileRole="output" operationType="QUERY" type="profile.xml"/>
+              </profiles>
+            </destination>
+            <maps>
+              <map extensible="true" id="b0b5bf3f-4e49-4ccd-968e-a729c2f3c2b9" name="Picklist Translation Map v1.4"/>
+            </maps>
+          </dataMap>
+          <unusedMaps/>
+        </DataMaps>
+      </Extensions>
+      <CrossReferenceOverrides>
+        <CrossReferenceOverride id="4550292b-166b-4fa2-833b-976724d28f55" name="Report Error Message Severity Level"/>
+      </CrossReferenceOverrides>
+      <PGPOverrides>
+        <PGPOverride id="d0c6be56-2fd3-454e-8aa0-22fa190c97a9" name="PGP Public Key- EC-372 NAVEX" overrideable="true"/>
+        <PGPOverride id="97e0fea3-d795-41e7-a8e5-71a8a4d1d392" name="SF Integrations - Pepsi (QA Pub Key)" overrideable="true"/>
+      </PGPOverrides>
+      <DefinedProcessPropertyOverrides>
+        <OverrideableDefinedProcessPropertyComponent componentId="795e769e-a9c3-442e-bff3-a96b04f9b531">
+          <OverrideableDefinedProcessPropertyValue key="a6b2e057-49d9-4cbc-9c94-16fe27cf011b" name="fromEmailAddressForErrors" overrideable="true"/>
+          <OverrideableDefinedProcessPropertyValue key="630bd0e1-a257-4ac9-b3c6-b4213140f7ff" name="toEmailAddressForErrors" overrideable="true"/>
+          <OverrideableDefinedProcessPropertyValue key="9a653915-1d4f-464a-b613-f20c8958f652" name="fromEmailAddressForSuccess" overrideable="true"/>
+          <OverrideableDefinedProcessPropertyValue key="e6c11e22-d87f-4570-975b-f39b8012be6e" name="toEmailAddressForSuccess" overrideable="true"/>
+          <OverrideableDefinedProcessPropertyValue key="a92b59a7-bbfb-4ee5-8a4c-e32d7727fbb4" name="Filter_company_territory_code" overrideable="true"/>
+          <OverrideableDefinedProcessPropertyValue key="8caddbc7-67c5-41dc-afb1-ce06fa7d9e8e" name="Filter_LegalEntity" overrideable="true"/>
+          <OverrideableDefinedProcessPropertyValue key="5373d17c-a180-4aab-bc91-e91f8689b86c" name="Filter_EmployeeClass" overrideable="true"/>
+          <OverrideableDefinedProcessPropertyValue key="c7175bc9-9ed8-4da3-97ad-e2147208110f" name="Filter_GPID" overrideable="true"/>
+          <OverrideableDefinedProcessPropertyValue key="6c4f4625-a39d-4368-b986-85499c5dd7d2" name="Archive path on SFTP server" overrideable="true"/>
+          <OverrideableDefinedProcessPropertyValue key="6236f705-e6ba-4f9c-8dcf-bacffe65d640" name="Employee Status" overrideable="true"/>
+          <OverrideableDefinedProcessPropertyValue key="9649296e-66e0-4bf8-9041-cd438ad4167b" name="Send Output To Vendor ?" overrideable="true"/>
+          <OverrideableDefinedProcessPropertyValue key="d0c9f73d-8faa-47c1-adda-3abd94033ac9" name="FileType" overrideable="true"/>
+          <OverrideableDefinedProcessPropertyValue key="b2157951-1c8b-4e53-96fe-70de4e1be1b3" name="SendFilesToPepsoSFTP" overrideable="true"/>
+          <OverrideableDefinedProcessPropertyValue key="729bf863-ed8a-4863-85e7-f6a69f337c8b" name="NAVEXSFTPDirectory" overrideable="true"/>
+          <OverrideableDefinedProcessPropertyValue key="60304a50-7a2a-412a-932c-db44d28dbdc4" name="Encrypt Archive File" overrideable="true"/>
+          <OverrideableDefinedProcessPropertyValue key="bdf17f77-c75b-4777-bc49-2ce59e2286d9" name="Filter_LSRD" overrideable="true"/>
+          <OverrideableDefinedProcessPropertyValue key="2d3d973b-7bee-4b79-9512-f52a5021a00e" name="Full File Start Date" overrideable="true"/>
+        </OverrideableDefinedProcessPropertyComponent>
+      </DefinedProcessPropertyOverrides>
+    </Overrides>
+  </bns:processOverrides>
+</bns:Component>

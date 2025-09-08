@@ -1,0 +1,9 @@
+<?xml version="1.0" ?>
+<shape image="note_icon" name="shape8" shapetype="note" x="400.0" y="144.0">
+  <configuration>
+    <note createdBy="purini.anil@accenture.com">
+      <noteText>Check if the country code is from extension.</noteText>
+    </note>
+  </configuration>
+  <dragpoints/>
+</shape>

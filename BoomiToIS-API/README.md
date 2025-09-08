@@ -1,212 +1,160 @@
-# MuleToIS API for iFlow Generation
+# Boomi to SAP Integration Suite (iFlow) Converter
 
-This API provides a REST interface for generating SAP Integration Suite iFlows from markdown documentation. It leverages the MuleToIFlow GenAI approach to analyze markdown content and generate iFlow XML files.
+A comprehensive tool for converting Boomi integration processes to SAP Integration Suite iFlow format.
 
-## Features
+## 🏗️ Project Structure
 
-- REST API for generating iFlows from markdown content
-- Asynchronous job processing
-- Job status tracking
-- Download generated iFlow ZIP files
-- Access to debug files for troubleshooting
+```
+BoomiToIS-API/
+├── 📁 Core Components/
+│   ├── enhanced_genai_iflow_generator.py    # Main iFlow generator
+│   ├── json_to_iflow_converter.py           # JSON to iFlow converter
+│   ├── enhanced_iflow_templates.py          # iFlow templates
+│   ├── bpmn_templates.py                    # BPMN templates
+│   └── config_driven_generator.py           # Configuration-driven generator
+├── 📁 API & Web Interface/
+│   ├── app.py                               # Main Flask application
+│   ├── iflow_generator_api.py               # API endpoints
+│   └── cors_config.py                       # CORS configuration
+├── 📁 Configuration & Validation/
+│   ├── config_validation_engine.py          # Configuration validator
+│   ├── config/                              # Configuration files
+│   └── .env*                                # Environment files
+├── 📁 Utils/
+│   ├── run.py                               # Development server runner
+│   ├── setup_dependencies.py                # Dependency setup
+│   ├── nltk_setup.py                        # NLTK configuration
+│   └── client.py                            # API client example
+├── 📁 Specialized/
+│   └── enhanced_prompt_generator.py         # Advanced prompt generation
+├── 📁 Processing & Utilities/
+│   ├── boomi_xml_processor.py               # Boomi XML processor
+│   ├── iflow_fixer.py                       # iFlow XML fixer
+│   └── sap_btp_integration.py               # SAP BTP integration
+├── 📁 Deployment & Setup/
+│   ├── direct_iflow_deployment.py           # Direct deployment
+│   ├── deploy.*                              # Deployment scripts
+│   └── setup.*                              # Setup scripts
+├── 📁 Documentation/
+│   ├── COMPONENT_MAPPING_REFERENCE.md       # Component mapping
+│   ├── DEPLOYMENT_GUIDE.md                  # Deployment guide
+│   ├── IMPLEMENTATION_SUMMARY.md            # Implementation summary
+│   └── README_DEPLOYMENT.md                 # Deployment README
+├── 📁 Archive/                              # Archived files
+│   ├── test_results/                        # Old test results
+│   ├── test_scripts/                        # Old test scripts
+│   ├── debug_files/                         # Old debug files
+│   ├── sample_files/                        # Old sample files
+│   └── old_versions/                        # Old versions
+└── 📁 Working Directories/
+    ├── genai_debug/                         # Current debug files
+    ├── genai_output/                        # Generated outputs
+    ├── results/                             # Current results
+    └── uploads/                             # File uploads
+```
 
-## Prerequisites
+## 🚀 Quick Start
 
-- Python 3.8 or higher
-- Claude API key (set in `.env` file)
-- Access to the MuleToIFlow GenAI Approach code
+### Prerequisites
+- Python 3.8+
+- SAP Integration Suite access
+- Boomi integration export
 
-## Installation
-
-1. Clone this repository
-2. Install dependencies:
-   ```
-   pip install -r requirements.txt
-   ```
-3. Create a `.env` file with your Claude API key:
-   ```
-   CLAUDE_API_KEY=your_api_key_here
-   ```
-
-## Usage
-
-### Starting the API Server
-
+### Installation
 ```bash
+# Install dependencies
+pip install -r requirements.txt
+
+# Setup environment
+cp .env.example .env
+# Edit .env with your configuration
+
+# Run the application
 python app.py
 ```
 
-The server will start on port 5000 by default. You can change the port by setting the `PORT` environment variable.
+### Usage
 
-### API Endpoints
+#### 1. Web Interface
+- Start the Flask app: `python app.py` or `python utils/run.py`
+- Access: `http://localhost:5000`
+- Upload Boomi XML or JSON files
+- Generate iFlow ZIP files
 
-#### Generate iFlow
+#### 2. Command Line
+```bash
+# Generate iFlow from JSON blueprint
+python tools/iflow_generate_template.py --json blueprint.json --name MyFlow --out output/
 
-```
-POST /api/generate-iflow
-```
+# Convert Boomi XML to iFlow
+python json_to_iflow_converter.py --input boomi.xml --output iflow.zip
 
-Request body:
-```json
-{
-  "markdown": "# API Documentation...",
-  "iflow_name": "MyIFlow" (optional)
-}
-```
-
-Response:
-```json
-{
-  "status": "queued",
-  "message": "iFlow generation started",
-  "job_id": "12345678-1234-5678-1234-567812345678"
-}
+# Test the API with a markdown file
+python utils/client.py --markdown-file example.md --iflow-name MyFlow
 ```
 
-#### Get Job Status
+#### 3. API Usage
+```python
+import requests
 
-```
-GET /api/jobs/{job_id}
-```
-
-Response:
-```json
-{
-  "id": "12345678-1234-5678-1234-567812345678",
-  "status": "completed",
-  "created": "2025-05-15T10:30:00.000Z",
-  "message": "iFlow generation completed successfully!",
-  "files": {
-    "zip": "results/12345678-1234-5678-1234-567812345678/GeneratedIFlow_12345678.zip",
-    "debug": {
-      "raw_analysis_response.txt": "genai_debug/raw_analysis_response.txt",
-      "final_iflow_GeneratedIFlow_12345678.xml": "genai_debug/final_iflow_GeneratedIFlow_12345678.xml"
-    }
-  },
-  "iflow_name": "GeneratedIFlow_12345678"
-}
+# Generate iFlow
+response = requests.post('http://localhost:5000/api/generate', 
+                        json={'blueprint': blueprint_data})
+iflow_zip = response.content
 ```
 
-#### Download Generated iFlow
+## 🔧 Configuration
 
-```
-GET /api/jobs/{job_id}/download
-```
+### Environment Variables
+- `SAP_CLIENT_ID`: SAP BTP client ID
+- `SAP_CLIENT_SECRET`: SAP BTP client secret
+- `SAP_TENANT`: SAP BTP tenant
+- `ANTHROPIC_API_KEY`: Anthropic API key (optional)
 
-Returns the generated iFlow ZIP file.
+### Component Mapping
+Edit `COMPONENT_MAPPING_REFERENCE.md` to customize component translations.
 
-#### Download Debug File
+## 📊 Features
 
-```
-GET /api/jobs/{job_id}/debug/{file_name}
-```
+- ✅ **Boomi XML Processing**: Parse and analyze Boomi integration processes
+- ✅ **iFlow Generation**: Create SAP Integration Suite compatible iFlows
+- ✅ **Template System**: Flexible template-based generation
+- ✅ **Validation**: Comprehensive iFlow validation and fixing
+- ✅ **Deployment**: Direct deployment to SAP BTP
+- ✅ **API Interface**: RESTful API for integration
+- ✅ **Web UI**: User-friendly web interface
 
-Returns the specified debug file.
+## 🧪 Testing
 
-### Health Check
+Test files and results are archived in `archive/test_results/` and `archive/test_scripts/`.
 
-```
-GET /api/health
-```
+## 📚 Documentation
 
-Response:
-```json
-{
-  "status": "ok",
-  "message": "MuleToIS API is running",
-  "api_key_configured": true
-}
-```
+- **Component Mapping**: `COMPONENT_MAPPING_REFERENCE.md`
+- **Deployment**: `DEPLOYMENT_GUIDE.md`
+- **Implementation**: `IMPLEMENTATION_SUMMARY.md`
 
-## Integration with Frontend
+## 🤝 Contributing
 
-To integrate with the frontend "Generate iFlow" button:
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
 
-1. Update the frontend API service to call the new endpoints:
+## 📄 License
 
-```javascript
-// Generate iFlow from markdown documentation
-export const generateIflow = async (markdown, iflowName = null) => {
-  try {
-    const response = await api.post('/api/generate-iflow', {
-      markdown,
-      iflow_name: iflowName
-    });
-    return response.data;
-  } catch (error) {
-    console.error("Error generating iFlow:", error);
-    throw error;
-  }
-};
+This project is licensed under the MIT License.
 
-// Get iFlow generation status
-export const getIflowGenerationStatus = async (jobId) => {
-  try {
-    const response = await api.get(`/api/jobs/${jobId}`);
-    return response.data;
-  } catch (error) {
-    console.error("Error getting iFlow generation status:", error);
-    throw error;
-  }
-};
+## 🆘 Support
 
-// Download generated iFlow
-export const downloadGeneratedIflow = async (jobId) => {
-  try {
-    const response = await api.get(`/api/jobs/${jobId}/download`, {
-      responseType: 'blob'
-    });
-    return response.data;
-  } catch (error) {
-    console.error("Error downloading generated iFlow:", error);
-    throw error;
-  }
-};
-```
+For issues and questions:
+1. Check the documentation
+2. Review archived test results
+3. Create an issue with detailed information
 
-2. Update the "Generate iFlow" button handler to use the new API:
+---
 
-```javascript
-const handleGenerateIflow = async () => {
-  try {
-    setIsGeneratingIflow(true);
-    
-    // Get the markdown content from the job
-    const markdownContent = await getDocumentation(jobInfo.id, 'markdown');
-    const markdownText = await markdownContent.text();
-    
-    // Call the API to generate the iFlow
-    const result = await generateIflow(markdownText);
-    
-    // Start polling for status
-    const statusInterval = setInterval(async () => {
-      try {
-        const statusResult = await getIflowGenerationStatus(result.job_id);
-        
-        if (statusResult.status === "completed") {
-          setIsGeneratingIflow(false);
-          setIsIflowGenerated(true);
-          setIflowJobId(result.job_id);
-          toast.success("iFlow generated successfully!");
-          clearInterval(statusInterval);
-        } else if (statusResult.status === "failed") {
-          setIsGeneratingIflow(false);
-          toast.error(`iFlow generation failed: ${statusResult.message}`);
-          clearInterval(statusInterval);
-        }
-      } catch (error) {
-        console.error("Error checking iFlow generation status:", error);
-      }
-    }, 2000);
-    
-  } catch (error) {
-    setIsGeneratingIflow(false);
-    toast.error("Failed to generate iFlow");
-    console.error("Error generating iFlow:", error);
-  }
-};
-```
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
+**Last Updated**: August 2025
+**Version**: 2.0.0
+**Status**: Production Ready

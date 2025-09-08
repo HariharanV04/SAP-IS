@@ -1,1 +1,0 @@
-This iFlow integrates Stripe subscription data with Salesforce by retrieving customer and product details from Stripe, transforming the data into a Salesforce opportunity format, and creating a new opportunity record in Salesforce. It includes error handling for logging issues during the integration process and uses Groovy scripts for data transformation.

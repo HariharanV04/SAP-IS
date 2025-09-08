@@ -1,0 +1,1323 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn2:definitions xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:ifl="http:///com.sap.ifl.model/Ifl.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_1">
+    <bpmn2:collaboration id="Collaboration_1" name="Default Collaboration">
+        <bpmn2:extensionElements>
+            <ifl:property>
+                <key>namespaceMapping</key>
+                <value />
+            </ifl:property>
+            <ifl:property>
+                <key>httpSessionHandling</key>
+                <value>None</value>
+            </ifl:property>
+            <ifl:property>
+                <key>returnExceptionToSender</key>
+                <value>false</value>
+            </ifl:property>
+            <ifl:property>
+                <key>log</key>
+                <value>All events</value>
+            </ifl:property>
+            <ifl:property>
+                <key>corsEnabled</key>
+                <value>false</value>
+            </ifl:property>
+            <ifl:property>
+                <key>componentVersion</key>
+                <value>1.2</value>
+            </ifl:property>
+            <ifl:property>
+                <key>ServerTrace</key>
+                <value>false</value>
+            </ifl:property>
+            <ifl:property>
+                <key>xsrfProtection</key>
+                <value>false</value>
+            </ifl:property>
+            <ifl:property>
+                <key>cmdVariantUri</key>
+                <value>ctype::IFlowVariant/cname::IFlowConfiguration/version::1.2.4</value>
+            </ifl:property>
+        </bpmn2:extensionElements>
+<bpmn2:participant id="Participant_1" ifl:type="EndpointSender" name="Sender">
+            <bpmn2:extensionElements>
+                <ifl:property>
+                    <key>enableBasicAuthentication</key>
+                    <value>false</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>ifl:type</key>
+                    <value>EndpointSender</value>
+                </ifl:property>
+            </bpmn2:extensionElements>
+        </bpmn2:participant>
+<bpmn2:participant id="Participant_Process_1" ifl:type="IntegrationProcess" name="Integration Process" processRef="Process_1">
+            <bpmn2:extensionElements />
+        </bpmn2:participant>
+<bpmn2:participant id="Participant_OData_extract_employee_data_1" ifl:type="EndpointReceiver" name="OData_Extract_Employee_Data_from_SuccessFactors">
+    <bpmn2:extensionElements>
+        <ifl:property>
+            <key>ifl:type</key>
+            <value>EndpointReceiver</value>
+        </ifl:property>
+    </bpmn2:extensionElements>
+</bpmn2:participant>
+<bpmn2:participant id="Participant_OData_query_picklist_1" ifl:type="EndpointReceiver" name="OData_Query_Picklist_Values_from_SuccessFactors">
+    <bpmn2:extensionElements>
+        <ifl:property>
+            <key>ifl:type</key>
+            <value>EndpointReceiver</value>
+        </ifl:property>
+    </bpmn2:extensionElements>
+</bpmn2:participant>
+<bpmn2:participant id="Participant_deliver_navex_sftp_1" ifl:type="EndpointRecevier" name="Deliver_to_NAVEX_SFTP_from_Boomi_SFTP">
+    <bpmn2:extensionElements>
+        <ifl:property>
+            <key>ifl:type</key>
+            <value>EndpointRecevier</value>
+        </ifl:property>
+    </bpmn2:extensionElements>
+</bpmn2:participant>
+<bpmn2:participant id="Participant_archive_internal_sftp_1" ifl:type="EndpointRecevier" name="Archive_to_Internal_SFTP_from_Boomi_SFTP">
+    <bpmn2:extensionElements>
+        <ifl:property>
+            <key>ifl:type</key>
+            <value>EndpointRecevier</value>
+        </ifl:property>
+    </bpmn2:extensionElements>
+</bpmn2:participant>
+<bpmn2:participant id="Participant_success_notification_1" ifl:type="EndpointRecevier" name="Send_Success_Notification_from_Boomi_Receiver">
+            <bpmn2:extensionElements>
+                <ifl:property>
+                    <key>ifl:type</key>
+                    <value>EndpointRecevier</value>
+                </ifl:property>
+            </bpmn2:extensionElements>
+        </bpmn2:participant>
+<bpmn2:messageFlow id="MessageFlow_10" name="HTTPS" sourceRef="Participant_1" targetRef="StartEvent_2">
+            <bpmn2:extensionElements>
+                <ifl:property>
+                    <key>ComponentType</key>
+                    <value>HTTPS</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>Description</key>
+                    <value />
+                </ifl:property>
+                <ifl:property>
+                    <key>maximumBodySize</key>
+                    <value>40</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>ComponentNS</key>
+                    <value>sap</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>componentVersion</key>
+                    <value>1.4</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>urlPath</key>
+                    <value>/test</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>TransportProtocolVersion</key>
+                    <value>1.4.1</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>xsrfProtection</key>
+                    <value>false</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>TransportProtocol</key>
+                    <value>HTTPS</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>cmdVariantUri</key>
+                    <value>ctype::AdapterVariant/cname::sap:HTTPS/tp::HTTPS/mp::None/direction::Sender/version::1.4.1</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>userRole</key>
+                    <value>ESBMessaging.send</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>senderAuthType</key>
+                    <value>RoleBased</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>MessageProtocol</key>
+                    <value>None</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>MessageProtocolVersion</key>
+                    <value>1.4.1</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>direction</key>
+                    <value>Sender</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>clientCertificates</key>
+                    <value />
+                </ifl:property>
+            </bpmn2:extensionElements>
+        </bpmn2:messageFlow>
+<bpmn2:messageFlow id="MessageFlow_OData_extract_employee_data_1" name="OData" sourceRef="ODataCall_extract_employee_data_1" targetRef="Participant_OData_extract_employee_data_1">
+    <bpmn2:extensionElements>
+        <ifl:property>
+            <key>Description</key>
+            <value>OData Connection to CompoundEmployee</value>
+        </ifl:property>
+        <ifl:property>
+            <key>pagination</key>
+            <value>0</value>
+        </ifl:property>
+        <ifl:property>
+            <key>ComponentNS</key>
+            <value>sap</value>
+        </ifl:property>
+        <ifl:property>
+            <key>resourcePath</key>
+            <value>CompoundEmployee</value>
+        </ifl:property>
+        <ifl:property>
+            <key>TransportProtocolVersion</key>
+            <value>1.25.0</value>
+        </ifl:property>
+        <ifl:property>
+            <key>ComponentSWCVName</key>
+            <value>external</value>
+        </ifl:property>
+        <ifl:property>
+            <key>enableMPLAttachments</key>
+            <value>true</value>
+        </ifl:property>
+        <ifl:property>
+            <key>contentType</key>
+            <value>application/atom+xml</value>
+        </ifl:property>
+        <ifl:property>
+            <key>ComponentSWCVId</key>
+            <value>1.25.0</value>
+        </ifl:property>
+        <ifl:property>
+            <key>MessageProtocol</key>
+            <value>OData V2</value>
+        </ifl:property>
+        <ifl:property>
+            <key>direction</key>
+            <value>Receiver</value>
+        </ifl:property>
+        <ifl:property>
+            <key>ComponentType</key>
+            <value>HCIOData</value>
+        </ifl:property>
+        <ifl:property>
+            <key>address</key>
+            <value>https://{{SuccessFactors_Tenant}}.successfactors.com/odata/v2/</value>
+        </ifl:property>
+        <ifl:property>
+            <key>queryOptions</key>
+            <value>$select=person_id_external,first_name,last_name,email_address,employment_status,employee_class,pay_grade,custom_string15,location,company_territory_code,manager_id,user_id,relationship_type,manager_person_id_external,end_date,original_start_date,custom_string30,custom_string31&amp;$expand=employment_information,personal_information</value>
+        </ifl:property>
+        <ifl:property>
+            <key>proxyType</key>
+            <value>default</value>
+        </ifl:property>
+        <ifl:property>
+            <key>isCSRFEnabled</key>
+            <value>true</value>
+        </ifl:property>
+        <ifl:property>
+            <key>componentVersion</key>
+            <value>1.25</value>
+        </ifl:property>
+        <ifl:property>
+            <key>operation</key>
+            <value>Query(GET)</value>
+        </ifl:property>
+        <ifl:property>
+            <key>MessageProtocolVersion</key>
+            <value>1.25.0</value>
+        </ifl:property>
+        <ifl:property>
+            <key>TransportProtocol</key>
+            <value>HTTP</value>
+        </ifl:property>
+        <ifl:property>
+            <key>cmdVariantUri</key>
+            <value>ctype::AdapterVariant/cname::sap:HCIOData/tp::HTTP/mp::OData V2/direction::Receiver/version::1.25.0</value>
+        </ifl:property>
+        <ifl:property>
+            <key>authenticationMethod</key>
+            <value>None</value>
+        </ifl:property>
+    </bpmn2:extensionElements>
+</bpmn2:messageFlow>
+<bpmn2:messageFlow id="MessageFlow_OData_query_picklist_1" name="OData" sourceRef="ODataCall_query_picklist_1" targetRef="Participant_OData_query_picklist_1">
+    <bpmn2:extensionElements>
+        <ifl:property>
+            <key>Description</key>
+            <value>OData Connection to PicklistOption</value>
+        </ifl:property>
+        <ifl:property>
+            <key>pagination</key>
+            <value>0</value>
+        </ifl:property>
+        <ifl:property>
+            <key>ComponentNS</key>
+            <value>sap</value>
+        </ifl:property>
+        <ifl:property>
+            <key>resourcePath</key>
+            <value>PicklistOption</value>
+        </ifl:property>
+        <ifl:property>
+            <key>TransportProtocolVersion</key>
+            <value>1.25.0</value>
+        </ifl:property>
+        <ifl:property>
+            <key>ComponentSWCVName</key>
+            <value>external</value>
+        </ifl:property>
+        <ifl:property>
+            <key>enableMPLAttachments</key>
+            <value>true</value>
+        </ifl:property>
+        <ifl:property>
+            <key>contentType</key>
+            <value>application/atom+xml</value>
+        </ifl:property>
+        <ifl:property>
+            <key>ComponentSWCVId</key>
+            <value>1.25.0</value>
+        </ifl:property>
+        <ifl:property>
+            <key>MessageProtocol</key>
+            <value>OData V2</value>
+        </ifl:property>
+        <ifl:property>
+            <key>direction</key>
+            <value>Receiver</value>
+        </ifl:property>
+        <ifl:property>
+            <key>ComponentType</key>
+            <value>HCIOData</value>
+        </ifl:property>
+        <ifl:property>
+            <key>address</key>
+            <value>https://{{SuccessFactors_Tenant}}.successfactors.com/odata/v2/</value>
+        </ifl:property>
+        <ifl:property>
+            <key>queryOptions</key>
+            <value>$filter=picklistId in ('employee-status','GlobalEmployeeClass','jobRelType')&amp;$select=picklistId,externalCode,en_US</value>
+        </ifl:property>
+        <ifl:property>
+            <key>proxyType</key>
+            <value>default</value>
+        </ifl:property>
+        <ifl:property>
+            <key>isCSRFEnabled</key>
+            <value>true</value>
+        </ifl:property>
+        <ifl:property>
+            <key>componentVersion</key>
+            <value>1.25</value>
+        </ifl:property>
+        <ifl:property>
+            <key>operation</key>
+            <value>Query(GET)</value>
+        </ifl:property>
+        <ifl:property>
+            <key>MessageProtocolVersion</key>
+            <value>1.25.0</value>
+        </ifl:property>
+        <ifl:property>
+            <key>TransportProtocol</key>
+            <value>HTTP</value>
+        </ifl:property>
+        <ifl:property>
+            <key>cmdVariantUri</key>
+            <value>ctype::AdapterVariant/cname::sap:HCIOData/tp::HTTP/mp::OData V2/direction::Receiver/version::1.25.0</value>
+        </ifl:property>
+        <ifl:property>
+            <key>authenticationMethod</key>
+            <value>None</value>
+        </ifl:property>
+    </bpmn2:extensionElements>
+</bpmn2:messageFlow>
+<bpmn2:messageFlow id="MessageFlow_deliver_navex_sftp_1" name="SFTP" sourceRef="deliver_navex_sftp_1" targetRef="Participant_deliver_navex_sftp_1">
+    <bpmn2:extensionElements>
+        <ifl:property>
+            <key>ComponentType</key>
+            <value>SFTP</value>
+        </ifl:property>
+        <ifl:property>
+            <key>Description</key>
+            <value>SFTP Connection for file upload</value>
+        </ifl:property>
+        <ifl:property>
+            <key>ComponentNS</key>
+            <value>sap</value>
+        </ifl:property>
+        <ifl:property>
+            <key>host</key>
+            <value />
+        </ifl:property>
+        <ifl:property>
+            <key>port</key>
+            <value>22</value>
+        </ifl:property>
+        <ifl:property>
+            <key>path</key>
+            <value />
+        </ifl:property>
+        <ifl:property>
+            <key>authentication</key>
+            <value>password</value>
+        </ifl:property>
+        <ifl:property>
+            <key>username</key>
+            <value />
+        </ifl:property>
+        <ifl:property>
+            <key>operation</key>
+            <value>GET</value>
+        </ifl:property>
+        <ifl:property>
+            <key>TransportProtocolVersion</key>
+            <value>1.11.2</value>
+        </ifl:property>
+        <ifl:property>
+            <key>MessageProtocol</key>
+            <value>File</value>
+        </ifl:property>
+        <ifl:property>
+            <key>direction</key>
+            <value>Receiver</value>
+        </ifl:property>
+        <ifl:property>
+            <key>TransportProtocol</key>
+            <value>SFTP</value>
+        </ifl:property>
+        <ifl:property>
+            <key>componentVersion</key>
+            <value>1.11</value>
+        </ifl:property>
+        <ifl:property>
+            <key>cmdVariantUri</key>
+            <value>ctype::AdapterVariant/cname::sap:SFTP/tp::SFTP/mp::File/direction::Receiver/version::1.11.2</value>
+        </ifl:property>
+        <ifl:property>
+            <key>fileExist</key>
+            <value>Override</value>
+        </ifl:property>
+        <ifl:property>
+            <key>autoCreate</key>
+            <value>1</value>
+        </ifl:property>
+        <ifl:property>
+            <key>connectTimeout</key>
+            <value>10000</value>
+        </ifl:property>
+    </bpmn2:extensionElements>
+</bpmn2:messageFlow>
+<bpmn2:messageFlow id="MessageFlow_archive_internal_sftp_1" name="SFTP" sourceRef="archive_internal_sftp_1" targetRef="Participant_archive_internal_sftp_1">
+    <bpmn2:extensionElements>
+        <ifl:property>
+            <key>ComponentType</key>
+            <value>SFTP</value>
+        </ifl:property>
+        <ifl:property>
+            <key>Description</key>
+            <value>SFTP Connection for file upload</value>
+        </ifl:property>
+        <ifl:property>
+            <key>ComponentNS</key>
+            <value>sap</value>
+        </ifl:property>
+        <ifl:property>
+            <key>host</key>
+            <value />
+        </ifl:property>
+        <ifl:property>
+            <key>port</key>
+            <value>22</value>
+        </ifl:property>
+        <ifl:property>
+            <key>path</key>
+            <value />
+        </ifl:property>
+        <ifl:property>
+            <key>authentication</key>
+            <value>password</value>
+        </ifl:property>
+        <ifl:property>
+            <key>username</key>
+            <value />
+        </ifl:property>
+        <ifl:property>
+            <key>operation</key>
+            <value>GET</value>
+        </ifl:property>
+        <ifl:property>
+            <key>TransportProtocolVersion</key>
+            <value>1.11.2</value>
+        </ifl:property>
+        <ifl:property>
+            <key>MessageProtocol</key>
+            <value>File</value>
+        </ifl:property>
+        <ifl:property>
+            <key>direction</key>
+            <value>Receiver</value>
+        </ifl:property>
+        <ifl:property>
+            <key>TransportProtocol</key>
+            <value>SFTP</value>
+        </ifl:property>
+        <ifl:property>
+            <key>componentVersion</key>
+            <value>1.11</value>
+        </ifl:property>
+        <ifl:property>
+            <key>cmdVariantUri</key>
+            <value>ctype::AdapterVariant/cname::sap:SFTP/tp::SFTP/mp::File/direction::Receiver/version::1.11.2</value>
+        </ifl:property>
+        <ifl:property>
+            <key>fileExist</key>
+            <value>Override</value>
+        </ifl:property>
+        <ifl:property>
+            <key>autoCreate</key>
+            <value>1</value>
+        </ifl:property>
+        <ifl:property>
+            <key>connectTimeout</key>
+            <value>10000</value>
+        </ifl:property>
+    </bpmn2:extensionElements>
+</bpmn2:messageFlow>
+<bpmn2:messageFlow id="MessageFlow_success_notification_1" name="HTTP" sourceRef="success_notification_1" targetRef="Participant_success_notification_1">
+            <bpmn2:extensionElements>
+                <ifl:property>
+                    <key>Description</key>
+                    <value />
+                </ifl:property>
+                <ifl:property>
+                    <key>methodSourceExpression</key>
+                    <value />
+                </ifl:property>
+                <ifl:property>
+                    <key>apiArtifactType</key>
+                    <value />
+                </ifl:property>
+                <ifl:property>
+                    <key>providerAuth</key>
+                    <value />
+                </ifl:property>
+                <ifl:property>
+                    <key>ComponentNS</key>
+                    <value>sap</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>privateKeyAlias</key>
+                    <value />
+                </ifl:property>
+                <ifl:property>
+                    <key>httpMethod</key>
+                    <value>GET</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>allowedResponseHeaders</key>
+                    <value>*</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>Name</key>
+                    <value>HTTP</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>internetProxyType</key>
+                    <value />
+                </ifl:property>
+                <ifl:property>
+                    <key>TransportProtocolVersion</key>
+                    <value>1.16.2</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>ComponentSWCVName</key>
+                    <value>external</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>proxyPort</key>
+                    <value />
+                </ifl:property>
+                <ifl:property>
+                    <key>enableMPLAttachments</key>
+                    <value>true</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>httpAddressQuery</key>
+                    <value />
+                </ifl:property>
+                <ifl:property>
+                    <key>httpRequestTimeout</key>
+                    <value>60000</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>MessageProtocol</key>
+                    <value>None</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>ComponentSWCVId</key>
+                    <value>1.16.2</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>providerName</key>
+                    <value />
+                </ifl:property>
+                <ifl:property>
+                    <key>allowedRequestHeaders</key>
+                    <value />
+                </ifl:property>
+                <ifl:property>
+                    <key>direction</key>
+                    <value>Receiver</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>ComponentType</key>
+                    <value>HTTP</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>httpShouldSendBody</key>
+                    <value>false</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>throwExceptionOnFailure</key>
+                    <value>true</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>proxyType</key>
+                    <value>default</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>componentVersion</key>
+                    <value>1.16</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>retryIteration</key>
+                    <value>1</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>proxyHost</key>
+                    <value />
+                </ifl:property>
+                <ifl:property>
+                    <key>providerUrl</key>
+                    <value />
+                </ifl:property>
+                <ifl:property>
+                    <key>retryOnConnectionFailure</key>
+                    <value>false</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>system</key>
+                    <value>Send_Success_Notification_from_Boomi_System</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>authenticationMethod</key>
+                    <value>Client Certificate</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>locationID</key>
+                    <value />
+                </ifl:property>
+                <ifl:property>
+                    <key>retryInterval</key>
+                    <value>5</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>TransportProtocol</key>
+                    <value>HTTP</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>cmdVariantUri</key>
+                    <value>ctype::AdapterVariant/cname::sap:HTTP/tp::HTTP/mp::None/direction::Receiver/version::1.16.2</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>credentialName</key>
+                    <value />
+                </ifl:property>
+                <ifl:property>
+                    <key>httpErrorResponseCodes</key>
+                    <value />
+                </ifl:property>
+                <ifl:property>
+                    <key>MessageProtocolVersion</key>
+                    <value>1.16.2</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>httpAddressWithoutQuery</key>
+                    <value>https://example.com/api</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>providerRelativeUrl</key>
+                    <value />
+                </ifl:property>
+            </bpmn2:extensionElements>
+        </bpmn2:messageFlow>
+    </bpmn2:collaboration>
+    <bpmn2:process id="Process_1" name="Integration Process">
+        <bpmn2:extensionElements>
+            <ifl:property>
+                <key>transactionTimeout</key>
+                <value>30</value>
+            </ifl:property>
+            <ifl:property>
+                <key>componentVersion</key>
+                <value>1.2</value>
+            </ifl:property>
+            <ifl:property>
+                <key>cmdVariantUri</key>
+                <value>ctype::FlowElementVariant/cname::IntegrationProcess/version::1.2.1</value>
+            </ifl:property>
+            <ifl:property>
+                <key>transactionalHandling</key>
+                <value>Not Required</value>
+            </ifl:property>
+        </bpmn2:extensionElements>
+        
+            <bpmn2:startEvent id="StartEvent_2" name="Start">
+                <bpmn2:extensionElements>
+                    <ifl:property>
+                        <key>componentVersion</key>
+                        <value>1.0</value>
+                    </ifl:property>
+                    <ifl:property>
+                        <key>cmdVariantUri</key>
+                        <value>ctype::FlowstepVariant/cname::MessageStartEvent/version::1.0</value>
+                    </ifl:property>
+                </bpmn2:extensionElements>
+                <bpmn2:outgoing>flow_StartEvent_2_to_init_error_props_1_start</bpmn2:outgoing>
+                <bpmn2:messageEventDefinition id="MessageEventDefinition_StartEvent_2" />
+            </bpmn2:startEvent>
+            <bpmn2:callActivity id="init_error_props_1" name="Initialize_Error_Properties_from_Boomi">
+            <bpmn2:extensionElements>
+                <ifl:property>
+                    <key>bodyType</key>
+                    <value>expression</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>propertyTable</key>
+                    <value />
+                </ifl:property>
+                <ifl:property>
+                    <key>headerTable</key>
+                    <value />
+                </ifl:property>
+                <ifl:property>
+                    <key>wrapContent</key>
+                    <value />
+                </ifl:property>
+                <ifl:property>
+                    <key>componentVersion</key>
+                    <value>1.4</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>activityType</key>
+                    <value>Enricher</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>cmdVariantUri</key>
+                    <value>ctype::FlowstepVariant/cname::Enricher/version::1.4.2</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>bodyContent</key>
+                    <value>Initialize comprehensive error tracking properties across 7 categories: Business Rule, Cleanse, Decision, Route, TryCatch, Return, General</value>
+                </ifl:property>
+            </bpmn2:extensionElements>
+            <bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>
+            <bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>
+        </bpmn2:callActivity>
+            <bpmn2:callActivity id="set_delta_dates_1" name="Set_Delta_Date_Range_from_Boomi">
+            <bpmn2:extensionElements>
+                <ifl:property>
+                    <key>bodyType</key>
+                    <value>expression</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>propertyTable</key>
+                    <value />
+                </ifl:property>
+                <ifl:property>
+                    <key>headerTable</key>
+                    <value />
+                </ifl:property>
+                <ifl:property>
+                    <key>wrapContent</key>
+                    <value />
+                </ifl:property>
+                <ifl:property>
+                    <key>componentVersion</key>
+                    <value>1.4</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>activityType</key>
+                    <value>Enricher</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>cmdVariantUri</key>
+                    <value>ctype::FlowstepVariant/cname::Enricher/version::1.4.2</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>bodyContent</key>
+                    <value>Configure dynamic date ranges for delta processing using Last Successful Run Date (LSRD) and current system date</value>
+                </ifl:property>
+            </bpmn2:extensionElements>
+            <bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>
+            <bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>
+        </bpmn2:callActivity>
+            <bpmn2:callActivity id="set_full_dates_1" name="Set_Full_Date_Range_from_Boomi">
+            <bpmn2:extensionElements>
+                <ifl:property>
+                    <key>bodyType</key>
+                    <value>expression</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>propertyTable</key>
+                    <value />
+                </ifl:property>
+                <ifl:property>
+                    <key>headerTable</key>
+                    <value />
+                </ifl:property>
+                <ifl:property>
+                    <key>wrapContent</key>
+                    <value />
+                </ifl:property>
+                <ifl:property>
+                    <key>componentVersion</key>
+                    <value>1.4</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>activityType</key>
+                    <value>Enricher</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>cmdVariantUri</key>
+                    <value>ctype::FlowstepVariant/cname::Enricher/version::1.4.2</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>bodyContent</key>
+                    <value>Configure date ranges for full processing using configured start and end dates from process properties</value>
+                </ifl:property>
+            </bpmn2:extensionElements>
+            <bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>
+            <bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>
+        </bpmn2:callActivity>
+            <bpmn2:serviceTask id="ODataCall_extract_employee_data_1" name="Extract_Employee_Data_from_SuccessFactors">
+    <bpmn2:extensionElements>
+        <ifl:property>
+            <key>componentVersion</key>
+            <value>1.0</value>
+        </ifl:property>
+        <ifl:property>
+            <key>activityType</key>
+            <value>ExternalCall</value>
+        </ifl:property>
+        <ifl:property>
+            <key>cmdVariantUri</key>
+            <value>ctype::FlowstepVariant/cname::ExternalCall/version::1.0.4</value>
+        </ifl:property>
+    </bpmn2:extensionElements>
+    <bpmn2:incoming>SequenceFlow_extract_employee_data_1_in</bpmn2:incoming>
+    <bpmn2:outgoing>SequenceFlow_extract_employee_data_1_out</bpmn2:outgoing>
+</bpmn2:serviceTask>
+            <bpmn2:serviceTask id="ODataCall_query_picklist_1" name="Query_Picklist_Values_from_SuccessFactors">
+    <bpmn2:extensionElements>
+        <ifl:property>
+            <key>componentVersion</key>
+            <value>1.0</value>
+        </ifl:property>
+        <ifl:property>
+            <key>activityType</key>
+            <value>ExternalCall</value>
+        </ifl:property>
+        <ifl:property>
+            <key>cmdVariantUri</key>
+            <value>ctype::FlowstepVariant/cname::ExternalCall/version::1.0.4</value>
+        </ifl:property>
+    </bpmn2:extensionElements>
+    <bpmn2:incoming>SequenceFlow_query_picklist_1_in</bpmn2:incoming>
+    <bpmn2:outgoing>SequenceFlow_query_picklist_1_out</bpmn2:outgoing>
+</bpmn2:serviceTask>
+            <bpmn2:callActivity id="cache_reference_data_1" name="Cache_Reference_Data_from_Boomi">
+            <bpmn2:extensionElements>
+                <ifl:property>
+                    <key>bodyType</key>
+                    <value>expression</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>propertyTable</key>
+                    <value />
+                </ifl:property>
+                <ifl:property>
+                    <key>headerTable</key>
+                    <value />
+                </ifl:property>
+                <ifl:property>
+                    <key>wrapContent</key>
+                    <value />
+                </ifl:property>
+                <ifl:property>
+                    <key>componentVersion</key>
+                    <value>1.4</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>activityType</key>
+                    <value>Enricher</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>cmdVariantUri</key>
+                    <value>ctype::FlowstepVariant/cname::Enricher/version::1.4.2</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>bodyContent</key>
+                    <value>Cache picklist reference data for employee status, employee class, and job relationship type translations</value>
+                </ifl:property>
+            </bpmn2:extensionElements>
+            <bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>
+            <bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>
+        </bpmn2:callActivity>
+            <bpmn2:callActivity id="set_filename_1" name="Set_Dynamic_Filename_from_Boomi">
+            <bpmn2:extensionElements>
+                <ifl:property>
+                    <key>bodyType</key>
+                    <value>expression</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>propertyTable</key>
+                    <value />
+                </ifl:property>
+                <ifl:property>
+                    <key>headerTable</key>
+                    <value />
+                </ifl:property>
+                <ifl:property>
+                    <key>wrapContent</key>
+                    <value />
+                </ifl:property>
+                <ifl:property>
+                    <key>componentVersion</key>
+                    <value>1.4</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>activityType</key>
+                    <value>Enricher</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>cmdVariantUri</key>
+                    <value>ctype::FlowstepVariant/cname::Enricher/version::1.4.2</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>bodyContent</key>
+                    <value>Generate dynamic filename with timestamp: NAVEX_Employee_Data_{timestamp}.csv</value>
+                </ifl:property>
+            </bpmn2:extensionElements>
+            <bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>
+            <bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>
+        </bpmn2:callActivity>
+            <bpmn2:callActivity id="pgp_encrypt_1" name="PGP_Encrypt_File_from_Boomi">
+            <bpmn2:extensionElements>
+                <ifl:property>
+                    <key>bodyType</key>
+                    <value>expression</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>propertyTable</key>
+                    <value />
+                </ifl:property>
+                <ifl:property>
+                    <key>headerTable</key>
+                    <value />
+                </ifl:property>
+                <ifl:property>
+                    <key>wrapContent</key>
+                    <value />
+                </ifl:property>
+                <ifl:property>
+                    <key>componentVersion</key>
+                    <value>1.4</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>activityType</key>
+                    <value>Enricher</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>cmdVariantUri</key>
+                    <value>ctype::FlowstepVariant/cname::Enricher/version::1.4.2</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>bodyContent</key>
+                    <value>Encrypt CSV file using NAVEX public key for secure external delivery with .pgp extension</value>
+                </ifl:property>
+            </bpmn2:extensionElements>
+            <bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>
+            <bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>
+        </bpmn2:callActivity>
+            <bpmn2:callActivity id="build_where_clause_1" name="Build_WHERE_Clause_from_Boomi">
+                        <bpmn2:extensionElements>
+                            <ifl:property>
+                                <key>scriptFunction</key>
+                                <value>processMessage</value>
+                            </ifl:property>
+                            <ifl:property>
+                                <key>componentVersion</key>
+                                <value>1.0</value>
+                            </ifl:property>
+                            <ifl:property>
+                                <key>activityType</key>
+                                <value>Script</value>
+                            </ifl:property>
+                            <ifl:property>
+                                <key>cmdVariantUri</key>
+                                <value>ctype::FlowstepVariant/cname::GroovyScript/version::1.0.1</value>
+                            </ifl:property>
+                            <ifl:property>
+                                <key>subActivityType</key>
+                                <value>GroovyScript</value>
+                            </ifl:property>
+                            <ifl:property>
+                                <key>script</key>
+                                <value>Build_WHERE_Clause_from_Boomi.groovy</value>
+                            </ifl:property>
+                        </bpmn2:extensionElements>
+                    </bpmn2:callActivity>
+            <bpmn2:callActivity id="control_report_1" name="Generate_Control_Report_from_Boomi">
+                        <bpmn2:extensionElements>
+                            <ifl:property>
+                                <key>scriptFunction</key>
+                                <value>processMessage</value>
+                            </ifl:property>
+                            <ifl:property>
+                                <key>componentVersion</key>
+                                <value>1.0</value>
+                            </ifl:property>
+                            <ifl:property>
+                                <key>activityType</key>
+                                <value>Script</value>
+                            </ifl:property>
+                            <ifl:property>
+                                <key>cmdVariantUri</key>
+                                <value>ctype::FlowstepVariant/cname::GroovyScript/version::1.0.1</value>
+                            </ifl:property>
+                            <ifl:property>
+                                <key>subActivityType</key>
+                                <value>GroovyScript</value>
+                            </ifl:property>
+                            <ifl:property>
+                                <key>script</key>
+                                <value>Generate_Control_Report_from_Boomi.groovy</value>
+                            </ifl:property>
+                        </bpmn2:extensionElements>
+                    </bpmn2:callActivity>
+            <bpmn2:serviceTask id="deliver_navex_sftp_1" name="Deliver_to_NAVEX_SFTP_from_Boomi">
+    <bpmn2:extensionElements>
+        <ifl:property>
+            <key>componentVersion</key>
+            <value>1.0</value>
+        </ifl:property>
+        <ifl:property>
+            <key>activityType</key>
+            <value>ExternalCall</value>
+        </ifl:property>
+        <ifl:property>
+            <key>cmdVariantUri</key>
+            <value>ctype::FlowstepVariant/cname::ExternalCall/version::1.0.4</value>
+        </ifl:property>
+    </bpmn2:extensionElements>
+    <bpmn2:incoming>SequenceFlow_9</bpmn2:incoming>
+    <bpmn2:outgoing>SequenceFlow_10</bpmn2:outgoing>
+</bpmn2:serviceTask>
+            <bpmn2:serviceTask id="archive_internal_sftp_1" name="Archive_to_Internal_SFTP_from_Boomi">
+    <bpmn2:extensionElements>
+        <ifl:property>
+            <key>componentVersion</key>
+            <value>1.0</value>
+        </ifl:property>
+        <ifl:property>
+            <key>activityType</key>
+            <value>ExternalCall</value>
+        </ifl:property>
+        <ifl:property>
+            <key>cmdVariantUri</key>
+            <value>ctype::FlowstepVariant/cname::ExternalCall/version::1.0.4</value>
+        </ifl:property>
+    </bpmn2:extensionElements>
+    <bpmn2:incoming>SequenceFlow_10</bpmn2:incoming>
+    <bpmn2:outgoing>SequenceFlow_11</bpmn2:outgoing>
+</bpmn2:serviceTask>
+            <bpmn2:serviceTask id="success_notification_1" name="Send_Success_Notification_from_Boomi">
+    <bpmn2:extensionElements>
+        <ifl:property>
+            <key>componentVersion</key>
+            <value>1.0</value>
+        </ifl:property>
+        <ifl:property>
+            <key>activityType</key>
+            <value>ExternalCall</value>
+        </ifl:property>
+        <ifl:property>
+            <key>cmdVariantUri</key>
+            <value>ctype::FlowstepVariant/cname::ExternalCall/version::1.0.4</value>
+        </ifl:property>
+    </bpmn2:extensionElements>
+    <bpmn2:incoming>SequenceFlow_11</bpmn2:incoming>
+    <bpmn2:outgoing>SequenceFlow_12</bpmn2:outgoing>
+</bpmn2:serviceTask>
+            <bpmn2:callActivity id="transform_ec_navex_1" name="Transform_EC_to_NAVEX_from_Boomi">
+                        <bpmn2:extensionElements>
+                            <ifl:property>
+                                <key>scriptFunction</key>
+                                <value>processMessage</value>
+                            </ifl:property>
+                            <ifl:property>
+                                <key>componentVersion</key>
+                                <value>1.0</value>
+                            </ifl:property>
+                            <ifl:property>
+                                <key>activityType</key>
+                                <value>Script</value>
+                            </ifl:property>
+                            <ifl:property>
+                                <key>cmdVariantUri</key>
+                                <value>ctype::FlowstepVariant/cname::GroovyScript/version::1.0.1</value>
+                            </ifl:property>
+                            <ifl:property>
+                                <key>subActivityType</key>
+                                <value>GroovyScript</value>
+                            </ifl:property>
+                            <ifl:property>
+                                <key>script</key>
+                                <value>Transform_EC_to_NAVEX_from_Boomi.groovy</value>
+                            </ifl:property>
+                        </bpmn2:extensionElements>
+                    </bpmn2:callActivity>
+            <bpmn2:callActivity id="validate_data_1" name="Validate_Transformed_Data_from_Boomi">
+            <bpmn2:extensionElements>
+                <ifl:property>
+                    <key>bodyType</key>
+                    <value>expression</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>propertyTable</key>
+                    <value />
+                </ifl:property>
+                <ifl:property>
+                    <key>headerTable</key>
+                    <value />
+                </ifl:property>
+                <ifl:property>
+                    <key>wrapContent</key>
+                    <value />
+                </ifl:property>
+                <ifl:property>
+                    <key>componentVersion</key>
+                    <value>1.4</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>activityType</key>
+                    <value>Enricher</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>cmdVariantUri</key>
+                    <value>ctype::FlowstepVariant/cname::Enricher/version::1.4.2</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>bodyContent</key>
+                    <value>Validate transformed employee records for required fields (GPID, Email, Employment Status) and data type checking</value>
+                </ifl:property>
+            </bpmn2:extensionElements>
+            <bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>
+            <bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>
+        </bpmn2:callActivity>
+            <bpmn2:callActivity id="generate_csv_1" name="Generate_CSV_Format_from_Boomi">
+                        <bpmn2:extensionElements>
+                            <ifl:property>
+                                <key>scriptFunction</key>
+                                <value>processMessage</value>
+                            </ifl:property>
+                            <ifl:property>
+                                <key>componentVersion</key>
+                                <value>1.0</value>
+                            </ifl:property>
+                            <ifl:property>
+                                <key>activityType</key>
+                                <value>Script</value>
+                            </ifl:property>
+                            <ifl:property>
+                                <key>cmdVariantUri</key>
+                                <value>ctype::FlowstepVariant/cname::GroovyScript/version::1.0.1</value>
+                            </ifl:property>
+                            <ifl:property>
+                                <key>subActivityType</key>
+                                <value>GroovyScript</value>
+                            </ifl:property>
+                            <ifl:property>
+                                <key>script</key>
+                                <value>Generate_CSV_Format_from_Boomi.groovy</value>
+                            </ifl:property>
+                        </bpmn2:extensionElements>
+                    </bpmn2:callActivity>
+            <bpmn2:endEvent id="EndEvent_2" name="End">
+                <bpmn2:extensionElements>
+                    <ifl:property>
+                        <key>componentVersion</key>
+                        <value>1.1</value>
+                    </ifl:property>
+                    <ifl:property>
+                        <key>cmdVariantUri</key>
+                        <value>ctype::FlowstepVariant/cname::MessageEndEvent/version::1.1.0</value>
+                    </ifl:property>
+                </bpmn2:extensionElements>
+                <bpmn2:incoming>flow_generate_csv_1_to_EndEvent_2_end</bpmn2:incoming>
+                <bpmn2:messageEventDefinition id="MessageEventDefinition_EndEvent_2" />
+            </bpmn2:endEvent>
+            <bpmn2:sequenceFlow id="SequenceFlow_Start" sourceRef="init_error_props_1" targetRef="set_delta_dates_1" isImmediate="true" />
+            <bpmn2:sequenceFlow id="SequenceFlow_1" sourceRef="set_delta_dates_1" targetRef="set_full_dates_1" isImmediate="true" />
+            <bpmn2:sequenceFlow id="SequenceFlow_2" sourceRef="set_full_dates_1" targetRef="ODataCall_extract_employee_data_1" isImmediate="true" />
+            <bpmn2:sequenceFlow id="SequenceFlow_3" sourceRef="ODataCall_extract_employee_data_1" targetRef="ODataCall_query_picklist_1" isImmediate="true" />
+            <bpmn2:sequenceFlow id="SequenceFlow_4" sourceRef="ODataCall_query_picklist_1" targetRef="cache_reference_data_1" isImmediate="true" />
+            <bpmn2:sequenceFlow id="SequenceFlow_5" sourceRef="cache_reference_data_1" targetRef="set_filename_1" isImmediate="true" />
+            <bpmn2:sequenceFlow id="SequenceFlow_6" sourceRef="set_filename_1" targetRef="pgp_encrypt_1" isImmediate="true" />
+            <bpmn2:sequenceFlow id="SequenceFlow_7" sourceRef="pgp_encrypt_1" targetRef="build_where_clause_1" isImmediate="true" />
+            <bpmn2:sequenceFlow id="SequenceFlow_8" sourceRef="build_where_clause_1" targetRef="control_report_1" isImmediate="true" />
+            <bpmn2:sequenceFlow id="SequenceFlow_9" sourceRef="control_report_1" targetRef="deliver_navex_sftp_1" isImmediate="true" />
+            <bpmn2:sequenceFlow id="SequenceFlow_10" sourceRef="deliver_navex_sftp_1" targetRef="archive_internal_sftp_1" isImmediate="true" />
+            <bpmn2:sequenceFlow id="SequenceFlow_11" sourceRef="archive_internal_sftp_1" targetRef="success_notification_1" isImmediate="true" />
+            <bpmn2:sequenceFlow id="SequenceFlow_12" sourceRef="success_notification_1" targetRef="transform_ec_navex_1" isImmediate="true" />
+            <bpmn2:sequenceFlow id="SequenceFlow_13" sourceRef="transform_ec_navex_1" targetRef="validate_data_1" isImmediate="true" />
+            <bpmn2:sequenceFlow id="SequenceFlow_End" sourceRef="validate_data_1" targetRef="generate_csv_1" isImmediate="true" />
+            <bpmn2:sequenceFlow id="flow_generate_csv_1_to_EndEvent_2_end" sourceRef="generate_csv_1" targetRef="EndEvent_2" isImmediate="true" />
+            <bpmn2:sequenceFlow id="flow_StartEvent_2_to_init_error_props_1_start" sourceRef="StartEvent_2" targetRef="init_error_props_1" isImmediate="true" />
+    </bpmn2:process>
+    <bpmndi:BPMNDiagram id="BPMNDiagram_1" name="Default Collaboration Diagram">
+        
+                <bpmndi:BPMNPlane bpmnElement="Collaboration_1" id="BPMNPlane_1"><bpmndi:BPMNShape bpmnElement="Participant_1" id="BPMNShape_Participant_1">
+    <dc:Bounds height="140.0" width="100.0" x="100" y="100" />
+</bpmndi:BPMNShape><bpmndi:BPMNShape bpmnElement="Participant_Process_1" id="BPMNShape_Participant_Process_1">
+    <dc:Bounds height="294" width="957" x="220" y="150" />
+</bpmndi:BPMNShape><bpmndi:BPMNShape bpmnElement="Participant_OData_extract_employee_data_1" id="BPMNShape_Participant_OData_extract_employee_data_1">
+    <dc:Bounds height="140.0" width="100.0" x="850" y="150" />
+</bpmndi:BPMNShape><bpmndi:BPMNShape bpmnElement="Participant_OData_query_picklist_1" id="BPMNShape_Participant_OData_query_picklist_1">
+    <dc:Bounds height="140.0" width="100.0" x="850" y="150" />
+</bpmndi:BPMNShape><bpmndi:BPMNShape bpmnElement="Participant_deliver_navex_sftp_1" id="BPMNShape_Participant_deliver_navex_sftp_1">
+    <dc:Bounds height="140.0" width="100.0" x="580" y="100" />
+</bpmndi:BPMNShape><bpmndi:BPMNShape bpmnElement="Participant_archive_internal_sftp_1" id="BPMNShape_Participant_archive_internal_sftp_1">
+    <dc:Bounds height="140.0" width="100.0" x="700" y="100" />
+</bpmndi:BPMNShape><bpmndi:BPMNShape bpmnElement="Participant_success_notification_1" id="BPMNShape_Participant_success_notification_1">
+    <dc:Bounds height="140.0" width="100.0" x="820" y="400" />
+</bpmndi:BPMNShape><bpmndi:BPMNShape bpmnElement="StartEvent_2" id="BPMNShape_StartEvent_2">
+    <dc:Bounds height="32.0" width="32.0" x="263" y="126" />
+</bpmndi:BPMNShape><bpmndi:BPMNShape bpmnElement="init_error_props_1" id="BPMNShape_init_error_props_1">
+    <dc:Bounds height="60" width="100" x="300" y="140" />
+</bpmndi:BPMNShape><bpmndi:BPMNShape bpmnElement="set_delta_dates_1" id="BPMNShape_set_delta_dates_1">
+    <dc:Bounds height="60" width="100" x="420" y="140" />
+</bpmndi:BPMNShape><bpmndi:BPMNShape bpmnElement="set_full_dates_1" id="BPMNShape_set_full_dates_1">
+    <dc:Bounds height="60" width="100" x="540" y="140" />
+</bpmndi:BPMNShape><bpmndi:BPMNShape bpmnElement="ODataCall_extract_employee_data_1" id="BPMNShape_ODataCall_extract_employee_data_1">
+    <dc:Bounds height="60" width="100" x="660" y="140" />
+</bpmndi:BPMNShape><bpmndi:BPMNShape bpmnElement="ODataCall_query_picklist_1" id="BPMNShape_ODataCall_query_picklist_1">
+    <dc:Bounds height="60" width="100" x="780" y="140" />
+</bpmndi:BPMNShape><bpmndi:BPMNShape bpmnElement="cache_reference_data_1" id="BPMNShape_cache_reference_data_1">
+    <dc:Bounds height="60" width="100" x="900" y="140" />
+</bpmndi:BPMNShape><bpmndi:BPMNShape bpmnElement="set_filename_1" id="BPMNShape_set_filename_1">
+    <dc:Bounds height="60" width="100" x="1020" y="140" />
+</bpmndi:BPMNShape><bpmndi:BPMNShape bpmnElement="pgp_encrypt_1" id="BPMNShape_pgp_encrypt_1">
+    <dc:Bounds height="60" width="100" x="1140" y="140" />
+</bpmndi:BPMNShape><bpmndi:BPMNShape bpmnElement="build_where_clause_1" id="BPMNShape_build_where_clause_1">
+    <dc:Bounds height="60" width="100" x="1260" y="140" />
+</bpmndi:BPMNShape><bpmndi:BPMNShape bpmnElement="control_report_1" id="BPMNShape_control_report_1">
+    <dc:Bounds height="60" width="100" x="1380" y="140" />
+</bpmndi:BPMNShape><bpmndi:BPMNShape bpmnElement="deliver_navex_sftp_1" id="BPMNShape_deliver_navex_sftp_1">
+    <dc:Bounds height="60" width="100" x="1500" y="140" />
+</bpmndi:BPMNShape><bpmndi:BPMNShape bpmnElement="archive_internal_sftp_1" id="BPMNShape_archive_internal_sftp_1">
+    <dc:Bounds height="60" width="100" x="1620" y="140" />
+</bpmndi:BPMNShape><bpmndi:BPMNShape bpmnElement="success_notification_1" id="BPMNShape_success_notification_1">
+    <dc:Bounds height="60" width="100" x="1740" y="140" />
+</bpmndi:BPMNShape><bpmndi:BPMNShape bpmnElement="transform_ec_navex_1" id="BPMNShape_transform_ec_navex_1">
+    <dc:Bounds height="60" width="100" x="1860" y="140" />
+</bpmndi:BPMNShape><bpmndi:BPMNShape bpmnElement="validate_data_1" id="BPMNShape_validate_data_1">
+    <dc:Bounds height="60" width="100" x="1980" y="140" />
+</bpmndi:BPMNShape><bpmndi:BPMNShape bpmnElement="generate_csv_1" id="BPMNShape_generate_csv_1">
+    <dc:Bounds height="60" width="100" x="2100" y="140" />
+</bpmndi:BPMNShape><bpmndi:BPMNShape bpmnElement="EndEvent_2" id="BPMNShape_EndEvent_2">
+    <dc:Bounds height="32.0" width="32.0" x="950" y="112" />
+</bpmndi:BPMNShape><bpmndi:BPMNEdge bpmnElement="MessageFlow_10" id="BPMNEdge_MessageFlow_10" sourceElement="BPMNShape_Participant_1" targetElement="BPMNShape_StartEvent_2">
+                        <di:waypoint x="150" xsi:type="dc:Point" y="170" />
+                        <di:waypoint x="250" xsi:type="dc:Point" y="170" />
+                    </bpmndi:BPMNEdge><bpmndi:BPMNEdge bpmnElement="MessageFlow_OData_extract_employee_data_1" id="BPMNEdge_MessageFlow_OData_extract_employee_data_1" sourceElement="BPMNShape_ODataCall_extract_employee_data_1" targetElement="BPMNShape_Participant_OData_extract_employee_data_1">
+    <di:waypoint x="757" xsi:type="dc:Point" y="140" />
+    <di:waypoint x="850" xsi:type="dc:Point" y="170" />
+</bpmndi:BPMNEdge><bpmndi:BPMNEdge bpmnElement="MessageFlow_OData_query_picklist_1" id="BPMNEdge_MessageFlow_OData_query_picklist_1" sourceElement="BPMNShape_ODataCall_query_picklist_1" targetElement="BPMNShape_Participant_OData_query_picklist_1">
+    <di:waypoint x="757" xsi:type="dc:Point" y="140" />
+    <di:waypoint x="850" xsi:type="dc:Point" y="170" />
+</bpmndi:BPMNEdge>
+                    <bpmndi:BPMNEdge bpmnElement="MessageFlow_deliver_navex_sftp_1" id="BPMNEdge_MessageFlow_deliver_navex_sftp_1" sourceElement="BPMNShape_deliver_navex_sftp_1" targetElement="BPMNShape_Participant_deliver_navex_sftp_1">
+                        <di:waypoint x="1620" xsi:type="dc:Point" y="142" />
+                        <di:waypoint x="1620" xsi:type="dc:Point" y="300" />
+                    </bpmndi:BPMNEdge>
+                    <bpmndi:BPMNEdge bpmnElement="MessageFlow_archive_internal_sftp_1" id="BPMNEdge_MessageFlow_archive_internal_sftp_1" sourceElement="BPMNShape_archive_internal_sftp_1" targetElement="BPMNShape_Participant_archive_internal_sftp_1">
+                        <di:waypoint x="1740" xsi:type="dc:Point" y="142" />
+                        <di:waypoint x="1740" xsi:type="dc:Point" y="300" />
+                    </bpmndi:BPMNEdge>
+                    <bpmndi:BPMNEdge bpmnElement="MessageFlow_success_notification_1" id="BPMNEdge_MessageFlow_success_notification_1" sourceElement="BPMNShape_success_notification_1" targetElement="BPMNShape_Participant_success_notification_1">
+                        <di:waypoint x="1860" xsi:type="dc:Point" y="142" />
+                        <di:waypoint x="1860" xsi:type="dc:Point" y="300" />
+                    </bpmndi:BPMNEdge><bpmndi:BPMNEdge bpmnElement="SequenceFlow_Start" id="BPMNEdge_SequenceFlow_Start" sourceElement="BPMNShape_init_error_props_1" targetElement="BPMNShape_set_delta_dates_1">
+    <di:waypoint x="400" xsi:type="dc:Point" y="170.0" />
+    <di:waypoint x="420" xsi:type="dc:Point" y="170.0" />
+</bpmndi:BPMNEdge><bpmndi:BPMNEdge bpmnElement="SequenceFlow_1" id="BPMNEdge_SequenceFlow_1" sourceElement="BPMNShape_set_delta_dates_1" targetElement="BPMNShape_set_full_dates_1">
+    <di:waypoint x="520" xsi:type="dc:Point" y="170.0" />
+    <di:waypoint x="540" xsi:type="dc:Point" y="170.0" />
+</bpmndi:BPMNEdge><bpmndi:BPMNEdge bpmnElement="SequenceFlow_5" id="BPMNEdge_SequenceFlow_5" sourceElement="BPMNShape_cache_reference_data_1" targetElement="BPMNShape_set_filename_1">
+    <di:waypoint x="1000" xsi:type="dc:Point" y="170.0" />
+    <di:waypoint x="1020" xsi:type="dc:Point" y="170.0" />
+</bpmndi:BPMNEdge><bpmndi:BPMNEdge bpmnElement="SequenceFlow_6" id="BPMNEdge_SequenceFlow_6" sourceElement="BPMNShape_set_filename_1" targetElement="BPMNShape_pgp_encrypt_1">
+    <di:waypoint x="1120" xsi:type="dc:Point" y="170.0" />
+    <di:waypoint x="1140" xsi:type="dc:Point" y="170.0" />
+</bpmndi:BPMNEdge><bpmndi:BPMNEdge bpmnElement="SequenceFlow_7" id="BPMNEdge_SequenceFlow_7" sourceElement="BPMNShape_pgp_encrypt_1" targetElement="BPMNShape_build_where_clause_1">
+    <di:waypoint x="1240" xsi:type="dc:Point" y="170.0" />
+    <di:waypoint x="1260" xsi:type="dc:Point" y="170.0" />
+</bpmndi:BPMNEdge><bpmndi:BPMNEdge bpmnElement="SequenceFlow_8" id="BPMNEdge_SequenceFlow_8" sourceElement="BPMNShape_build_where_clause_1" targetElement="BPMNShape_control_report_1">
+    <di:waypoint x="1360" xsi:type="dc:Point" y="170.0" />
+    <di:waypoint x="1380" xsi:type="dc:Point" y="170.0" />
+</bpmndi:BPMNEdge><bpmndi:BPMNEdge bpmnElement="SequenceFlow_9" id="BPMNEdge_SequenceFlow_9" sourceElement="BPMNShape_control_report_1" targetElement="BPMNShape_deliver_navex_sftp_1">
+    <di:waypoint x="1480" xsi:type="dc:Point" y="170.0" />
+    <di:waypoint x="1500" xsi:type="dc:Point" y="170.0" />
+</bpmndi:BPMNEdge><bpmndi:BPMNEdge bpmnElement="SequenceFlow_10" id="BPMNEdge_SequenceFlow_10" sourceElement="BPMNShape_deliver_navex_sftp_1" targetElement="BPMNShape_archive_internal_sftp_1">
+    <di:waypoint x="1600" xsi:type="dc:Point" y="170.0" />
+    <di:waypoint x="1620" xsi:type="dc:Point" y="170.0" />
+</bpmndi:BPMNEdge><bpmndi:BPMNEdge bpmnElement="SequenceFlow_11" id="BPMNEdge_SequenceFlow_11" sourceElement="BPMNShape_archive_internal_sftp_1" targetElement="BPMNShape_success_notification_1">
+    <di:waypoint x="1720" xsi:type="dc:Point" y="170.0" />
+    <di:waypoint x="1740" xsi:type="dc:Point" y="170.0" />
+</bpmndi:BPMNEdge><bpmndi:BPMNEdge bpmnElement="SequenceFlow_12" id="BPMNEdge_SequenceFlow_12" sourceElement="BPMNShape_success_notification_1" targetElement="BPMNShape_transform_ec_navex_1">
+    <di:waypoint x="1840" xsi:type="dc:Point" y="170.0" />
+    <di:waypoint x="1860" xsi:type="dc:Point" y="170.0" />
+</bpmndi:BPMNEdge><bpmndi:BPMNEdge bpmnElement="SequenceFlow_13" id="BPMNEdge_SequenceFlow_13" sourceElement="BPMNShape_transform_ec_navex_1" targetElement="BPMNShape_validate_data_1">
+    <di:waypoint x="1960" xsi:type="dc:Point" y="170.0" />
+    <di:waypoint x="1980" xsi:type="dc:Point" y="170.0" />
+</bpmndi:BPMNEdge><bpmndi:BPMNEdge bpmnElement="SequenceFlow_End" id="BPMNEdge_SequenceFlow_End" sourceElement="BPMNShape_validate_data_1" targetElement="BPMNShape_generate_csv_1">
+    <di:waypoint x="2080" xsi:type="dc:Point" y="170.0" />
+    <di:waypoint x="2100" xsi:type="dc:Point" y="170.0" />
+</bpmndi:BPMNEdge><bpmndi:BPMNEdge bpmnElement="flow_generate_csv_1_to_EndEvent_2_end" id="BPMNEdge_flow_generate_csv_1_to_EndEvent_2_end" sourceElement="BPMNShape_generate_csv_1" targetElement="BPMNShape_EndEvent_2">
+    <di:waypoint x="2200" xsi:type="dc:Point" y="170.0" />
+    <di:waypoint x="950" xsi:type="dc:Point" y="128.0" />
+</bpmndi:BPMNEdge><bpmndi:BPMNEdge bpmnElement="flow_StartEvent_2_to_init_error_props_1_start" id="BPMNEdge_flow_StartEvent_2_to_init_error_props_1_start" sourceElement="BPMNShape_StartEvent_2" targetElement="BPMNShape_init_error_props_1">
+    <di:waypoint x="295" xsi:type="dc:Point" y="142.0" />
+    <di:waypoint x="300" xsi:type="dc:Point" y="170.0" />
+</bpmndi:BPMNEdge>
+                </bpmndi:BPMNPlane>
+            
+    </bpmndi:BPMNDiagram>
+</bpmn2:definitions>

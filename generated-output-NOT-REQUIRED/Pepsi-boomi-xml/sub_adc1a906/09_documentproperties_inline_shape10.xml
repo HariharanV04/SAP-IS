@@ -1,0 +1,32 @@
+<?xml version="1.0" ?>
+<shape image="documentproperties_icon" name="shape10" shapetype="documentproperties" userlabel="Set  employee_class IN" x="992.0" y="64.0">
+  <configuration>
+    <documentproperties>
+      <documentproperty defaultValue="" isTradingPartner="false" name="Dynamic Process Property - where" persist="false" propertyId="process.where">
+        <sourcevalues>
+          <parametervalue key="1" valueType="process">
+            <processparameter processproperty="where" processpropertydefaultvalue=""/>
+          </parametervalue>
+          <parametervalue key="2" valueType="static">
+            <staticparameter staticproperty=" AND  employee_class  IN ('"/>
+          </parametervalue>
+          <parametervalue key="3" valueType="definedparameter">
+            <definedprocessparameter componentId="795e769e-a9c3-442e-bff3-a96b04f9b531" componentName="EC372 - EC to NAVEX (OB)" propertyKey="5373d17c-a180-4aab-bc91-e91f8689b86c" propertyLabel="Filter_EmployeeClass"/>
+          </parametervalue>
+          <parametervalue key="4" valueType="static">
+            <staticparameter staticproperty="')"/>
+          </parametervalue>
+        </sourcevalues>
+      </documentproperty>
+    </documentproperties>
+  </configuration>
+  <dragpoints>
+    <dragpoint name="shape10.dragpoint1" toShape="shape3" x="1120.0" y="169.0">
+      <linesegment length="0" name="shape10.dragpoint1.lineseg1" orient="horizontal" x="1026.0" y="79.0"/>
+      <linesegment length="0" name="shape10.dragpoint1.lineseg2" orient="vertical" x="1026.0" y="79.0"/>
+      <linesegment length="55" name="shape10.dragpoint1.lineseg3" orient="horizontal" x="1026.0" y="79.0"/>
+      <linesegment length="96" name="shape10.dragpoint1.lineseg4" orient="vertical" x="1081.0" y="79.0"/>
+      <linesegment length="39" name="shape10.dragpoint1.lineseg5" orient="horizontal" x="1081.0" y="175.0"/>
+    </dragpoint>
+  </dragpoints>
+</shape>

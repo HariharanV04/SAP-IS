@@ -1,0 +1,57 @@
+<?xml version="1.0" ?>
+<bns:Component xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bns="http://api.platform.boomi.com/" folderFullPath="PepsiCo/2.0 Development/2.1 Global Integrations/EC372 - EC to NAVEX (OB)" componentId="20802acd-e6e5-44fc-8824-829f891c2469" version="1" name="Sub: Query Picklist Values" type="process" createdDate="2018-04-11T06:21:10Z" createdBy="Deep.Singh.Chauhan@accenture.com" modifiedDate="2018-04-11T06:21:10Z" modifiedBy="Deep.Singh.Chauhan@accenture.com" deleted="false" currentVersion="true" folderName="EC372 - EC to NAVEX (OB)" folderId="RjoxOTM3OTEx" branchName="main" branchId="QjoyOTk5NDY">
+  <bns:encryptedValues/>
+  <bns:description/>
+  <bns:object>
+    <process xmlns="" allowSimultaneous="false" enableUserLog="false" processLogOnErrorOnly="false" purgeDataImmediately="false" updateRunDates="false" workload="general">
+      <shapes>
+        <shape image="start" name="shape1" shapetype="start" userlabel="Start" x="96.0" y="96.0">
+          <configuration>
+            <passthroughaction/>
+          </configuration>
+          <dragpoints>
+            <dragpoint name="shape1.dragpoint1" toShape="shape2" x="224.0" y="104.0">
+              <linesegment length="0" name="shape1.dragpoint1.lineseg1" orient="horizontal" x="129.0" y="110.0"/>
+              <linesegment length="0" name="shape1.dragpoint1.lineseg2" orient="vertical" x="129.0" y="110.0"/>
+              <linesegment length="55" name="shape1.dragpoint1.lineseg3" orient="horizontal" x="129.0" y="110.0"/>
+              <linesegment length="0" name="shape1.dragpoint1.lineseg4" orient="vertical" x="184.0" y="110.0"/>
+              <linesegment length="40" name="shape1.dragpoint1.lineseg5" orient="horizontal" x="184.0" y="110.0"/>
+            </dragpoint>
+          </dragpoints>
+        </shape>
+        <shape image="documentproperties_icon" name="shape2" shapetype="documentproperties" userlabel="Set PICKLISTIDS" x="240.0" y="96.0">
+          <configuration>
+            <documentproperties>
+              <documentproperty defaultValue="" isTradingPartner="false" name="Dynamic Process Property - PICKLISTIDS" persist="false" propertyId="process.PICKLISTIDS">
+                <sourcevalues>
+                  <parametervalue key="1" valueType="static">
+                    <staticparameter staticproperty="ISOCountryList,employee-status,GlobalEmployeeClass,jobRelType"/>
+                  </parametervalue>
+                </sourcevalues>
+              </documentproperty>
+            </documentproperties>
+          </configuration>
+          <dragpoints>
+            <dragpoint name="shape2.dragpoint1" toShape="shape3" x="448.0" y="104.0">
+              <linesegment length="0" name="shape2.dragpoint1.lineseg1" orient="horizontal" x="273.0" y="110.0"/>
+              <linesegment length="0" name="shape2.dragpoint1.lineseg2" orient="vertical" x="273.0" y="110.0"/>
+              <linesegment length="95" name="shape2.dragpoint1.lineseg3" orient="horizontal" x="273.0" y="110.0"/>
+              <linesegment length="0" name="shape2.dragpoint1.lineseg4" orient="vertical" x="368.0" y="110.0"/>
+              <linesegment length="80" name="shape2.dragpoint1.lineseg5" orient="horizontal" x="368.0" y="110.0"/>
+            </dragpoint>
+          </dragpoints>
+        </shape>
+        <shape image="processcall_icon" name="shape3" shapetype="processcall" userlabel="" x="464.0" y="96.0">
+          <configuration>
+            <processcall abort="true" processId="1adab30f-a143-4d5f-8ce7-876b22f08fae" wait="true">
+              <parameters/>
+              <returnpaths/>
+            </processcall>
+          </configuration>
+          <dragpoints/>
+        </shape>
+      </shapes>
+    </process>
+  </bns:object>
+  <bns:processOverrides/>
+</bns:Component>

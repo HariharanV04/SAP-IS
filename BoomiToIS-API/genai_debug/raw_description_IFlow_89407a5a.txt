@@ -1,1 +1,0 @@
-This iFlow retrieves product details via OData based on a product identifier. It validates the product ID, logs request information, routes valid requests to the OData service to fetch comprehensive product data, and returns formatted error responses for invalid product identifiers. The flow includes validation logic, conditional routing, and proper error handling.

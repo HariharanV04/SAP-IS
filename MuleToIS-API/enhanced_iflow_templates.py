@@ -1848,6 +1848,63 @@ class EnhancedIFlowTemplates:
             <bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>
         </bpmn2:task>'''
 
+    def enhanced_message_mapping_template(self, id, name, mapping_name="DataMapping", source_schema="Source.xsd", target_schema="Target.xsd"):
+        """
+        Enhanced Message Mapping template based on real SAP iFlow structure
+        
+        Args:
+            id (str): Component ID
+            name (str): Component name
+            mapping_name (str): Name of the mapping bundle
+            source_schema (str): Source XSD file name
+            target_schema (str): Target XSD file name
+            
+        Returns:
+            str: XML template for enhanced Message Mapping
+        """
+        return f'''<bpmn2:callActivity id="{id}" name="{name}">
+            <bpmn2:extensionElements>
+                <ifl:property>
+                    <key>componentVersion</key>
+                    <value>1.3</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>activityType</key>
+                    <value>Mapping</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>cmdVariantUri</key>
+                    <value>ctype::FlowstepVariant/cname::MessageMapping/version::1.3.1</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>mappinguri</key>
+                    <value>dir://mapping/{mapping_name}.mmap</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>mappingType</key>
+                    <value>MessageMapping</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>messageMappingBundleId</key>
+                    <value>{mapping_name}</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>sourceSchema</key>
+                    <value>src/main/resources/xsd/{source_schema}</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>targetSchema</key>
+                    <value>src/main/resources/xsd/{target_schema}</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>customFunctions</key>
+                    <value>src/main/resources/script</value>
+                </ifl:property>
+            </bpmn2:extensionElements>
+            <bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>
+            <bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>
+        </bpmn2:callActivity>'''
+
     # ===== Event Templates =====
 
     def message_start_event_template(self, id, name):
@@ -2676,6 +2733,108 @@ class EnhancedIFlowTemplates:
         </bpmn2:extensionElements>
         {{process_content}}
     </bpmn2:process>'''
+
+    # ===== Additional Receiver Participants/Adapters (Safe Additions) =====
+
+    def sftp_receiver_participant_template(self, id="Participant_SFTP", name="SFTP_Server"):
+        """Create an SFTP receiver participant (non-breaking addition)."""
+        definition = f'''<bpmn2:participant id="{id}" ifl:type="EndpointRecevier" name="{name}">
+    <bpmn2:extensionElements>
+        <ifl:property>
+            <key>ifl:type</key>
+            <value>EndpointRecevier</value>
+        </ifl:property>
+    </bpmn2:extensionElements>
+</bpmn2:participant>'''
+
+        shape = f'''<bpmndi:BPMNShape bpmnElement="{id}" id="BPMNShape_{id}">
+    <dc:Bounds height="140.0" width="100.0" x="850" y="150"/>
+</bpmndi:BPMNShape>'''
+
+        return {"definition": definition, "shape": shape}
+
+    def sftp_receiver_message_flow_template(self, id="MessageFlow_SFTP", source_ref="ServiceTask_1", target_ref="Participant_SFTP",
+                                            host="sftp.example.com", port="22", path="/uploads", username="${sftp_username}",
+                                            auth_type="Password", operation="PUT"):
+        """Create an SFTP receiver message flow (non-breaking addition)."""
+        definition = f'''<bpmn2:messageFlow id="{id}" name="SFTP" sourceRef="{source_ref}" targetRef="{target_ref}">
+    <bpmn2:extensionElements>
+        <ifl:property><key>ComponentType</key><value>SFTP</value></ifl:property>
+        <ifl:property><key>Description</key><value>SFTP Connection for file upload</value></ifl:property>
+        <ifl:property><key>ComponentNS</key><value>sap</value></ifl:property>
+        <ifl:property><key>host</key><value>{host}</value></ifl:property>
+        <ifl:property><key>port</key><value>{port}</value></ifl:property>
+        <ifl:property><key>path</key><value>{path}</value></ifl:property>
+        <ifl:property><key>authentication</key><value>{auth_type.lower()}</value></ifl:property>
+        <ifl:property><key>username</key><value>{username}</value></ifl:property>
+        <ifl:property><key>operation</key><value>{operation}</value></ifl:property>
+        <ifl:property><key>TransportProtocolVersion</key><value>1.11.2</value></ifl:property>
+        <ifl:property><key>MessageProtocol</key><value>File</value></ifl:property>
+        <ifl:property><key>direction</key><value>Receiver</value></ifl:property>
+        <ifl:property><key>TransportProtocol</key><value>SFTP</value></ifl:property>
+    </bpmn2:extensionElements>
+</bpmn2:messageFlow>'''
+
+        edge = f'''<bpmndi:BPMNEdge bpmnElement="{id}" id="BPMNEdge_{id}" sourceElement="BPMNShape_{source_ref}" targetElement="BPMNShape_{target_ref}">
+    <di:waypoint x="757" xsi:type="dc:Point" y="140"/>
+    <di:waypoint x="850" xsi:type="dc:Point" y="170"/>
+</bpmndi:BPMNEdge>'''
+
+        return {"definition": definition, "edge": edge}
+
+    def successfactors_receiver_participant_template(self, id="Participant_SuccessFactors", name="SuccessFactors"):
+        """Create a SuccessFactors receiver participant (non-breaking addition)."""
+        definition = f'''<bpmn2:participant id="{id}" ifl:type="EndpointRecevier" name="{name}">
+    <bpmn2:extensionElements>
+        <ifl:property>
+            <key>ifl:type</key>
+            <value>EndpointRecevier</value>
+        </ifl:property>
+    </bpmn2:extensionElements>
+</bpmn2:participant>'''
+
+        shape = f'''<bpmndi:BPMNShape bpmnElement="{id}" id="BPMNShape_{id}">
+    <dc:Bounds height="140.0" width="100.0" x="850" y="150"/>
+</bpmndi:BPMNShape>'''
+
+        return {"definition": definition, "shape": shape}
+
+    def successfactors_receiver_message_flow_template(self, id="MessageFlow_SuccessFactors", source_ref="ServiceTask_1", target_ref="Participant_SuccessFactors",
+                                                      url="https://api.successfactors.com/odata/v2/User", operation="Query(GET)", auth_method="OAuth"):
+        """Create a SuccessFactors OData message flow (non-breaking addition)."""
+        definition = f'''<bpmn2:messageFlow id="{id}" name="SuccessFactors" sourceRef="{source_ref}" targetRef="{target_ref}">
+    <bpmn2:extensionElements>
+        <ifl:property><key>ComponentType</key><value>SuccessFactors</value></ifl:property>
+        <ifl:property><key>Description</key><value>SuccessFactors OData Connection</value></ifl:property>
+        <ifl:property><key>ComponentNS</key><value>sap</value></ifl:property>
+        <ifl:property><key>address</key><value>{url}</value></ifl:property>
+        <ifl:property><key>operation</key><value>{operation}</value></ifl:property>
+        <ifl:property><key>authenticationMethod</key><value>{auth_method}</value></ifl:property>
+        <ifl:property><key>MessageProtocol</key><value>OData V2</value></ifl:property>
+        <ifl:property><key>direction</key><value>Receiver</value></ifl:property>
+        <ifl:property><key>TransportProtocol</key><value>HTTPS</value></ifl:property>
+    </bpmn2:extensionElements>
+</bpmn2:messageFlow>'''
+
+        edge = f'''<bpmndi:BPMNEdge bpmnElement="{id}" id="BPMNEdge_{id}" sourceElement="BPMNShape_{source_ref}" targetElement="BPMNShape_{target_ref}">
+    <di:waypoint x="757" xsi:type="dc:Point" y="140"/>
+    <di:waypoint x="850" xsi:type="dc:Point" y="170"/>
+</bpmndi:BPMNEdge>'''
+
+        return {"definition": definition, "edge": edge}
+
+    # ===== Generic Embedded Subprocess (Safe Addition) =====
+
+    def subprocess_template(self, id, name):
+        """Create a generic embedded subprocess container."""
+        return f'''<bpmn2:subProcess id="{id}" name="{name}">
+    <bpmn2:extensionElements>
+        <ifl:property><key>componentVersion</key><value>1.0</value></ifl:property>
+        <ifl:property><key>activityType</key><value>EmbeddedSubprocess</value></ifl:property>
+        <ifl:property><key>cmdVariantUri</key><value>ctype::FlowstepVariant/cname::Subprocess/version::1.0.0</value></ifl:property>
+    </bpmn2:extensionElements>
+    <!-- Add internal flow elements here (start, tasks, end) as needed by generator -->
+</bpmn2:subProcess>'''
     # ===== Helper Methods =====
 
     def generate_unique_id(self, prefix=""):

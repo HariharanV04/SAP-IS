@@ -12,6 +12,7 @@ import re
 import zipfile
 import argparse
 import datetime
+import uuid
 from enhanced_iflow_templates import EnhancedIFlowTemplates
 from boomi_xml_processor import BoomiXMLProcessor
 
@@ -19,8 +20,11 @@ class EnhancedGenAIIFlowGenerator:
     """
     An enhanced version of the GenAI iFlow Generator that ensures compatibility with SAP Integration Suite
     """
+    # 🆔 UNIQUE IDENTIFIER: This is the BoomiTOIS-API version
+    VERSION_ID = "BoomiTOIS-API-v1.0"
+    FILE_PATH = __file__
 
-    def __init__(self, api_key=None, model="claude-sonnet-4-20250514", provider="claude"):
+    def __init__(self, api_key=None, model="claude-sonnet-4-20250514", provider="claude", use_converter=False):
         """
         Initialize the generator
 
@@ -28,15 +32,24 @@ class EnhancedGenAIIFlowGenerator:
             api_key (str): API key for the LLM service (optional)
             model (str): Model to use for the LLM service
             provider (str): AI provider to use ('openai', 'claude', or 'local')
+            use_converter (bool): If True, use JSON-to-iFlow converter; if False, use template-based approach
         """
         # Initialize the original generator
+        print(f"🔍 DEBUG: EnhancedGenAIIFlowGenerator.__init__ called with use_converter={use_converter}")
+        print(f"🔍 DEBUG: EnhancedGenAIIFlowGenerator.__init__: type(use_converter)={type(use_converter)}")
+        print(f"🆔 VERSION: {self.VERSION_ID}")
+        print(f"🆔 FILE: {self.FILE_PATH}")
+        
         self.templates = EnhancedIFlowTemplates()
         self.model = model
         self.provider = provider
         self.api_key = api_key
+        self.use_converter = use_converter
+        
+        print(f"🔍 DEBUG: EnhancedGenAIIFlowGenerator.__init__: self.use_converter={self.use_converter}")
 
         # Track generation approach (GenAI or template-based)
-        self.generation_approach = "unknown"
+        self.generation_approach = "converter" if use_converter else "template-based"
         self.generation_details = {}
 
         # Job status tracking
@@ -61,6 +74,171 @@ class EnhancedGenAIIFlowGenerator:
                 print("Anthropic package not found. Please install it with 'pip install anthropic'")
                 self.provider = "local"
 
+    def _call_llm_api(self, prompt):
+        """
+        Call the LLM API with the given prompt
+
+        Args:
+            prompt (str): The prompt for the LLM
+
+        Returns:
+            str: The response from the LLM
+        """
+        if self.provider == "openai":
+            # Use OpenAI API
+            response = self.openai.ChatCompletion.create(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": "You are an expert in SAP Integration Suite and API design."},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.2,  # Lower temperature for more deterministic output
+                max_tokens=4000
+            )
+
+            return response.choices[0].message.content
+
+        elif self.provider == "claude":
+            # Use Claude API with the Anthropic client
+            try:
+                # Simple system prompt for JSON generation
+                system_prompt = """
+                You are an expert in SAP Integration Suite and iFlow development.
+                Your task is to analyze the provided content and respond according to the user's request.
+                
+                IMPORTANT: 
+                - If asked for JSON, generate ONLY valid JSON
+                - If asked for descriptions, generate ONLY plain text
+                - Do NOT generate XML unless specifically requested
+                - Follow the user's prompt exactly
+                """
+
+                message = self.anthropic_client.messages.create(
+                    model=self.model,
+                    max_tokens=8000,
+                    temperature=0.1,  # Low temperature for deterministic output
+                    system=system_prompt,
+                    messages=[
+                        {
+                            "role": "user",
+                            "content": [
+                                {
+                                    "type": "text",
+                                    "text": prompt
+                                }
+                            ]
+                        }
+                    ]
+                )
+
+                # Extract the text content from the response
+                response_content = message.content[0].text
+                return response_content
+
+            except Exception as e:
+                print(f"Error calling Claude API: {e}")
+                # Fall back to local mode if Claude API fails
+                self.provider = "local"
+                return self._call_llm_api(prompt)
+
+        else:
+            # Use a local LLM (placeholder) - try to extract JSON from the prompt
+            print("Using local LLM (placeholder)")
+
+            # Try to extract JSON from the prompt/markdown
+            try:
+                import json
+                import re
+
+                # Look for JSON in the prompt - try multiple patterns
+                json_patterns = [
+                    r'```json\s*(\{[\s\S]*?\})\s*```',  # JSON in code blocks
+                    r'```\s*(\{[\s\S]*?\})\s*```',  # JSON in generic code blocks
+                    r'"process_name":\s*"[^"]*"[\s\S]*?\}',  # Look for process_name as anchor
+                    r'\{[\s\S]*?"process_name"[\s\S]*?\}',  # JSON containing process_name
+                    r'\{[\s\S]*\}',  # Basic JSON pattern (last resort)
+                ]
+
+                # Also try to find JSON by looking for the specific structure from the test
+                if '"process_name"' in prompt and '"endpoints"' in prompt:
+                    # Try to extract the JSON structure more carefully
+                    start_idx = prompt.find('{')
+                    if start_idx != -1:
+                        # Find the matching closing brace
+                        brace_count = 0
+                        end_idx = start_idx
+                        for i, char in enumerate(prompt[start_idx:], start_idx):
+                            if char == '{':
+                                brace_count += 1
+                            elif char == '}':
+                                brace_count -= 1
+                                if brace_count == 0:
+                                    end_idx = i + 1
+                                    break
+
+                        if brace_count == 0:  # Found matching braces
+                            json_str = prompt[start_idx:end_idx]
+                            try:
+                                parsed_json = json.loads(json_str)
+                                print(f"✅ Local LLM extracted JSON by brace matching: {parsed_json.get('process_name', 'Unknown Process')}")
+                                return json.dumps(parsed_json, indent=2)
+                            except json.JSONDecodeError as e:
+                                print(f"❌ Brace matching found JSON but couldn't parse it: {e}")
+                                # Continue to try other patterns
+
+                for pattern in json_patterns:
+                    json_match = re.search(pattern, prompt, re.MULTILINE | re.DOTALL)
+                    if json_match:
+                        # Extract the JSON string (use group 1 if it exists, otherwise group 0)
+                        json_str = json_match.group(1) if json_match.groups() else json_match.group(0)
+
+                        try:
+                            parsed_json = json.loads(json_str)
+                            print(f"✅ Local LLM extracted JSON from input: {parsed_json.get('process_name', 'Unknown Process')}")
+                            return json.dumps(parsed_json, indent=2)
+                        except json.JSONDecodeError as e:
+                            print(f"❌ Found JSON-like content but couldn't parse it: {e}")
+                            # Try to clean up the JSON and parse again
+                            try:
+                                # Remove any trailing commas and fix common issues
+                                cleaned_json = re.sub(r',\s*}', '}', json_str)
+                                cleaned_json = re.sub(r',\s*]', ']', cleaned_json)
+                                parsed_json = json.loads(cleaned_json)
+                                print(f"✅ Local LLM extracted JSON after cleanup: {parsed_json.get('process_name', 'Unknown Process')}")
+                                return json.dumps(parsed_json, indent=2)
+                            except json.JSONDecodeError:
+                                print(f"❌ Still couldn't parse JSON after cleanup")
+                                continue
+
+                # If no JSON found, return a simple default
+                print("⚠️  No JSON found in input, using default structure")
+
+            except Exception as e:
+                print(f"❌ Error in local LLM JSON extraction: {e}")
+
+            # Fallback to simple example
+            return """
+            {
+                "api_name": "Example API",
+                "base_url": "/api/v1",
+                "endpoints": [
+                    {
+                        "method": "GET",
+                        "path": "/test",
+                        "purpose": "Test endpoint",
+                        "components": [
+                            {
+                                "type": "enricher",
+                                "name": "Test Component",
+                                "id": "test_1",
+                                "config": {}
+                            }
+                        ],
+                        "sequence": ["StartEvent_2", "test_1", "EndEvent_2"]
+                    }
+                ]
+            }
+            """
     def generate_iflow(self, markdown_content, output_path, iflow_name, job_id=None):
         """
         Generate an iFlow from markdown content
@@ -76,8 +254,45 @@ class EnhancedGenAIIFlowGenerator:
         """
         self._update_job_status(job_id, "processing", "Starting iFlow generation...")
 
-        # Step 1: Use GenAI to analyze the markdown and determine components
-        components = self._analyze_with_genai(markdown_content, job_id=job_id)
+        # Step 1: Use GenAI to analyze the markdown and determine components (skip for template-based approach)
+        # Both converter and template-based approaches need GenAI to analyze documentation
+        # The only difference is which generation method is used after getting the JSON
+        print(f"🔍 DEBUG: Content analysis - use_converter={self.use_converter}")
+        
+        # Check if we have JSON in the markdown content (from UI conversion)
+        if markdown_content and markdown_content.strip().startswith('{'):
+            try:
+                import json
+                parsed_content = json.loads(markdown_content)
+                
+                # Check if this is documentation JSON (from main API) or iFlow blueprint JSON
+                if "documentation" in parsed_content and "source_type" in parsed_content:
+                    print("🔍 DEBUG: Detected documentation JSON - converting to iFlow blueprint")
+                    # This is documentation JSON from main API, convert to iFlow blueprint
+                    components = self._convert_documentation_to_iflow_blueprint(parsed_content, job_id)
+                elif "endpoints" in parsed_content or "components" in parsed_content:
+                    print("🔍 DEBUG: Detected iFlow blueprint JSON - using directly")
+                    # This is already iFlow blueprint JSON
+                    components = parsed_content
+                    # Fix JSON structure if needed
+                    if "components" in components and "endpoints" not in components:
+                        print("🔧 DEBUG: Fixing JSON structure - moving from 'components' to 'endpoints'")
+                        components = components["components"]
+                    elif "components" in components and "endpoints" in components["components"]:
+                        print("🔧 DEBUG: Fixing JSON structure - extracting endpoints from nested components")
+                        components = components["components"]
+                else:
+                    print("⚠️  DEBUG: Unknown JSON format - analyzing with GenAI")
+                    components = self._analyze_with_genai(markdown_content, job_id=job_id)
+                    
+            except json.JSONDecodeError as e:
+                print(f"⚠️  DEBUG: Could not parse JSON from markdown content: {e}")
+                print("🔍 DEBUG: Falling back to GenAI analysis")
+                components = self._analyze_with_genai(markdown_content, job_id=job_id)
+        else:
+            print("🔍 DEBUG: No JSON detected - analyzing markdown with GenAI")
+            # For both converter and template approaches, use GenAI to analyze markdown documentation
+            components = self._analyze_with_genai(markdown_content, job_id=job_id)
 
         # Step 2: Generate the iFlow files
         self._update_job_status(job_id, "processing", "Generating iFlow XML and configuration files...")
@@ -89,6 +304,38 @@ class EnhancedGenAIIFlowGenerator:
 
         self._update_job_status(job_id, "completed", f"iFlow generation completed: {iflow_name}")
         return zip_path
+
+    def _convert_documentation_to_iflow_blueprint(self, documentation_json, job_id):
+        """
+        Convert documentation JSON from main API to iFlow blueprint JSON
+        
+        Args:
+            documentation_json (dict): Documentation JSON from main API
+            job_id (str): Job ID for tracking
+            
+        Returns:
+            dict: iFlow blueprint JSON with endpoints structure
+        """
+        try:
+            print("🔍 DEBUG: Converting documentation JSON to iFlow blueprint")
+            
+            # Extract the markdown documentation content
+            markdown_content = documentation_json.get('documentation', '')
+            source_file = documentation_json.get('source_file', 'unknown')
+            
+            print(f"🔍 DEBUG: Source file: {source_file}")
+            print(f"🔍 DEBUG: Markdown content length: {len(markdown_content)}")
+            
+            # Use GenAI to convert documentation to iFlow blueprint
+            # This is the same analysis that would happen in the converter approach
+            components = self._analyze_with_genai(markdown_content, job_id=job_id)
+            
+            print(f"🔍 DEBUG: Generated iFlow blueprint with {len(components.get('endpoints', []))} endpoints")
+            return components
+            
+        except Exception as e:
+            print(f"❌ ERROR: Failed to convert documentation to iFlow blueprint: {e}")
+            return {"endpoints": []}
 
     def _update_job_status(self, job_id, status, message):
         """Update job status for progress tracking"""
@@ -183,11 +430,25 @@ class EnhancedGenAIIFlowGenerator:
                         print("Saved parsed components to genai_debug/parsed_components.json")
 
                         components = self._generate_transformation_scripts(components)
-                        components = self._create_intelligent_connections(components)
+                        # DISABLED: _create_intelligent_connections was overriding GenAI sequence flows
+                        # components = self._create_intelligent_connections(components)
+                        print("🔧 DEBUG: Preserving GenAI sequence flows - skipping intelligent connections override")
 
+                        # Add timestamp to the JSON for tracking
+                        timestamped_components = {
+                            "timestamp": datetime.datetime.now().isoformat(),
+                            "iflow_name": f"IFlow_{uuid.uuid4().hex[:8]}",
+                            "components": components
+                        }
+                        
+                        # Save with timestamp
                         with open("genai_debug/final_components.json", "w", encoding="utf-8") as f:
-                            json.dump(components, f, indent=2)
-                        print("Saved final components to genai_debug/final_components.json")
+                            json.dump(timestamped_components, f, indent=2)
+                        print(f"Saved final components to genai_debug/final_components.json with timestamp: {timestamped_components['timestamp']}")
+                        
+                        # Clean up old JSON files to prevent confusion
+                        self._cleanup_old_json_files()
+                        
                         return components
                     else:
                         print(f"❌ Attempt {attempt+1} failed: Parsed components lack meaningful content")
@@ -265,6 +526,116 @@ class EnhancedGenAIIFlowGenerator:
 
         return False
 
+    def _get_latest_json_by_timestamp(self, debug_dir="genai_debug"):
+        """
+        Find the latest JSON file by timestamp to ensure we use the most recent data
+        
+        Args:
+            debug_dir (str): Directory to search for JSON files
+            
+        Returns:
+            dict: The latest components data, or None if no valid files found
+        """
+        try:
+            if not os.path.exists(debug_dir):
+                print(f"Debug directory {debug_dir} not found")
+                return None
+                
+            # Look for timestamped JSON files
+            json_files = []
+            for filename in os.listdir(debug_dir):
+                if filename.endswith('.json') and 'final_components' in filename:
+                    filepath = os.path.join(debug_dir, filename)
+                    try:
+                        with open(filepath, 'r', encoding='utf-8') as f:
+                            data = json.load(f)
+                            
+                        # Check if it has timestamp structure
+                        if isinstance(data, dict) and 'timestamp' in data:
+                            json_files.append({
+                                'filepath': filepath,
+                                'timestamp': data['timestamp'],
+                                'data': data
+                            })
+                        # Legacy format without timestamp
+                        elif isinstance(data, dict) and 'endpoints' in data:
+                            # Use file modification time as fallback
+                            file_time = os.path.getmtime(filepath)
+                            json_files.append({
+                                'filepath': filepath,
+                                'timestamp': datetime.datetime.fromtimestamp(file_time).isoformat(),
+                                'data': data
+                            })
+                    except Exception as e:
+                        print(f"Error reading {filename}: {e}")
+                        continue
+            
+            if not json_files:
+                print("No valid JSON files found in debug directory")
+                return None
+                
+            # Sort by timestamp (newest first)
+            json_files.sort(key=lambda x: x['timestamp'], reverse=True)
+            latest = json_files[0]
+            
+            print(f"📁 Using latest JSON: {os.path.basename(latest['filepath'])}")
+            print(f"⏰ Timestamp: {latest['timestamp']}")
+            
+            # Return the actual components data
+            if 'components' in latest['data']:
+                return latest['data']['components']
+            else:
+                return latest['data']
+                
+        except Exception as e:
+            print(f"Error finding latest JSON: {e}")
+            return None
+
+    def _cleanup_old_json_files(self, debug_dir="genai_debug", keep_latest=3):
+        """
+        Clean up old JSON files to prevent confusion and ensure we only work with recent data
+        
+        Args:
+            debug_dir (str): Directory to clean up
+            keep_latest (int): Number of latest files to keep
+        """
+        try:
+            if not os.path.exists(debug_dir):
+                return
+                
+            # Find all JSON files with timestamps
+            json_files = []
+            for filename in os.listdir(debug_dir):
+                if filename.endswith('.json') and 'final_components' in filename:
+                    filepath = os.path.join(debug_dir, filename)
+                    try:
+                        with open(filepath, 'r', encoding='utf-8') as f:
+                            data = json.load(f)
+                            
+                        if isinstance(data, dict) and 'timestamp' in data:
+                            json_files.append({
+                                'filepath': filepath,
+                                'timestamp': data['timestamp']
+                            })
+                    except:
+                        continue
+            
+            if len(json_files) <= keep_latest:
+                return
+                
+            # Sort by timestamp and remove old files
+            json_files.sort(key=lambda x: x['timestamp'], reverse=True)
+            
+            for old_file in json_files[keep_latest:]:
+                try:
+                    os.remove(old_file['filepath'])
+                    print(f"🗑️  Cleaned up old JSON: {os.path.basename(old_file['filepath'])}")
+                except Exception as e:
+                    print(f"Error removing {old_file['filepath']}: {e}")
+                    
+        except Exception as e:
+            print(f"Error during cleanup: {e}")
+
     def _create_more_explicit_prompt(self, markdown_content, previous_error):
         """
         Create a more explicit prompt after a failed attempt.
@@ -285,6 +656,11 @@ class EnhancedGenAIIFlowGenerator:
         🚨 CRITICAL: The previous attempt failed with error: {previous_error}
 
         THIS IS A RETRY ATTEMPT - YOU MUST FIX THE PREVIOUS ERROR!
+
+        🚨 THE AI GENERATED XML INSTEAD OF JSON - THIS IS WRONG!
+        🚨 YOU MUST GENERATE JSON ONLY - NO XML, NO XSLT, NO EXPLANATIONS!
+        🚨 YOUR RESPONSE MUST START WITH {{ AND END WITH }}
+        🚨 DO NOT START WITH <?xml OR ANY XML DECLARATION!
 
         MANDATORY JSON ESCAPING RULES (THE PREVIOUS ATTEMPT FAILED ON THIS):
         - ALL strings must be properly escaped (use \\\\n for newlines, \\\\" for quotes, \\\\\\\\ for backslashes)
@@ -312,9 +688,12 @@ class EnhancedGenAIIFlowGenerator:
             str: The prompt for analyzing the markdown content
         """
         prompt = """
-        CRITICAL INSTRUCTION: You MUST respond with ONLY valid JSON in the exact format specified below.
-        Do NOT include any XSLT, XML, code explanations, or other text formats.
-        Do NOT include any markdown code blocks or formatting.
+        🚨 CRITICAL INSTRUCTION: You MUST respond with ONLY valid JSON in the exact format specified below.
+        🚨 DO NOT generate XML, XSLT, or any other format.
+        🚨 DO NOT include any explanations, markdown, or code blocks.
+        🚨 DO NOT start with <?xml or any XML declaration.
+        🚨 Your response must start with { and end with }.
+        🚨 This is a JSON-only request - XML generation is NOT allowed.
 
         CRITICAL JSON FORMATTING RULES:
         - ALL strings must be properly escaped (use \\n for newlines, \\" for quotes, \\\\ for backslashes)
@@ -329,61 +708,59 @@ class EnhancedGenAIIFlowGenerator:
         Dell Boomi process documentation and extract the components needed for an equivalent SAP Integration Suite iFlow.
 
         RESPOND WITH ONLY THE JSON STRUCTURE - NO OTHER TEXT, XML, OR CODE.
+        
+        🚨 CRITICAL: The JSON structure MUST follow the exact SAP Integration Suite schema!
+        🚨 The correct format is: {"endpoints": [...]} with proper id, name, description fields
+        🚨 DO NOT include "timestamp", "iflow_name", "process_name", "method", "path", "purpose", "error_handling", "branching", or "transformations" fields!
+        🚨 Start your JSON response with: {"endpoints": [...]}
 
         {
-            "process_name": "Name of the Boomi Process",
-            "description": "Description of the Boomi Process conversion",
             "endpoints": [
                 {
-                    "method": "HTTP method (GET, POST, etc.) - derived from Boomi connectors",
-                    "path": "Path of the endpoint - derived from Boomi process flow",
-                    "purpose": "Purpose of the process - derived from Boomi process documentation",
+                    "id": "unique_endpoint_id",
+                    "name": "Descriptive endpoint name",
+                    "description": "Description of the integration process",
                     "components": [
                         {
-                            "type": "Component type - MUST be one of: enricher, request_reply, json_to_xml_converter, groovy_script, odata, odata_receiver (DO NOT use start_event or end_event). Map from Boomi components: Boomi Map→message_mapping, Boomi Connector→request_reply, Boomi Document Properties→enricher, Boomi Decision→router",
+                            "type": "Component type - MUST be one of: enricher, request_reply, script, odata, sftp (DO NOT use start_event or end_event). Map from Boomi components: Boomi Map→script, Boomi Connector→request_reply, Boomi Document Properties→enricher, Boomi Decision→enricher",
                             "name": "Component name - should be descriptive and indicate Boomi origin (e.g., 'Map_CustomerData_from_Boomi')",
                             "id": "Component ID - must be unique across all components",
                             "config": {
                                 "endpoint_path": "For request_reply components, the path of the endpoint",
-                                "content": "For content_modifier components, the content to set",
-                                "script": "For groovy_script components, the name of the script file",
-                                "address": "For odata components, the URL of the OData service",
-                                "resource_path": "For odata components, the entity set or resource path to query",
-                                "operation": "For odata components, the operation to perform (Query(GET), Create(POST), etc.)",
-                                "query_options": "For odata components, query options like select, filter, etc."
+                                "method": "For request_reply components, HTTP method (GET, POST, etc.)",
+                                "url": "For request_reply components, the full URL",
+                                "script_content": "For script components, the actual Groovy script content - use this instead of script_file",
+                                "service_url": "For odata components, the URL of the OData service",
+                                "entity_set": "For odata components, the entity set or resource path to query",
+                                "operation": "For odata components, the operation to perform (GET, POST, etc.)",
+                                "host": "For sftp components, the SFTP host",
+                                "port": "For sftp components, the SFTP port",
+                                "path": "For sftp components, the remote path",
+                                "username": "For sftp components, the username",
+                                "password": "For sftp components, the password",
+                                "properties": "For enricher components, array of property objects with name and source fields"
                             }
                         }
                     ],
-                    "error_handling": {
-                        "exception_subprocess": [
-                            {
-                                "type": "Component type for error handling (enricher, groovy_script, request_reply for notifications)",
-                                "name": "Error handling component name",
-                                "id": "Unique ID for error component",
-                                "trigger": "What triggers this error handler (validation_error, connection_error, etc.)",
-                                "config": {}
-                            }
-                        ]
-                    },
-                    "branching": {
-                        "type": "parallel or exclusive - based on Boomi branch behavior",
-                        "branches": [
-                            {
-                                "condition": "Condition for this branch (if exclusive)",
-                                "components": ["List of component IDs for this branch"],
-                                "sequence": ["Order of components in this branch"]
-                            }
-                        ]
-                    },
-                    "sequence": [
+                    "flow": [
                         "List of component IDs in the order they should be connected",
-                        "For example: ['Start_Event_2','JSONtoXMLConverter_1', 'ContentModifier_1', 'RequestReply_1','End_Event_2']"
+                        "For example: ['enricher_1', 'script_1', 'request_reply_1']"
                     ],
-                    "transformations": [
+                    "sequence_flows": [
                         {
-                            "name": "Transformation name (e.g., 'TransformProductData.groovy')",
-                            "type": "groovy",
-                            "script": "Actual Groovy script content"
+                            "id": "flow_StartEvent_2_to_first_component",
+                            "source_ref": "StartEvent_2",
+                            "target_ref": "first_component_id"
+                        },
+                        {
+                            "id": "SequenceFlow_component1_to_component2",
+                            "source_ref": "component1_id",
+                            "target_ref": "component2_id"
+                        },
+                        {
+                            "id": "flow_last_component_to_EndEvent_2",
+                            "source_ref": "last_component_id",
+                            "target_ref": "EndEvent_2"
                         }
                     ]
                 }
@@ -392,11 +769,13 @@ class EnhancedGenAIIFlowGenerator:
 
         CRITICAL REQUIREMENTS FOR BOOMI TO SAP CONVERSION:
 
-        1. The JSON structure MUST be valid and complete
-        2. Each component MUST have a unique ID
-        3. Component types MUST be one of the allowed types listed above
-        4. The "sequence" array MUST list ONLY the main happy path component IDs in order
-        5. Error handling components should be in separate "error_handling" section
+        1. The JSON structure MUST be valid and complete - follow the SAP Integration Suite schema exactly
+        2. Each component MUST have a unique ID within the endpoint
+        3. Component types MUST be one of the allowed types: enricher, request_reply, script, odata, sftp
+        4. The "flow" array MUST list component IDs in execution order
+        5. The "sequence_flows" array MUST define connections between components AND StartEvent/EndEvent
+        6. ALWAYS include StartEvent_2 → first_component and last_component → EndEvent_2 flows
+        7. Sequence flows must follow the flow array order exactly - no mismatches allowed
         6. Map Boomi components to SAP equivalents:
            - Boomi Start Shape → (handled automatically by SAP start_event)
            - Boomi Connector (Listen) → request_reply with receiver configuration
@@ -439,7 +818,7 @@ class EnhancedGenAIIFlowGenerator:
 
            IMPORTANT: OData components in SAP Integration Suite require a specific implementation:
            - The OData component must be implemented as a service task with activityType="ExternalCall"
-           - The OData receiver must be implemented as a participant with ifl:type="EndpointReceiver"
+           - The OData receiver must be implemented as a participant with ifl:type="EndpointRecevier"
            - The participant must be positioned OUTSIDE the collaboration perimeter
            - The service task and participant must be connected via a message flow
            - All three components (service task, participant, message flow) must have proper BPMN diagram elements
@@ -474,11 +853,11 @@ class EnhancedGenAIIFlowGenerator:
            </bpmn2:serviceTask>
 
            <!-- OData Receiver Participant -->
-           <bpmn2:participant id="Participant_OData_products" ifl:type="EndpointReceiver" name="OData_Products">
+           <bpmn2:participant id="Participant_OData_products" ifl:type="EndpointRecevier" name="OData_Products">
                <bpmn2:extensionElements>
                    <ifl:property>
                        <key>ifl:type</key>
-                       <value>EndpointReceiver</value>
+                       <value>EndpointRecevier</value>
                    </ifl:property>
                </bpmn2:extensionElements>
            </bpmn2:participant>
@@ -596,11 +975,26 @@ class EnhancedGenAIIFlowGenerator:
            - A request_reply component to handle the external call (which requires a receiver participant and message flow)
            - An enricher component to format the response (NOT content_modifier)
 
-        Example of a valid component sequence for an OData endpoint:
-        "sequence": ["StartEvent_2", "JSONtoXMLConverter_root", "odata_1"]
+        Example of a valid endpoint with proper flow and sequence_flows:
+        {
+            "id": "salesforce_integration",
+            "name": "Salesforce Data Integration", 
+            "description": "Process to sync Salesforce data",
+            "components": [
+                {"type": "enricher", "id": "enricher_1", "name": "Set_Headers", "config": {"properties": [...]}},
+                {"type": "script", "id": "script_1", "name": "Transform_Data", "config": {"script_content": "..."}},
+                {"type": "request_reply", "id": "request_reply_1", "name": "Call_API", "config": {"endpoint_path": "/api", "method": "POST"}}
+            ],
+            "flow": ["enricher_1", "script_1", "request_reply_1"],
+            "sequence_flows": [
+                {"id": "flow_StartEvent_2_to_enricher_1", "source_ref": "StartEvent_2", "target_ref": "enricher_1"},
+                {"id": "SequenceFlow_enricher_1_to_script_1", "source_ref": "enricher_1", "target_ref": "script_1"},
+                {"id": "SequenceFlow_script_1_to_request_reply_1", "source_ref": "script_1", "target_ref": "request_reply_1"},
+                {"id": "flow_request_reply_1_to_EndEvent_2", "source_ref": "request_reply_1", "target_ref": "EndEvent_2"}
+            ]
+        }
 
-        IMPORTANT: Notice that for OData components, you don't need to add enricher components before or after them.
-        The OData component itself handles all the necessary processing.
+        IMPORTANT: The sequence_flows MUST create a complete path from StartEvent_2 through all components to EndEvent_2.
 
         EXAMPLE BOOMI TO SAP CONVERSION:
 
@@ -656,10 +1050,10 @@ class EnhancedGenAIIFlowGenerator:
 
         Convert to:
         {
-          "sequence": ["query_data", "transform_data"],
+          "flow": ["query_data", "transform_data"],
           "components": [
             {"type": "request_reply", "name": "Query Data", "id": "query_data"},
-            {"type": "groovy_script", "name": "Transform Data", "id": "transform_data"}
+            {"type": "script", "name": "Transform Data", "id": "transform_data"}
           ],
           "error_handling": {
             "exception_subprocess": [
@@ -673,11 +1067,25 @@ class EnhancedGenAIIFlowGenerator:
         Do NOT include any explanations, XML, XSLT, or other content.
         Start your response with { and end with }.
 
-        CRITICAL ERROR HANDLING REMINDER:
-        - Main "sequence" array = happy path components only
+        CRITICAL JSON STRUCTURE REQUIREMENTS:
+        - MUST use "flow" array (NOT "sequence") for main component flow
+        - MUST use "script" type (NOT "groovy_script") for script components
+        - Script components MUST have "script_file" and "script_content" in config
+        - Main "flow" array = happy path components only
         - "error_handling" section = exception subprocess components only
-        - Error components should NEVER be in the main sequence
+        - Error components should NEVER be in the main flow
         - If you see <error-path> or error handling in Boomi, use "error_handling" section
+        
+        EXAMPLE CORRECT STRUCTURE:
+        {
+          "type": "script",
+          "id": "script_1", 
+          "name": "Transform Data",
+          "config": {
+            "script_file": "transform_data.groovy",
+            "script_content": "// Groovy script content here"
+          }
+        }
 
         JSON ESCAPING EXAMPLE - DO THIS:
         {
@@ -697,8 +1105,8 @@ class EnhancedGenAIIFlowGenerator:
         Analyze the following Dell Boomi process documentation and convert it to SAP Integration Suite equivalent:
         """
 
-        # Append the markdown content to the prompt
-        return prompt + "\n\nBoomi Documentation:\n" + markdown_content + "\n\nRESPOND WITH ONLY JSON:"
+        # Append the markdown content to the prompt  
+        return prompt + "\n\nBoomi Documentation:\n" + markdown_content + "\n\n🚨 FINAL INSTRUCTION: RESPOND WITH ONLY JSON - NO XML, NO EXPLANATIONS, NO MARKDOWN. \n🚨 MUST include both 'flow' array AND 'sequence_flows' array for each endpoint.\n🚨 The 'flow' array defines execution order, 'sequence_flows' defines connections.\n🚨 START WITH { AND END WITH }."
 
     def _validate_genai_response(self, response):
         """
@@ -1069,8 +1477,8 @@ class EnhancedGenAIIFlowGenerator:
 
                     sequence_flow = {
                         "id": flow_id,
-                        "source": source.get("id"),
-                        "target": target.get("id"),
+                        "source_ref": source.get("id"),
+                        "target_ref": target.get("id"),
                         "is_immediate": True,
                         "xml_content": f'''<bpmn2:sequenceFlow id="{flow_id}" sourceRef="{source.get('id')}" targetRef="{target.get('id')}" isImmediate="true"/>'''
                     }
@@ -1193,671 +1601,65 @@ def Message {transformation_name}(Message message) {{
 }}
 """
 
-    def _call_llm_api(self, prompt):
-        """
-        Call the LLM API with the given prompt
 
+    def _normalize_odata_operation(self, operation):
+        """
+        Normalize OData operation to SAP Integration Suite format.
+        Converts raw HTTP methods to proper OData operation format.
+        
         Args:
-            prompt (str): The prompt for the LLM
-
+            operation (str): Raw operation value (e.g., "GET", "POST", "PUT", "DELETE")
+            
         Returns:
-            str: The response from the LLM
+            str: Normalized OData operation (e.g., "Query(GET)", "Create(POST)")
         """
-        if self.provider == "openai":
-            # Use OpenAI API
-            response = self.openai.ChatCompletion.create(
-                model=self.model,
-                messages=[
-                    {"role": "system", "content": "You are an expert in SAP Integration Suite and API design."},
-                    {"role": "user", "content": prompt}
-                ],
-                temperature=0.2,  # Lower temperature for more deterministic output
-                max_tokens=4000
-            )
+        if not operation:
+            return "Query(GET)"
+            
+        # If already in correct format, return as is
+        if "(" in operation and ")" in operation:
+            return operation
+            
+        # Map raw HTTP methods to SAP Integration Suite OData operations
+        operation_mapping = {
+            "GET": "Query(GET)",
+            "POST": "Create(POST)", 
+            "PUT": "Update(PUT)",
+            "PATCH": "Patch(PATCH)",
+            "DELETE": "Delete(DELETE)",
+            "MERGE": "Merge(MERGE)"
+        }
+        
+        return operation_mapping.get(operation.upper(), f"Query({operation})")
 
-            return response.choices[0].message.content
-
-        elif self.provider == "claude":
-            # Use Claude API with the Anthropic client
-            try:
-                # Enhanced system prompt for better XML generation
-                system_prompt = """
-                You are an expert in SAP Integration Suite and iFlow development.
-                Your task is to generate valid, well-formed XML for iFlow files based on the provided specifications.
-
-                Important XML generation rules:
-                1. Always generate complete XML with all tags properly closed
-                2. Use consistent indentation (2 spaces per level)
-                3. Ensure all attribute values are properly quoted with double quotes
-                4. Properly escape special characters in XML content (&, <, >, ", ')
-                5. Ensure all namespaces are properly declared and used
-                6. Never truncate the XML - ensure it is complete from start to finish
-                7. Verify that all referenced IDs exist in the document
-                8. Ensure all required elements and attributes are included
-                9. Follow the exact structure specified in the prompt
-                10. Do not include any explanatory text, only output the XML
-
-                For Request-Reply components, always include:
-                1. A serviceTask with activityType="ExternalCall" for the request
-                2. A participant with ifl:type="EndpointReceiver" for the receiver
-                3. A messageFlow connecting the serviceTask to the participant
-                4. Proper sequence flows connecting to and from the serviceTask
-                5. BPMN diagram elements for all components and connections
-
-                For OData Request-Reply components, you MUST include ALL of these elements:
-                1. A serviceTask with id="ServiceTask_OData_[path]" with activityType="ExternalCall" and componentVersion="1.1" for the request
-                2. A participant with id="Participant_OData_[path]" with ifl:type="EndpointReceiver" for the receiver
-                3. A messageFlow with id="MessageFlow_OData_[path]" with name="OData" and ComponentType="HCIOData" connecting the serviceTask to the participant
-                4. Proper sequence flows connecting to and from the serviceTask
-                5. BPMN diagram shapes for both the serviceTask and participant
-                6. A BPMN diagram edge for the messageFlow with sourceElement and targetElement attributes
-
-                CRITICAL: All six elements above are MANDATORY for OData to work properly in SAP Integration Suite.
-                If any API description mentions OData, you MUST implement this complete pattern.
-
-                IMPORTANT: The OData participant MUST be positioned OUTSIDE the collaboration perimeter.
-                This means the y-coordinate of the participant should be at least 300 (e.g., y="341.0").
-                The service task should be positioned inside the collaboration perimeter (e.g., y="150.0").
-
-                CRITICAL: DO NOT use IDs that start with "ServiceTask_OData_" for your components.
-                These will be automatically generated by the system. Instead, use IDs like "odata_1", "odata_get_products", etc.
-
-                IMPORTANT: When using the "odata" component type, DO NOT create additional enricher components for it.
-                The OData component is self-contained and does not need any additional enricher components.
-                The system will automatically create the necessary OData components (service task, participant, message flow).
-
-                Here is a complete example of the OData request-reply pattern:
-
-                <!-- Service Task for OData Request -->
-                <bpmn2:serviceTask id="ServiceTask_OData_products" name="Get_Products">
-                    <bpmn2:extensionElements>
-                        <ifl:property>
-                            <key>componentVersion</key>
-                            <value>1.0</value>
-                        </ifl:property>
-                        <ifl:property>
-                            <key>activityType</key>
-                            <value>ExternalCall</value>
-                        </ifl:property>
-                        <ifl:property>
-                            <key>cmdVariantUri</key>
-                            <value>ctype::FlowstepVariant/cname::ExternalCall/version::1.0.4</value>
-                        </ifl:property>
-                    </bpmn2:extensionElements>
-                    <bpmn2:incoming>SequenceFlow_In</bpmn2:incoming>
-                    <bpmn2:outgoing>SequenceFlow_Out</bpmn2:outgoing>
-                </bpmn2:serviceTask>
-
-                <!-- OData Receiver Participant -->
-                <bpmn2:participant id="Participant_OData_products" ifl:type="EndpointReceiver" name="OData_Products">
-                    <bpmn2:extensionElements>
-                        <ifl:property>
-                            <key>ifl:type</key>
-                            <value>EndpointReceiver</value>
-                        </ifl:property>
-                    </bpmn2:extensionElements>
-                </bpmn2:participant>
-
-                <!-- Message Flow connecting Service Task to OData Receiver -->
-                <bpmn2:messageFlow id="MessageFlow_OData_products" name="OData" sourceRef="ServiceTask_OData_products" targetRef="Participant_OData_products">
-                    <bpmn2:extensionElements>
-                        <ifl:property>
-                            <key>ComponentType</key>
-                            <value>HCIOData</value>
-                        </ifl:property>
-                        <ifl:property>
-                            <key>operation</key>
-                            <value>Query(GET)</value>
-                        </ifl:property>
-                        <!-- Other OData-specific properties -->
-                    </bpmn2:extensionElements>
-                </bpmn2:messageFlow>
-
-                <!-- BPMN Diagram Elements for OData Components -->
-                <bpmndi:BPMNShape bpmnElement="ServiceTask_OData_products" id="BPMNShape_ServiceTask_OData_products">
-                    <dc:Bounds height="60.0" width="100.0" x="400.0" y="150.0"/>
-                </bpmndi:BPMNShape>
-
-                <bpmndi:BPMNShape bpmnElement="Participant_OData_products" id="BPMNShape_Participant_OData_products">
-                    <dc:Bounds height="140.0" width="100.0" x="400.0" y="341.0"/>
-                </bpmndi:BPMNShape>
-
-                <bpmndi:BPMNEdge bpmnElement="MessageFlow_OData_products" id="BPMNEdge_MessageFlow_OData_products" sourceElement="BPMNShape_ServiceTask_OData_products" targetElement="BPMNShape_Participant_OData_products">
-                    <di:waypoint x="450.0" xsi:type="dc:Point" y="210.0"/>
-                    <di:waypoint x="450.0" xsi:type="dc:Point" y="341.0"/>
-                </bpmndi:BPMNEdge>
-
-                IMPORTANT: Use EXACTLY these ID patterns for OData components:
-                - ServiceTask_OData_[path]
-                - Participant_OData_[path]
-                - MessageFlow_OData_[path]
-
-                Where [path] is a clean version of the endpoint path (e.g., "products" for "/products").
-
-                CRITICAL EXAMPLES FOR ODATA CONNECTIONS:
-
-                <!-- OData Receiver Participant -->
-                <bpmn2:participant id="Participant_OData_products" ifl:type="EndpointReceiver" name="OData_Service_products">
-                    <bpmn2:extensionElements>
-                        <ifl:property>
-                            <key>ifl:type</key>
-                            <value>EndpointReceiver</value>
-                        </ifl:property>
-                    </bpmn2:extensionElements>
-                </bpmn2:participant>
-
-                <!-- Message Flow connecting Service Task to OData Receiver -->
-                <bpmn2:messageFlow id="MessageFlow_OData_products" name="OData" sourceRef="ServiceTask_OData_products" targetRef="Participant_OData_products">
-                    <bpmn2:extensionElements>
-                        <ifl:property>
-                            <key>ComponentType</key>
-                            <value>HCIOData</value>
-                        </ifl:property>
-                        <ifl:property>
-                            <key>operation</key>
-                            <value>Query(GET)</value>
-                        </ifl:property>
-                        <!-- Other OData-specific properties -->
-                    </bpmn2:extensionElements>
-                </bpmn2:messageFlow>
-
-                <!-- Service Task for OData Request - MUST be a serviceTask with activityType="ExternalCall" -->
-                <bpmn2:serviceTask id="ServiceTask_OData_products" name="Call_OData_Service">
-                    <bpmn2:extensionElements>
-                        <ifl:property>
-                            <key>componentVersion</key>
-                            <value>1.1</value>
-                        </ifl:property>
-                        <ifl:property>
-                            <key>activityType</key>
-                            <value>ExternalCall</value>
-                        </ifl:property>
-                        <ifl:property>
-                            <key>cmdVariantUri</key>
-                            <value>ctype::FlowstepVariant/cname::ExternalCall/version::1.1.0</value>
-                        </ifl:property>
-                    </bpmn2:extensionElements>
-                    <bpmn2:incoming>SequenceFlow_In</bpmn2:incoming>
-                    <bpmn2:outgoing>SequenceFlow_Out</bpmn2:outgoing>
-                </bpmn2:serviceTask>
-
-                Example Request-Reply structure:
-                <bpmn2:serviceTask id="ServiceTask_ID" name="Send_Request">
-                    <bpmn2:extensionElements>
-                        <ifl:property>
-                            <key>componentVersion</key>
-                            <value>1.1</value>
-                        </ifl:property>
-                        <ifl:property>
-                            <key>activityType</key>
-                            <value>ExternalCall</value>
-                        </ifl:property>
-                        <ifl:property>
-                            <key>cmdVariantUri</key>
-                            <value>ctype::FlowstepVariant/cname::ExternalCall/version::1.1.0</value>
-                        </ifl:property>
-                    </bpmn2:extensionElements>
-                    <bpmn2:incoming>SequenceFlow_In</bpmn2:incoming>
-                    <bpmn2:outgoing>SequenceFlow_Out</bpmn2:outgoing>
-                </bpmn2:serviceTask>
-
-                <bpmn2:participant id="Participant_OData_products" ifl:type="EndpointReceiver" name="InboundProduct_products">
-                    <bpmn2:extensionElements>
-                        <ifl:property>
-                            <key>ifl:type</key>
-                            <value>EndpointReceiver</value>
-                        </ifl:property>
-                    </bpmn2:extensionElements>
-                </bpmn2:participant>
-
-                <bpmn2:messageFlow id="MessageFlow_ID" name="HTTP" sourceRef="ServiceTask_ID" targetRef="Participant_ID">
-                    <bpmn2:extensionElements>
-                        <!-- Message flow properties -->
-                    </bpmn2:extensionElements>
-                </bpmn2:messageFlow>
-
-                For OData Request-Reply components, use EXACTLY this structure for the message flow:
-                <bpmn2:messageFlow id="MessageFlow_OData_products" name="OData" sourceRef="ServiceTask_OData_products" targetRef="Participant_OData_products">
-                    <bpmn2:extensionElements>
-                        <ifl:property>
-                            <key>Description</key>
-                            <value/>
-                        </ifl:property>
-                        <ifl:property>
-                            <key>pagination</key>
-                            <value>0</value>
-                        </ifl:property>
-                        <ifl:property>
-                            <key>odataCertAuthPrivateKeyAlias</key>
-                            <value/>
-                        </ifl:property>
-                        <ifl:property>
-                            <key>ComponentNS</key>
-                            <value>sap</value>
-                        </ifl:property>
-                        <ifl:property>
-                            <key>resourcePath</key>
-                            <value>${{property.ResourcePath}}</value>
-                        </ifl:property>
-                        <ifl:property>
-                            <key>customQueryOptions</key>
-                            <value/>
-                        </ifl:property>
-                        <ifl:property>
-                            <key>Name</key>
-                            <value>OData</value>
-                        </ifl:property>
-                        <ifl:property>
-                            <key>TransportProtocolVersion</key>
-                            <value>1.8.0</value>
-                        </ifl:property>
-                        <ifl:property>
-                            <key>ComponentSWCVName</key>
-                            <value>external</value>
-                        </ifl:property>
-                        <ifl:property>
-                            <key>proxyPort</key>
-                            <value/>
-                        </ifl:property>
-                        <ifl:property>
-                            <key>receiveTimeOut</key>
-                            <value>{{Timeout}}</value>
-                        </ifl:property>
-                        <ifl:property>
-                            <key>alias</key>
-                            <value>{{Destination Credential}}</value>
-                        </ifl:property>
-                        <ifl:property>
-                            <key>contentType</key>
-                            <value>application/json</value>
-                        </ifl:property>
-                        <ifl:property>
-                            <key>MessageProtocol</key>
-                            <value>OData V2</value>
-                        </ifl:property>
-                        <ifl:property>
-                            <key>ComponentSWCVId</key>
-                            <value>1.8.0</value>
-                        </ifl:property>
-                        <ifl:property>
-                            <key>direction</key>
-                            <value>Receiver</value>
-                        </ifl:property>
-                        <ifl:property>
-                            <key>scc_location_id</key>
-                            <value>{{Location ID}}</value>
-                        </ifl:property>
-                        <ifl:property>
-                            <key>ComponentType</key>
-                            <value>HCIOData</value>
-                        </ifl:property>
-                        <ifl:property>
-                            <key>address</key>
-                            <value>{{Destination Host}}/{{Service URL}}</value>
-                        </ifl:property>
-                        <ifl:property>
-                            <key>queryOptions</key>
-                            <value/>
-                        </ifl:property>
-                        <ifl:property>
-                            <key>proxyType</key>
-                            <value>{{Destination Proxy Type}}</value>
-                        </ifl:property>
-                        <ifl:property>
-                            <key>componentVersion</key>
-                            <value>1.8</value>
-                        </ifl:property>
-                        <ifl:property>
-                            <key>proxyHost</key>
-                            <value/>
-                        </ifl:property>
-                        <ifl:property>
-                            <key>edmxFilePath</key>
-                            <value>edmx/Products.edmx</value>
-                        </ifl:property>
-                        <ifl:property>
-                            <key>odatapagesize</key>
-                            <value>200</value>
-                        </ifl:property>
-                        <ifl:property>
-                            <key>system</key>
-                            <value>InboundProduct</value>
-                        </ifl:property>
-                        <ifl:property>
-                            <key>authenticationMethod</key>
-                            <value>{{Destination Authentication}}</value>
-                        </ifl:property>
-                        <ifl:property>
-                            <key>enableBatchProcessing</key>
-                            <value>1</value>
-                        </ifl:property>
-                        <ifl:property>
-                            <key>TransportProtocol</key>
-                            <value>HTTP</value>
-                        </ifl:property>
-                        <ifl:property>
-                            <key>cmdVariantUri</key>
-                            <value>ctype::AdapterVariant/cname::sap:HCIOData/tp::HTTP/mp::OData V2/direction::Receiver/version::1.8.0</value>
-                        </ifl:property>
-                        <ifl:property>
-                            <key>fields</key>
-                            <value>ID,Name,Description,Price</value>
-                        </ifl:property>
-                        <ifl:property>
-                            <key>characterEncoding</key>
-                            <value>none</value>
-                        </ifl:property>
-                        <ifl:property>
-                            <key>operation</key>
-                            <value>Create(POST)</value>
-                        </ifl:property>
-                        <ifl:property>
-                            <key>MessageProtocolVersion</key>
-                            <value>1.8.0</value>
-                        </ifl:property>
-                    </bpmn2:extensionElements>
-                </bpmn2:messageFlow>
-
-                IMPORTANT: If the API description mentions OData services or OData calls in any way, you MUST use the OData message flow pattern instead of regular HTTP.
-
-                CRITICAL: You MUST include BPMN diagram elements for ALL components and flows:
-
-                1. For each component (serviceTask, participant, etc.), include a BPMNShape:
-                <bpmndi:BPMNShape bpmnElement="ServiceTask_ID" id="BPMNShape_ServiceTask_ID">
-                    <dc:Bounds height="60.0" width="100.0" x="400.0" y="142.0"/>
-                </bpmndi:BPMNShape>
-
-                2. For each sequence flow, include a BPMNEdge with sourceElement and targetElement attributes:
-                <bpmndi:BPMNEdge bpmnElement="SequenceFlow_ID" id="BPMNEdge_SequenceFlow_ID" sourceElement="BPMNShape_Source_ID" targetElement="BPMNShape_Target_ID">
-                    <di:waypoint x="350.0" y="142.0"/>
-                    <di:waypoint x="400.0" y="142.0"/>
-                </bpmndi:BPMNEdge>
-
-                3. For OData message flows, include a BPMNEdge with sourceElement and targetElement attributes:
-                <bpmndi:BPMNEdge bpmnElement="MessageFlow_OData_products" id="BPMNEdge_MessageFlow_OData_products" sourceElement="BPMNShape_ServiceTask_OData_products" targetElement="BPMNShape_Participant_OData_products">
-                    <di:waypoint x="757.0" xsi:type="dc:Point" y="140.0"/>
-                    <di:waypoint x="850.0" xsi:type="dc:Point" y="170.0"/>
-                </bpmndi:BPMNEdge>
-
-                WITHOUT THESE DIAGRAM ELEMENTS, COMPONENTS WILL BE INVISIBLE IN SAP INTEGRATION SUITE!
-
-                CRITICAL WARNINGS - AVOID THESE COMMON ERRORS:
-                1. DO NOT create tasks with IDs like "Participant_1" - these IDs are for participants only
-                2. DO NOT create duplicate IDs (e.g., multiple "EndEvent_2")
-                3. DO NOT create sequence flows with the same ID but different source/target references
-                4. DO NOT reference sequence flow IDs that don't exist (e.g., "SequenceFlow_ServiceTask_1_in")
-                5. DO NOT create circular or conflicting flows between components
-                6. DO NOT create BPMNEdge elements with illogical waypoints (e.g., edges connecting from high x-coordinates to low x-coordinates)
-                7. DO NOT use different coordinates for the same component in different places
-                8. ALWAYS include OData receiver participants for each OData service with ifl:type="EndpointReceiver" (note the spelling!)
-                9. ALWAYS include message flows connecting service tasks to OData receivers
-                10. ALWAYS use unique, descriptive IDs for all components and flows
-                11. ALWAYS use bpmn2:serviceTask with activityType="ExternalCall" for OData service tasks
-
-                ID NAMING CONVENTIONS:
-                - Start events: "StartEvent_[unique_number]"
-                - End events: "EndEvent_[unique_number]"
-                - Service tasks: "ServiceTask_[purpose]_[unique_number]"
-                - Content modifiers: "ContentModifier_[purpose]_[unique_number]"
-                - Script tasks: "ScriptTask_[purpose]_[unique_number]"
-                - Sequence flows: "SequenceFlow_[source]_to_[target]_[unique_number]"
-                - Message flows: "MessageFlow_[source]_to_[target]_[unique_number]"
-                - Participants: "Participant_[type]_[unique_number]"
-                - OData components: Use the patterns specified earlier
-
-                ALWAYS ensure that each ID is used exactly once in the entire XML file.
-
-                COMPLETE ODATA PATTERN EXAMPLE FROM WORKING IFLOW:
-
-                <!-- In the collaboration section -->
-                <bpmn2:participant id="Participant_2" ifl:type="EndpointReceiver" name="Receiver">
-                    <bpmn2:extensionElements>
-                        <ifl:property>
-                            <key>ifl:type</key>
-                            <value>EndpointReceiver</value>
-                        </ifl:property>
-                    </bpmn2:extensionElements>
-                </bpmn2:participant>
-
-                <bpmn2:messageFlow id="MessageFlow_969834" name="OData" sourceRef="ServiceTask_969832" targetRef="Participant_2">
-                    <bpmn2:extensionElements>
-                        <ifl:property>
-                            <key>Description</key>
-                            <value/>
-                        </ifl:property>
-                        <ifl:property>
-                            <key>ComponentType</key>
-                            <value>HCIOData</value>
-                        </ifl:property>
-                        <ifl:property>
-                            <key>MessageProtocol</key>
-                            <value>OData V2</value>
-                        </ifl:property>
-                        <ifl:property>
-                            <key>operation</key>
-                            <value>Query(GET)</value>
-                        </ifl:property>
-                        <ifl:property>
-                            <key>resourcePath</key>
-                            <value>Products</value>
-                        </ifl:property>
-                        <ifl:property>
-                            <key>address</key>
-                            <value>https://example.com/odata/service</value>
-                        </ifl:property>
-                        <ifl:property>
-                            <key>direction</key>
-                            <value>Receiver</value>
-                        </ifl:property>
-                    </bpmn2:extensionElements>
-                </bpmn2:messageFlow>
-
-                <!-- In the process section -->
-                <bpmn2:serviceTask id="ServiceTask_969832" name="Request Reply 1">
-                    <bpmn2:extensionElements>
-                        <ifl:property>
-                            <key>componentVersion</key>
-                            <value>1.0</value>
-                        </ifl:property>
-                        <ifl:property>
-                            <key>activityType</key>
-                            <value>ExternalCall</value>
-                        </ifl:property>
-                        <ifl:property>
-                            <key>cmdVariantUri</key>
-                            <value>ctype::FlowstepVariant/cname::ExternalCall/version::1.0.4</value>
-                        </ifl:property>
-                    </bpmn2:extensionElements>
-                    <bpmn2:incoming>SequenceFlow_969836</bpmn2:incoming>
-                    <bpmn2:outgoing>SequenceFlow_969833</bpmn2:outgoing>
-                </bpmn2:serviceTask>
-
-                <!-- In the diagram section -->
-                <bpmndi:BPMNShape bpmnElement="ServiceTask_969832" id="BPMNShape_ServiceTask_969832">
-                    <dc:Bounds height="60.0" width="100.0" x="821.0" y="132.0"/>
-                </bpmndi:BPMNShape>
-
-                <bpmndi:BPMNShape bpmnElement="Participant_2" id="BPMNShape_Participant_2">
-                    <dc:Bounds height="140.0" width="100.0" x="821.0" y="315.0"/>
-                </bpmndi:BPMNShape>
-
-                <bpmndi:BPMNEdge bpmnElement="MessageFlow_969834" id="BPMNEdge_MessageFlow_969834" sourceElement="BPMNShape_ServiceTask_969832" targetElement="BPMNShape_Participant_2">
-                    <di:waypoint x="871.0" xsi:type="dc:Point" y="162.0"/>
-                    <di:waypoint x="871.0" xsi:type="dc:Point" y="385.0"/>
-                </bpmndi:BPMNEdge>
-
-                <!-- Sequence flow connections -->
-                <bpmn2:sequenceFlow id="SequenceFlow_969836" name="Route 1" sourceRef="ExclusiveGateway_969835" targetRef="ServiceTask_969832"/>
-                <bpmn2:sequenceFlow id="SequenceFlow_969833" sourceRef="ServiceTask_969832" targetRef="EndEvent_2"/>
-
-                <bpmndi:BPMNEdge bpmnElement="SequenceFlow_969836" id="BPMNEdge_SequenceFlow_969836" sourceElement="BPMNShape_ExclusiveGateway_969835" targetElement="BPMNShape_ServiceTask_969832">
-                    <di:waypoint x="695.0" xsi:type="dc:Point" y="162.0"/>
-                    <di:waypoint x="871.0" xsi:type="dc:Point" y="162.0"/>
-                </bpmndi:BPMNEdge>
-
-                <bpmndi:BPMNEdge bpmnElement="SequenceFlow_969833" id="BPMNEdge_SequenceFlow_969833" sourceElement="BPMNShape_ServiceTask_969832" targetElement="BPMNShape_EndEvent_2">
-                    <di:waypoint x="871.0" xsi:type="dc:Point" y="160.0"/>
-                    <di:waypoint x="1174.0" xsi:type="dc:Point" y="160.0"/>
-                </bpmndi:BPMNEdge>
-
-                CRITICAL EXAMPLES FOR ODATA BPMN DIAGRAM ELEMENTS:
-
-                <!-- BPMN Shape for OData Service Task -->
-                <bpmndi:BPMNShape bpmnElement="ServiceTask_OData_products" id="BPMNShape_ServiceTask_OData_products">
-                    <dc:Bounds height="60.0" width="100.0" x="650.0" y="110.0"/>
-                </bpmndi:BPMNShape>
-
-                <!-- BPMN Shape for OData Participant (positioned outside the process) -->
-                <bpmndi:BPMNShape bpmnElement="Participant_OData_products" id="BPMNShape_Participant_OData_products">
-                    <dc:Bounds height="140.0" width="100.0" x="850.0" y="150.0"/>
-                </bpmndi:BPMNShape>
-
-                <!-- BPMN Edge for OData Message Flow -->
-                <bpmndi:BPMNEdge bpmnElement="MessageFlow_OData_products" id="BPMNEdge_MessageFlow_OData_products" sourceElement="BPMNShape_ServiceTask_OData_products" targetElement="BPMNShape_Participant_OData_products">
-                    <di:waypoint x="750.0" xsi:type="dc:Point" y="140.0"/>
-                    <di:waypoint x="850.0" xsi:type="dc:Point" y="170.0"/>
-                </bpmndi:BPMNEdge>
-                """
-
-                message = self.anthropic_client.messages.create(
-                    model=self.model,
-                    max_tokens=8000,  # Increased to 8000 to handle large XML responses
-                    temperature=0.1,  # Reduced from 0.2 to 0.1 for more deterministic output
-                    system=system_prompt,
-                    messages=[
-                        {
-                            "role": "user",
-                            "content": [
-                                {
-                                    "type": "text",
-                                    "text": prompt
-                                }
-                            ]
-                        }
-                    ]
-                )
-
-                # Extract the text content from the response
-                response_content = message.content[0].text
-
-                # Basic validation to ensure it's XML
-                if not response_content.strip().startswith('<?xml'):
-                    print("Warning: Generated content does not start with XML declaration")
-                    # Try to find XML content in the response
-                    xml_start = response_content.find('<?xml')
-                    if xml_start >= 0:
-                        response_content = response_content[xml_start:]
-
-                return response_content
-            except Exception as e:
-                print(f"Error calling Claude API: {e}")
-                # Fall back to local mode if Claude API fails
-                self.provider = "local"
-                return self._call_llm_api(prompt)
-
+    def _extract_script_name(self, component_config, component_id="", fallback_name="GroovyScript.groovy"):
+        """
+        Centralized function to extract script name from component config.
+        Ensures consistency across all script processing stages.
+        
+        Args:
+            component_config: The component configuration dict
+            component_id: Component ID for fallback naming
+            fallback_name: Default script name if none specified
+            
+        Returns:
+            str: Consistent script name
+        """
+        # Handle nested config structure
+        if "config" in component_config:
+            config = component_config["config"]
         else:
-            # Use a local LLM (placeholder) - try to extract JSON from the prompt
-            print("Using local LLM (placeholder)")
-
-            # Try to extract JSON from the prompt/markdown
-            try:
-                import json
-                import re
-
-                # Look for JSON in the prompt - try multiple patterns
-                json_patterns = [
-                    r'```json\s*(\{[\s\S]*?\})\s*```',  # JSON in code blocks
-                    r'```\s*(\{[\s\S]*?\})\s*```',  # JSON in generic code blocks
-                    r'"process_name":\s*"[^"]*"[\s\S]*?\}',  # Look for process_name as anchor
-                    r'\{[\s\S]*?"process_name"[\s\S]*?\}',  # JSON containing process_name
-                    r'\{[\s\S]*\}',  # Basic JSON pattern (last resort)
-                ]
-
-                # Also try to find JSON by looking for the specific structure from the test
-                if '"process_name"' in prompt and '"endpoints"' in prompt:
-                    # Try to extract the JSON structure more carefully
-                    start_idx = prompt.find('{')
-                    if start_idx != -1:
-                        # Find the matching closing brace
-                        brace_count = 0
-                        end_idx = start_idx
-                        for i, char in enumerate(prompt[start_idx:], start_idx):
-                            if char == '{':
-                                brace_count += 1
-                            elif char == '}':
-                                brace_count -= 1
-                                if brace_count == 0:
-                                    end_idx = i + 1
-                                    break
-
-                        if brace_count == 0:  # Found matching braces
-                            json_str = prompt[start_idx:end_idx]
-                            try:
-                                parsed_json = json.loads(json_str)
-                                print(f"✅ Local LLM extracted JSON by brace matching: {parsed_json.get('process_name', 'Unknown Process')}")
-                                return json.dumps(parsed_json, indent=2)
-                            except json.JSONDecodeError as e:
-                                print(f"❌ Brace matching found JSON but couldn't parse it: {e}")
-                                # Continue to try other patterns
-
-                for pattern in json_patterns:
-                    json_match = re.search(pattern, prompt, re.MULTILINE | re.DOTALL)
-                    if json_match:
-                        # Extract the JSON string (use group 1 if it exists, otherwise group 0)
-                        json_str = json_match.group(1) if json_match.groups() else json_match.group(0)
-
-                        try:
-                            parsed_json = json.loads(json_str)
-                            print(f"✅ Local LLM extracted JSON from input: {parsed_json.get('process_name', 'Unknown Process')}")
-                            return json.dumps(parsed_json, indent=2)
-                        except json.JSONDecodeError as e:
-                            print(f"❌ Found JSON-like content but couldn't parse it: {e}")
-                            # Try to clean up the JSON and parse again
-                            try:
-                                # Remove any trailing commas and fix common issues
-                                cleaned_json = re.sub(r',\s*}', '}', json_str)
-                                cleaned_json = re.sub(r',\s*]', ']', cleaned_json)
-                                parsed_json = json.loads(cleaned_json)
-                                print(f"✅ Local LLM extracted JSON after cleanup: {parsed_json.get('process_name', 'Unknown Process')}")
-                                return json.dumps(parsed_json, indent=2)
-                            except json.JSONDecodeError:
-                                print(f"❌ Still couldn't parse JSON after cleanup")
-                                continue
-
-                # If no JSON found, return a simple default
-                print("⚠️  No JSON found in input, using default structure")
-
-            except Exception as e:
-                print(f"❌ Error in local LLM JSON extraction: {e}")
-
-            # Fallback to simple example
-            return """
-            {
-                "api_name": "Example API",
-                "base_url": "/api/v1",
-                "endpoints": [
-                    {
-                        "method": "GET",
-                        "path": "/example",
-                        "purpose": "Example endpoint",
-                        "components": [
-                            {
-                                "type": "https_sender",
-                                "name": "HTTPS_Sender",
-                                "id": "MessageFlow_1",
-                                "config": {
-                                    "url_path": "/api/v1/example"
-                                }
-                            }
-                        ],
-                        "connections": [],
-                        "transformations": []
-                    }
-                ],
-                "parameters": []
-            }
-            """
-
+            config = component_config
+            
+        # Priority order: script_file -> script_name -> component-based fallback -> default fallback
+        script_name = (
+            config.get("script_file") or 
+            config.get("script_name") or 
+            (f"{component_id}.groovy" if component_id else None) or
+            fallback_name
+        )
+        
+        return script_name
 
     def _create_endpoint_components(self, endpoint, templates):
         """
@@ -1883,6 +1685,9 @@ def Message {transformation_name}(Message message) {{
 
         # Create components based on the endpoint configuration
         components = endpoint.get("components", [])
+        print(f"🔍 DEBUG: _create_endpoint_components called with {len(components)} components")
+        for i, comp in enumerate(components):
+            print(f"🔍 DEBUG: Component {i+1}: {comp.get('type', 'unknown')} - {comp.get('name', 'unnamed')}")
 
         # Filter out standalone odata_receiver components
         # These should only be used as part of request-reply patterns
@@ -2110,11 +1915,11 @@ def Message {transformation_name}(Message message) {{
                 "type": "participant",
                 "name": f"InboundProduct_{clean_path}",
                 "id": participant_id,
-                "xml_content": f'''<bpmn2:participant id="{participant_id}" ifl:type="EndpointReceiver" name="InboundProduct_{clean_path}">
+                "xml_content": f'''<bpmn2:participant id="{participant_id}" ifl:type="EndpointRecevier" name="InboundProduct_{clean_path}">
                     <bpmn2:extensionElements>
                         <ifl:property>
                             <key>ifl:type</key>
-                            <value>EndpointReceiver</value>
+                            <value>EndpointRecevier</value>
                         </ifl:property>
                     </bpmn2:extensionElements>
                 </bpmn2:participant>'''
@@ -2319,6 +2124,158 @@ def Message {transformation_name}(Message message) {{
 
                 # Add EDMX file to the endpoint components
                 endpoint["edmx_files"] = {"Products": edmx_content}
+                
+                # Add SuccessFactors message flow for SuccessFactors components
+                # Check if any components are SuccessFactors type
+                for comp in endpoint.get("components", []):
+                    if comp.get("type") == "request_reply" and comp.get("sap_component_type") == "SuccessFactors":
+                        # Create SuccessFactors participant
+                        participant_id = f"Participant_{comp['id']}"
+                        endpoint_components["collaboration_participants"].append({
+                            "type": "participant",
+                            "name": comp.get("name", "SuccessFactors"),
+                            "id": participant_id,
+                            "xml_content": f'''<bpmn2:participant id="{participant_id}" ifl:type="EndpointRecevier" name="{comp.get('name', 'SuccessFactors')}">
+                                <bpmn2:extensionElements>
+                                    <ifl:property>
+                                        <key>ifl:type</key>
+                                        <value>EndpointRecevier</value>
+                                    </ifl:property>
+                                </bpmn2:extensionElements>
+                            </bpmn2:participant>'''
+                        })
+                        
+                        # Create SuccessFactors message flow
+                        message_flow_id = f"MessageFlow_SuccessFactors_{comp['id']}"
+                        endpoint_components["collaboration_message_flows"].append({
+                            "type": "message_flow",
+                            "name": "SuccessFactors",
+                            "id": message_flow_id,
+                            "source": comp["id"],
+                            "target": participant_id,
+                            "xml_content": f'''<bpmn2:messageFlow id="{message_flow_id}" name="SuccessFactors" sourceRef="{comp['id']}" targetRef="{participant_id}">
+                                <bpmn2:extensionElements>
+                                    <ifl:property>
+                                        <key>ComponentType</key>
+                                        <value>SuccessFactors</value>
+                                    </ifl:property>
+                                    <ifl:property>
+                                        <key>Description</key>
+                                        <value/>
+                                    </ifl:property>
+                                    <ifl:property>
+                                        <key>address</key>
+                                        <value>{comp.get('config', {}).get('endpoint_path', '/odata/v2/CompoundEmployee')}</value>
+                                    </ifl:property>
+                                    <ifl:property>
+                                        <key>resourcePathForOdatav4</key>
+                                        <value>{comp.get('config', {}).get('endpoint_path', '/odata/v2/CompoundEmployee')}</value>
+                                    </ifl:property>
+                                    <ifl:property>
+                                        <key>queryOptions</key>
+                                        <value/>
+                                    </ifl:property>
+                                    <ifl:property>
+                                        <key>ComponentNS</key>
+                                        <value>sap</value>
+                                    </ifl:property>
+                                    <ifl:property>
+                                        <key>proxyType</key>
+                                        <value>default</value>
+                                    </ifl:property>
+                                    <ifl:property>
+                                        <key>componentVersion</key>
+                                        <value>1.11</value>
+                                    </ifl:property>
+                                    <ifl:property>
+                                        <key>proxyHost</key>
+                                        <value/>
+                                    </ifl:property>
+                                    <ifl:property>
+                                        <key>Name</key>
+                                        <value>SuccessFactors</value>
+                                    </ifl:property>
+                                    <ifl:property>
+                                        <key>TransportProtocolVersion</key>
+                                        <value>1.21.0</value>
+                                    </ifl:property>
+                                    <ifl:property>
+                                        <key>ComponentSWCVName</key>
+                                        <value>external</value>
+                                    </ifl:property>
+                                    <ifl:property>
+                                        <key>proxyPort</key>
+                                        <value/>
+                                    </ifl:property>
+                                    <ifl:property>
+                                        <key>system</key>
+                                        <value>{comp.get('name', 'SuccessFactors')}</value>
+                                    </ifl:property>
+                                    <ifl:property>
+                                        <key>authenticationMethod</key>
+                                        <value>OAuth2ClientCredentials</value>
+                                    </ifl:property>
+                                    <ifl:property>
+                                        <key>connectionReuse</key>
+                                        <value>true</value>
+                                    </ifl:property>
+                                    <ifl:property>
+                                        <key>alias</key>
+                                        <value>test</value>
+                                    </ifl:property>
+                                    <ifl:property>
+                                        <key>TransportProtocol</key>
+                                        <value>HTTP</value>
+                                    </ifl:property>
+                                    <ifl:property>
+                                        <key>cmdVariantUri</key>
+                                        <value>ctype::AdapterVariant/cname::sap:SuccessFactors/tp::HTTP/mp::OData V4/direction::Receiver/version::1.11.0</value>
+                                    </ifl:property>
+                                    <ifl:property>
+                                        <key>operation</key>
+                                        <value>get</value>
+                                    </ifl:property>
+                                    <ifl:property>
+                                        <key>MessageProtocol</key>
+                                        <value>OData V4</value>
+                                    </ifl:property>
+                                    <ifl:property>
+                                        <key>ComponentSWCVId</key>
+                                        <value>1.21.0</value>
+                                    </ifl:property>
+                                    <ifl:property>
+                                        <key>MessageProtocolVersion</key>
+                                        <value>1.21.0</value>
+                                    </ifl:property>
+                                    <ifl:property>
+                                        <key>direction</key>
+                                        <value>Receiver</value>
+                                    </ifl:property>
+                                </bpmn2:extensionElements>
+                            </bpmn2:messageFlow>'''
+                        })
+                        
+                        # Create BPMN shape for participant
+                        endpoint_components["bpmn_shapes"].append({
+                            "type": "participant_shape",
+                            "id": participant_id,
+                            "xml_content": f'''<bpmndi:BPMNShape bpmnElement="{participant_id}" id="BPMNShape_{participant_id}">
+                                <dc:Bounds height="140.0" width="100.0" x="1292.0" y="387.0"/>
+                            </bpmndi:BPMNShape>'''
+                        })
+                        
+                        # Create BPMN edge for message flow
+                        endpoint_components["bpmn_edges"].append({
+                            "type": "message_flow_edge",
+                            "id": message_flow_id,
+                            "xml_content": f'''<bpmndi:BPMNEdge bpmnElement="{message_flow_id}" id="BPMNEdge_{message_flow_id}" sourceElement="BPMNShape_{comp['id']}" targetElement="BPMNShape_{participant_id}">
+                                <di:waypoint x="1342.0" xsi:type="dc:Point" y="230.0"/>
+                                <di:waypoint x="1342.0" xsi:type="dc:Point" y="397.0"/>
+                            </bpmndi:BPMNEdge>'''
+                        })
+                        
+                        print(f"  ✅ Created SuccessFactors pattern: ServiceTask={comp['id']}, Participant={participant_id}, MessageFlow={message_flow_id}")
+                        break  # Only create one SuccessFactors pattern per endpoint
             else:
                 # Add HTTP message flow
                 components.append({
@@ -2630,50 +2587,50 @@ def Message processError(Message message) {{
             endpoint["sequence_flows"] = [
                 {
                     "id": f"SequenceFlow_Start_{clean_path}",
-                    "source": "StartEvent_2",
-                    "target": f"JSONtoXMLConverter_{clean_path}",
+                    "source_ref": "StartEvent_2",
+                    "target_ref": f"JSONtoXMLConverter_{clean_path}",
                     "is_immediate": True,
                     "xml_content": f'''<bpmn2:sequenceFlow id="SequenceFlow_Start_{clean_path}" sourceRef="StartEvent_2" targetRef="JSONtoXMLConverter_{clean_path}" isImmediate="true"/>'''
                 },
                 {
                     "id": f"SequenceFlow_1_{clean_path}",
-                    "source": f"JSONtoXMLConverter_{clean_path}",
-                    "target": f"ContentModifier_{clean_path}_1",
+                    "source_ref": f"JSONtoXMLConverter_{clean_path}",
+                    "target_ref": f"ContentModifier_{clean_path}_1",
                     "is_immediate": True,
                     "xml_content": f'''<bpmn2:sequenceFlow id="SequenceFlow_1_{clean_path}" sourceRef="JSONtoXMLConverter_{clean_path}" targetRef="ContentModifier_{clean_path}_1" isImmediate="true"/>'''
                 },
                 {
                     "id": f"SequenceFlow_2_{clean_path}",
-                    "source": f"ContentModifier_{clean_path}_1",
-                    "target": f"ContentModifier_{clean_path}_headers",
+                    "source_ref": f"ContentModifier_{clean_path}_1",
+                    "target_ref": f"ContentModifier_{clean_path}_headers",
                     "is_immediate": True,
                     "xml_content": f'''<bpmn2:sequenceFlow id="SequenceFlow_2_{clean_path}" sourceRef="ContentModifier_{clean_path}_1" targetRef="ContentModifier_{clean_path}_headers" isImmediate="true"/>'''
                 },
                 {
                     "id": f"SequenceFlow_3_{clean_path}",
-                    "source": f"ContentModifier_{clean_path}_headers",
-                    "target": f"RequestReply_{clean_path}",
+                    "source_ref": f"ContentModifier_{clean_path}_headers",
+                    "target_ref": f"RequestReply_{clean_path}",
                     "is_immediate": True,
                     "xml_content": f'''<bpmn2:sequenceFlow id="SequenceFlow_3_{clean_path}" sourceRef="ContentModifier_{clean_path}_headers" targetRef="RequestReply_{clean_path}" isImmediate="true"/>'''
                 },
                 {
                     "id": f"SequenceFlow_4_{clean_path}",
-                    "source": f"RequestReply_{clean_path}",
-                    "target": f"ContentModifier_{clean_path}_response",
+                    "source_ref": f"RequestReply_{clean_path}",
+                    "target_ref": f"ContentModifier_{clean_path}_response",
                     "is_immediate": True,
                     "xml_content": f'''<bpmn2:sequenceFlow id="SequenceFlow_4_{clean_path}" sourceRef="RequestReply_{clean_path}" targetRef="ContentModifier_{clean_path}_response" isImmediate="true"/>'''
                 },
                 {
                     "id": f"SequenceFlow_5_{clean_path}",
-                    "source": f"ContentModifier_{clean_path}_response",
-                    "target": f"ContentModifier_{clean_path}_2",
+                    "source_ref": f"ContentModifier_{clean_path}_response",
+                    "target_ref": f"ContentModifier_{clean_path}_2",
                     "is_immediate": True,
                     "xml_content": f'''<bpmn2:sequenceFlow id="SequenceFlow_5_{clean_path}" sourceRef="ContentModifier_{clean_path}_response" targetRef="ContentModifier_{clean_path}_2" isImmediate="true"/>'''
                 },
                 {
                     "id": f"SequenceFlow_End_{clean_path}",
-                    "source": f"ContentModifier_{clean_path}_2",
-                    "target": "EndEvent_2",
+                    "source_ref": f"ContentModifier_{clean_path}_2",
+                    "target_ref": "EndEvent_2",
                     "is_immediate": True,
                     "xml_content": f'''<bpmn2:sequenceFlow id="SequenceFlow_End_{clean_path}" sourceRef="ContentModifier_{clean_path}_2" targetRef="EndEvent_2" isImmediate="true"/>'''
                 }
@@ -2821,14 +2778,18 @@ def Message processError(Message message) {{
                 endpoint_components["participants"].append(templates.participant_template(
                     id=receiver_participant_id,
                     name=f"Receiver_{component_name}",
-                    type="EndpointReceiver"
+                    type="EndpointRecevier"
                 ))
 
                 # Add the HTTP receiver
+                # Get the actual URL from the component config
+                actual_url = component_config.get("url", component_config.get("address", component_config.get("endpoint_path", "https://example.com")))
+                print(f"🔧 Using HTTP receiver URL: {actual_url}")
+                
                 endpoint_components["message_flows"].append(templates.http_receiver_template(
                     id=component["id"],
                     name=component_name,
-                    address=component_config.get("address", "https://example.com"),  # Default address
+                    address=actual_url,  # Use actual URL from JSON
                     auth_method=component_config.get("auth_method", "None"),
                     credential_name=component_config.get("credential_name", "")
                 ).replace("{{source_ref}}", "Participant_Process_1").replace("{{target_ref}}", receiver_participant_id))
@@ -2872,7 +2833,8 @@ def Message processError(Message message) {{
                 # Get OData configuration with proper defaults
                 service_url = component_config.get("service_url", component_config.get("address", "https://example.com/odata/service"))
                 resource_path = component_config.get("resource_path", component_config.get("entity_set", "Products"))
-                operation = component_config.get("operation", "Query(GET)")
+                raw_operation = component_config.get("operation", "GET")
+                operation = self._normalize_odata_operation(raw_operation)
                 auth_method = component_config.get("auth_method", component_config.get("authenticationMethod", "None"))
 
                 print(f"  📊 OData Config: URL={service_url}, Resource={resource_path}, Operation={operation}, Auth={auth_method}")
@@ -2954,6 +2916,137 @@ def Message processError(Message message) {{
                     # Make sure there are no default routes with broken IDs
                     conditions=component_config.get("conditions", [])
                 ))
+                # Emit router branch sequence flows if provided
+                try:
+                    conditions = component_config.get("conditions", []) or []
+                    for idx, cond in enumerate(conditions):
+                        target = (cond.get("target") or "").strip()
+                        if not target:
+                            continue
+                        flow_id = cond.get("id") or f"flow_{component['id']}_to_{target}_{idx}"
+                        expr = cond.get("expression", "")
+                        expr_type = cond.get("expression_type", "NonXML")
+                        seq_xml = templates.router_condition_template(
+                            id=flow_id,
+                            name=cond.get("name", flow_id),
+                            source_ref=component["id"],
+                            target_ref=target,
+                            expression=expr,
+                            expression_type=expr_type,
+                        )
+                        endpoint_components["sequence_flows"].append(seq_xml)
+                except Exception:
+                    pass
+
+            elif component_type in ("groovy_script", "script"):
+                # Add a Groovy Script step using the groovy_script_template
+                # Use centralized script name extraction for consistency
+                script_name = self._extract_script_name(component_config, component["id"])
+                
+                # Handle nested config structure for other properties
+                if "config" in component_config:
+                    script_function = component_config["config"].get("script_function", "")
+                    script_content = component_config["config"].get("script_content", "")
+                else:
+                    script_function = component_config.get("script_function", "")
+                    script_content = component_config.get("script_content", "")
+                
+                # Create the actual script file content
+                if script_content:
+                    # Store script file info to be added to iflow_files later
+                    script_file_path = f"src/main/resources/script/{script_name}"
+                    if not hasattr(endpoint_components, 'script_files'):
+                        endpoint_components['script_files'] = []
+                    endpoint_components['script_files'].append({
+                        'path': script_file_path,
+                        'content': script_content,
+                        'name': script_name
+                    })
+                    print(f"        ✅ Prepared script file: {script_file_path}")
+                
+                if hasattr(templates, "groovy_script_template"):
+                    endpoint_components["process_components"].append(
+                        templates.groovy_script_template(
+                            id=component["id"],
+                            name=component_name,
+                            script_name=script_name,
+                            script_function=script_function,
+                            script_content=script_content
+                        )
+                    )
+                else:
+                    endpoint_components["process_components"].append(
+                        f'''<bpmn2:callActivity id="{component['id']}" name="{component_name}">\n'''
+                        f'''  <bpmn2:extensionElements>\n'''
+                        f'''    <ifl:property><key>activityType</key><value>Script</value></ifl:property>\n'''
+                        f'''    <ifl:property><key>cmdVariantUri</key><value>ctype::FlowstepVariant/cname::GroovyScript/version::1.1.2</value></ifl:property>\n'''
+                        f'''    <ifl:property><key>script</key><value>{script_name}</value></ifl:property>\n'''
+                        f'''  </bpmn2:extensionElements>\n'''
+                        f'''</bpmn2:callActivity>'''
+                    )
+
+            elif component_type == "filter":
+                endpoint_components["process_components"].append(templates.filter_template(
+                    id=component["id"],
+                    name=component_name,
+                    expression=component_config.get("expression", "")
+                ))
+
+            elif component_type == "multicast":
+                endpoint_components["process_components"].append(templates.multicast_template(
+                    id=component["id"],
+                    name=component_name,
+                ))
+
+            elif component_type == "sequential_multicast":
+                endpoint_components["process_components"].append(templates.sequential_multicast_template(
+                    id=component["id"],
+                    name=component_name,
+                ))
+
+            elif component_type == "parallel_gateway":
+                endpoint_components["process_components"].append(templates.parallel_gateway_template(
+                    id=component["id"],
+                    name=component_name,
+                    gateway_type=component_config.get("gateway_type", "parallel")
+                ))
+
+            elif component_type == "join_gateway":
+                endpoint_components["process_components"].append(templates.join_gateway_template(
+                    id=component["id"],
+                    name=component_name,
+                    join_type=component_config.get("join_type", "parallel")
+                ))
+
+            elif component_type == "process_call_element":
+                endpoint_components["process_components"].append(templates.process_call_element_template(
+                    id=component["id"],
+                    name=component_name,
+                ))
+
+            elif component_type == "send":
+                endpoint_components["process_components"].append(templates.send_template(
+                    id=component["id"],
+                    name=component_name,
+                ))
+
+            elif component_type == "xml_to_csv_converter":
+                endpoint_components["process_components"].append(templates.xml_to_csv_converter_template(
+                    id=component["id"],
+                    name=component_name,
+                ))
+
+            elif component_type == "xml_to_json_converter":
+                endpoint_components["process_components"].append(templates.xml_to_json_converter_template(
+                    id=component["id"],
+                    name=component_name,
+                ))
+
+            elif component_type == "json_to_xml_converter":
+                endpoint_components["process_components"].append(templates.json_to_xml_converter_template(
+                    id=component["id"],
+                    name=component_name,
+                ))
 
             elif component_type == "exception_subprocess":
                 # Add an exception subprocess to the process
@@ -2962,6 +3055,28 @@ def Message processError(Message message) {{
                     name=component_name,
                     error_type=component_config.get("error_type", "All")
                 ))
+
+            elif component_type == "subprocess":
+                # Add a generic embedded subprocess container to the process
+                # This creates a safe placeholder subprocess that can be enriched later
+                if hasattr(templates, "subprocess_template"):
+                    endpoint_components["process_components"].append(
+                        templates.subprocess_template(
+                            id=component["id"],
+                            name=component_name,
+                        )
+                    )
+                else:
+                    # Fallback: minimal subprocess element
+                    endpoint_components["process_components"].append(
+                        f'''<bpmn2:subProcess id="{component["id"]}" name="{component_name}">\n'''
+                        f'''    <bpmn2:extensionElements>\n'''
+                        f'''        <ifl:property><key>componentVersion</key><value>1.0</value></ifl:property>\n'''
+                        f'''        <ifl:property><key>activityType</key><value>EmbeddedSubprocess</value></ifl:property>\n'''
+                        f'''        <ifl:property><key>cmdVariantUri</key><value>ctype::FlowstepVariant/cname::Subprocess/version::1.0.0</value></ifl:property>\n'''
+                        f'''    </bpmn2:extensionElements>\n'''
+                        f'''</bpmn2:subProcess>'''
+                    )
 
             elif component_type == "write_to_log" or component_type == "logger":
                 # Add a write to log component to the process
@@ -2989,6 +3104,264 @@ def Message processError(Message message) {{
                     activity_type=component_config.get("activity_type", "Process")
                 ))
 
+            elif component_type == "lip":
+                # Add Local Integration Process as a process call activity
+                if hasattr(templates, "process_call_template"):
+                    # Extract LIP configuration
+                    lip_config = component_config or {}
+                    process_id = lip_config.get("process_id", f"Process_{component['id']}")
+                    process_name = lip_config.get("process_name", f"Local Integration Process {component['id']}")
+                    script_name = lip_config.get("script_name", "script.groovy")
+                    script_function = lip_config.get("script_function", "processMessage")
+                    
+                    # Create the process call activity (callActivity)
+                    process_call = templates.process_call_template(
+                        id=component["id"],
+                        name=component_name,
+                        process_id=process_id
+                    )
+                    endpoint_components["process_components"].append(process_call)
+                    
+                    # Create the LIP content (start event, script, end event)
+                    lip_start_event = templates.enhanced_start_event_template(
+                        id=f"StartEvent_{process_id}",
+                        name="Start 1"
+                    )
+                    
+                    lip_script = templates.enhanced_groovy_script_template(
+                        id=f"CallActivity_{process_id}",
+                        name="Groovy Script 1",
+                        script_name=script_name,
+                        script_function=script_function
+                    )
+                    
+                    lip_end_event = templates.enhanced_end_event_template(
+                        id=f"EndEvent_{process_id}",
+                        name="End 1"
+                    )
+                    
+                    # Create sequence flows for the LIP
+                    lip_flow_1 = f'''<bpmn2:sequenceFlow id="SequenceFlow_{process_id}_1" sourceRef="StartEvent_{process_id}" targetRef="CallActivity_{process_id}"/>'''
+                    lip_flow_2 = f'''<bpmn2:sequenceFlow id="SequenceFlow_{process_id}_2" sourceRef="CallActivity_{process_id}" targetRef="EndEvent_{process_id}"/>'''
+                    
+                    # Combine all LIP content
+                    lip_content = f"{lip_start_event}\n    {lip_script}\n    {lip_end_event}\n    {lip_flow_1}\n    {lip_flow_2}"
+                    
+                    # Create the complete LIP process with content directly
+                    lip_process = f'''<bpmn2:process id="{process_id}" name="{process_name}">
+    <bpmn2:extensionElements>
+        <ifl:property>
+            <key>transactionTimeout</key>
+            <value>30</value>
+        </ifl:property>
+        <ifl:property>
+            <key>processType</key>
+            <value>directCall</value>
+        </ifl:property>
+        <ifl:property>
+            <key>componentVersion</key>
+            <value>1.1</value>
+        </ifl:property>
+        <ifl:property>
+            <key>cmdVariantUri</key>
+            <value>ctype::FlowElementVariant/cname::LocalIntegrationProcess/version::1.1.3</value>
+        </ifl:property>
+        <ifl:property>
+            <key>transactionalHandling</key>
+            <value>From Calling Process</value>
+        </ifl:property>
+    </bpmn2:extensionElements>
+    {lip_content}
+</bpmn2:process>'''
+                    
+                    # Add the LIP process to the main XML structure (not process components)
+                    if "additional_processes" not in endpoint_components:
+                        endpoint_components["additional_processes"] = []
+                    endpoint_components["additional_processes"].append(lip_process)
+                    
+                    # Create a participant for the LIP process
+                    lip_participant = f'''<bpmn2:participant id="Participant_{process_id}" ifl:type="IntegrationProcess" name="{process_name}" processRef="{process_id}">
+    <bpmn2:extensionElements/>
+</bpmn2:participant>'''
+                    
+                    # Add the LIP participant to the collaboration participants
+                    endpoint_components["collaboration_participants"].append({
+                        "type": "participant",
+                        "name": process_name,
+                        "id": f"Participant_{process_id}",
+                        "xml_content": lip_participant
+                    })
+                    
+                    print(f"Created Local Integration Process: {process_name} with script {script_name} and participant Participant_{process_id}")
+                else:
+                    # Fallback to a generic call activity
+                    endpoint_components["process_components"].append(
+                        templates.call_activity_template(
+                            id=component["id"],
+                            name=component_name,
+                            activity_type="ProcessCallElement"
+                        )
+                    )
+
+            elif component_type == "local_integration_process":
+                # Backward compatibility for local_integration_process type
+                # Add Local Integration Process as a process call activity
+                if hasattr(templates, "process_call_template"):
+                    # Extract LIP configuration
+                    lip_config = component_config or {}
+                    process_id = lip_config.get("process_id", f"Process_{component['id']}")
+                    process_name = lip_config.get("process_name", f"Local Integration Process {component['id']}")
+                    script_name = lip_config.get("script_name", "script.groovy")
+                    script_function = lip_config.get("script_function", "processMessage")
+                    
+                    # Create the process call activity (callActivity)
+                    process_call = templates.process_call_template(
+                        id=component["id"],
+                        name=component_name,
+                        process_id=process_id
+                    )
+                    endpoint_components["process_components"].append(process_call)
+                    
+                    # Create the LIP content (start event, script, end event)
+                    lip_start_event = templates.enhanced_start_event_template(
+                        id=f"StartEvent_{process_id}",
+                        name="Start 1"
+                    )
+                    
+                    lip_script = templates.enhanced_groovy_script_template(
+                        id=f"CallActivity_{process_id}",
+                        name="Groovy Script 1",
+                        script_name=script_name,
+                        script_function=script_function
+                    )
+                    
+                    lip_end_event = templates.enhanced_end_event_template(
+                        id=f"EndEvent_{process_id}",
+                        name="End 1"
+                    )
+                    
+                    # Create sequence flows for the LIP
+                    lip_flow_1 = f'''<bpmn2:sequenceFlow id="SequenceFlow_{process_id}_1" sourceRef="StartEvent_{process_id}" targetRef="CallActivity_{process_id}"/>'''
+                    lip_flow_2 = f'''<bpmn2:sequenceFlow id="SequenceFlow_{process_id}_2" sourceRef="CallActivity_{process_id}" targetRef="EndEvent_{process_id}"/>'''
+                    
+                    # Combine all LIP content
+                    lip_content = f"{lip_start_event}\n    {lip_script}\n    {lip_end_event}\n    {lip_flow_1}\n    {lip_flow_2}"
+                    
+                    # Create the complete LIP process with content directly
+                    lip_process = f'''<bpmn2:process id="{process_id}" name="{process_name}">
+    <bpmn2:extensionElements>
+        <ifl:property>
+            <key>transactionTimeout</key>
+            <value>30</value>
+        </ifl:property>
+        <ifl:property>
+            <key>processType</key>
+            <value>directCall</value>
+        </ifl:property>
+        <ifl:property>
+            <key>componentVersion</key>
+            <value>1.1</value>
+        </ifl:property>
+        <ifl:property>
+            <key>cmdVariantUri</key>
+            <value>ctype::FlowElementVariant/cname::LocalIntegrationProcess/version::1.1.3</value>
+        </ifl:property>
+        <ifl:property>
+            <key>transactionalHandling</key>
+            <value>From Calling Process</value>
+        </ifl:property>
+    </bpmn2:extensionElements>
+    {lip_content}
+</bpmn2:process>'''
+                    
+                    # Add the LIP process to the main XML structure (not process components)
+                    if "additional_processes" not in endpoint_components:
+                        endpoint_components["additional_processes"] = []
+                    endpoint_components["additional_processes"].append(lip_process)
+                    
+                    # Create a participant for the LIP process
+                    lip_participant = f'''<bpmn2:participant id="Participant_{process_id}" ifl:type="IntegrationProcess" name="{process_name}" processRef="{process_id}">
+    <bpmn2:extensionElements/>
+</bpmn2:participant>'''
+                    
+                    # Add the LIP participant to the collaboration participants
+                    endpoint_components["collaboration_participants"].append({
+                        "type": "participant",
+                        "name": process_name,
+                        "id": f"Participant_{process_id}",
+                        "xml_content": lip_participant
+                    })
+                    
+                    print(f"Created Local Integration Process: {process_name} with script {script_name} and participant Participant_{process_id}")
+                else:
+                    # Fallback to a generic call activity
+                    endpoint_components["process_components"].append(
+                        templates.call_activity_template(
+                            id=component["id"],
+                            name=component_name,
+                            activity_type="ProcessCallElement"
+                        )
+                    )
+
+            elif component_type == "sftp":
+                # Add SFTP component to the process using the SFTP component template
+                if hasattr(templates, "sftp_component_template"):
+                    # Extract SFTP configuration from component config or endpoint path
+                    sftp_config = component_config or {}
+                    host = sftp_config.get("host", "sftp.example.com")
+                    port = sftp_config.get("port", 22)
+                    path = sftp_config.get("path", "/uploads")
+                    username = sftp_config.get("username", "${sftp_username}")
+                    auth_type = sftp_config.get("auth_type", "Password")
+                    operation = sftp_config.get("operation", "PUT")
+                    
+                    # Create the main SFTP component
+                    sftp_component = templates.sftp_component_template(
+                        id=component["id"],
+                        name=component_name,
+                        host=host,
+                        port=port,
+                        path=path,
+                        username=username,
+                        auth_type=auth_type,
+                        operation=operation
+                    )
+                    endpoint_components["process_components"].append(sftp_component["definition"])
+                    
+                    # Create SFTP receiver participant and message flow
+                    sftp_participant = templates.sftp_receiver_participant_template(
+                        id=f"Participant_{component['id']}",
+                        name=f"{component_name}_SFTP"
+                    )
+                    endpoint_components["participants"].append(sftp_participant["definition"])
+                    
+                    sftp_message_flow = templates.sftp_receiver_message_flow_template(
+                        id=f"MessageFlow_{component['id']}",
+                        source_ref=component["id"],
+                        target_ref=f"Participant_{component['id']}",
+                        host=host,
+                        port=port,
+                        path=path,
+                        username=username,
+                        auth_type=auth_type,
+                        operation=operation
+                    )
+                    endpoint_components["message_flows"].append(sftp_message_flow["definition"])
+                    
+                    print(f"Created SFTP component {component_name} with host {host}:{port}{path}")
+                else:
+                    # Fallback: create a generic service task for SFTP
+                    endpoint_components["process_components"].append(
+                        f'''<bpmn2:serviceTask id="{component["id"]}" name="{component_name}">\n'''
+                        f'''    <bpmn2:extensionElements>\n'''
+                        f'''        <ifl:property><key>componentVersion</key><value>1.11</value></ifl:property>\n'''
+                        f'''        <ifl:property><key>activityType</key><value>ExternalCall</value></ifl:property>\n'''
+                        f'''        <ifl:property><key>cmdVariantUri</key><value>ctype::FlowstepVariant/cname::ExternalCall/version::1.0.4</value></ifl:property>\n'''
+                        f'''        <ifl:property><key>sftp_operation</key><value>PUT</value></ifl:property>\n'''
+                        f'''    </bpmn2:extensionElements>\n'''
+                        f'''</bpmn2:serviceTask>'''
+                    )
+
             elif component_type == "odata":
                 # Skip components with IDs that start with "ServiceTask_OData_" as they're redundant
                 if component["id"].startswith("ServiceTask_OData_"):
@@ -3014,9 +3387,9 @@ def Message processError(Message message) {{
                 odata_config = component_config
 
                 # Create OData components using hardcoded template
-                # IMPORTANT: Don't use component["id"] directly to avoid creating ServiceTask_OData_* components
+                # IMPORTANT: Use the exact component ID from JSON to match flow array references
                 odata_components = self._create_odata_components(
-                    component_id=component["id"].replace("odata_", ""),  # Remove "odata_" prefix to avoid redundancy
+                    component_id=component["id"],  # Use exact ID to match flow array
                     component_name=component_name,
                     config=odata_config,
                     incoming_flow_id=incoming_flow_id,
@@ -3052,11 +3425,15 @@ def Message processError(Message message) {{
                 print(f"Created HARDCODED OData component pattern with service task {odata_components['service_task_id']}, participant {odata_components['participant_id']}, and message flow {odata_components['message_flow_id']}")
 
             elif component_type == "request_reply":
-                # Store the address and method in a comment for documentation
-                address = component_config.get("address", "https://example.com/api")
+                # Get the actual URL from the component config - check multiple possible fields
+                address = component_config.get("url", 
+                          component_config.get("address", 
+                          component_config.get("endpoint_path", "https://example.com/api")))
                 method = component_config.get("method", "GET")
                 protocol = component_config.get("protocol", "HTTPS")
                 operation = component_config.get("operation", method)
+                
+                print(f"🔧 Using request_reply URL: {address} (method: {method})")
 
                 print(f"Request-Reply component {component_name} will call {method} {address}")
 
@@ -3498,7 +3875,9 @@ def Message processMessage(Message message) {{
 
             # Add sequence flow if this is not the first component and we're not using a request_reply_pattern
             # (request_reply_pattern adds its own sequence flows)
-            if prev_component_id and component_type != "request_reply_pattern":
+            # Skip automatic sequence flow creation if flow array has been processed
+            if (prev_component_id and component_type != "request_reply_pattern" and 
+                not endpoint_components.get("flow_array_processed", False)):
                 sequence_flow_id = templates.generate_unique_id("SequenceFlow")
                 endpoint_components["sequence_flows"].append(
                     templates.sequence_flow_template(
@@ -3516,10 +3895,30 @@ def Message processMessage(Message message) {{
         if sequence_flows:
             print(f"Processing {len(sequence_flows)} explicit sequence flows")
 
-            # Clear any automatically generated sequence flows if we have explicit ones
+            # Clear any automatically generated sequence flows that would conflict with explicit ones
             if endpoint_components["sequence_flows"] and len(sequence_flows) > 0:
-                print("Clearing auto-generated sequence flows in favor of explicit ones")
-                endpoint_components["sequence_flows"] = []
+                print("Checking for conflicts between auto-generated and explicit sequence flows")
+                # Only clear flows that would conflict with explicit flows
+                flows_to_keep = []
+                for existing_flow in endpoint_components["sequence_flows"]:
+                    should_keep = True
+                    # Check if this flow conflicts with any explicit flow
+                    for explicit_flow in sequence_flows:
+                        if explicit_flow.get("source") and explicit_flow.get("target"):
+                            # Check if source and target match (potential conflict)
+                            if (f'sourceRef="{explicit_flow["source"]}"' in existing_flow and 
+                                f'targetRef="{explicit_flow["target"]}"' in existing_flow):
+                                print(f"  Removing conflicting auto-generated flow: {existing_flow[:100]}...")
+                                should_keep = False
+                                break
+                    if should_keep:
+                        flows_to_keep.append(existing_flow)
+                
+                if len(flows_to_keep) < len(endpoint_components["sequence_flows"]):
+                    print(f"Cleared {len(endpoint_components['sequence_flows']) - len(flows_to_keep)} conflicting flows, keeping {len(flows_to_keep)} non-conflicting flows")
+                    endpoint_components["sequence_flows"] = flows_to_keep
+                else:
+                    print("No conflicts found, keeping all existing flows")
 
             # Add sequence flows from the JSON
             for flow in sequence_flows:
@@ -3564,9 +3963,75 @@ def Message processMessage(Message message) {{
                 )
                 print(f"Added explicit sequence flow {flow_id} from {source_id} to {target_id}")
 
+        # Process flow array if it exists (for linear flow definitions)
+        flow_array = endpoint.get("flow", [])
+        if flow_array:
+            print(f"Processing {len(flow_array)} components from flow array to create sequence flows")
+            
+            # Clear ALL automatically generated sequence flows when flow array is present
+            if endpoint_components["sequence_flows"]:
+                print("Clearing ALL auto-generated sequence flows in favor of flow array")
+                endpoint_components["sequence_flows"] = []
+            
+            # Set a flag to indicate that flow array processing has been done
+            endpoint_components["flow_array_processed"] = True
+            # Also set as instance variable for _generate_iflw_content to access
+            self.flow_array_processed = True
+            
+            # Create start flow from start event to first component
+            if flow_array:
+                first_component_id = flow_array[0]
+                start_flow_id = f"flow_StartEvent_2_to_{first_component_id}_start"
+                
+                # Create the start sequence flow
+                endpoint_components["sequence_flows"].append(
+                    templates.sequence_flow_template(
+                        id=start_flow_id,
+                        source_ref="StartEvent_2",
+                        target_ref=first_component_id,
+                        is_immediate="true"
+                    )
+                )
+                print(f"Created start sequence flow {start_flow_id} from StartEvent_2 to {first_component_id}")
+            
+            # Create sequence flows from the flow array
+            for i in range(len(flow_array) - 1):
+                source_id = flow_array[i]
+                target_id = flow_array[i + 1]
+                
+                # Create a sequence flow ID
+                flow_id = f"SequenceFlow_{source_id}_to_{target_id}"
+                
+                # Create the sequence flow
+                endpoint_components["sequence_flows"].append(
+                    templates.sequence_flow_template(
+                        id=flow_id,
+                        source_ref=source_id,
+                        target_ref=target_id,
+                        is_immediate="true"
+                    )
+                )
+                print(f"Created sequence flow {flow_id} from {source_id} to {target_id}")
+            
+            # Create final flow from last component to end event
+            if flow_array:
+                last_component_id = flow_array[-1]
+                end_flow_id = f"flow_{last_component_id}_to_EndEvent_2_end"
+                
+                # Create the final sequence flow to end event
+                endpoint_components["sequence_flows"].append(
+                    templates.sequence_flow_template(
+                        id=end_flow_id,
+                        source_ref=last_component_id,
+                        target_ref="EndEvent_2",
+                        is_immediate="true"
+                    )
+                )
+                print(f"Created final sequence flow {end_flow_id} from {last_component_id} to EndEvent_2")
+
         # For backward compatibility, also process connections if they exist
         connections = endpoint.get("connections", [])
-        if connections and not sequence_flows:
+        if connections and not sequence_flows and not flow_array:
             print(f"Processing {len(connections)} explicit connections")
 
             # Clear any automatically generated sequence flows if we have explicit connections
@@ -3658,16 +4123,16 @@ def Message processMessage(Message message) {{
         if position is None:
             position = {"x": 400, "y": 150}
 
-        # Generate IDs - avoid using "ServiceTask_OData_" prefix for service task ID
-        # Instead, use a more generic prefix that won't conflict with the JSON input
-        service_task_id = f"ODataCall_{component_id}"
-        participant_id = f"Participant_OData_{component_id}"
-        message_flow_id = f"MessageFlow_OData_{component_id}"
+        # Generate IDs - use the exact component_id from JSON to match flow array references
+        service_task_id = component_id  # Use exact ID: "ODataCall_1"
+        participant_id = f"Participant_{component_id}"  # "Participant_ODataCall_1"
+        message_flow_id = f"MessageFlow_{component_id}"  # "MessageFlow_ODataCall_1"
 
         # Get OData configuration
         address = config.get("address", "https://example.com/odata/service")
         resource_path = config.get("resource_path", "Products")
-        operation = config.get("operation", "Query(GET)")
+        raw_operation = config.get("operation", "GET")
+        operation = self._normalize_odata_operation(raw_operation)
         query_options = config.get("query_options", "$select=Id,Name,Description")
 
         # Calculate positions
@@ -3700,11 +4165,11 @@ def Message processMessage(Message message) {{
     {outgoing_ref}
 </bpmn2:serviceTask>'''
 
-        participant = f'''<bpmn2:participant id="{participant_id}" ifl:type="EndpointReceiver" name="OData_{component_name}">
+        participant = f'''<bpmn2:participant id="{participant_id}" ifl:type="EndpointRecevier" name="OData_{component_name}">
     <bpmn2:extensionElements>
         <ifl:property>
             <key>ifl:type</key>
-            <value>EndpointReceiver</value>
+            <value>EndpointRecevier</value>
         </ifl:property>
     </bpmn2:extensionElements>
 </bpmn2:participant>'''
@@ -4008,6 +4473,247 @@ def Message processMessage(Message message) {{
 
         return True
 
+    def _post_validate_and_fix_json(self, components, iflow_name):
+        """
+        Post-validation logic that ensures JSON has all required elements for iFlow generation
+        This runs right before iFlow generation to fix any missing StartEvent/EndEvent flows
+        
+        Args:
+            components (dict): The components dictionary to validate and fix
+            iflow_name (str): Name of the iFlow for debugging
+            
+        Returns:
+            dict: Validated and fixed components
+        """
+        print(f"🔍 POST-VALIDATION: Validating JSON for {iflow_name}")
+        
+        if not components or not isinstance(components, dict):
+            print("❌ Invalid components structure")
+            return components
+            
+        if "endpoints" not in components:
+            print("❌ No endpoints found in components")
+            return components
+            
+        # Process each endpoint
+        for endpoint in components.get("endpoints", []):
+            if not isinstance(endpoint, dict):
+                continue
+                
+            # Ensure sequence_flows array exists
+            if "sequence_flows" not in endpoint:
+                endpoint["sequence_flows"] = []
+                print(f"✅ Added missing sequence_flows array")
+            
+            # Ensure flow array exists
+            if "flow" not in endpoint or not endpoint["flow"]:
+                print(f"⚠️  No flow array found for endpoint")
+                continue
+                
+            flow_array = endpoint["flow"]
+            sequence_flows = endpoint["sequence_flows"]
+            
+            print(f"🔍 Flow array: {flow_array}")
+            print(f"🔍 Current sequence flows: {len(sequence_flows)}")
+            
+            # Fix 1: Add StartEvent_2 to first component flow
+            if flow_array:
+                first_component = flow_array[0]
+                start_flow_id = f"flow_StartEvent_2_to_{first_component}"
+                
+                # Check if StartEvent flow already exists
+                has_start_flow = any(
+                    flow.get("source_ref") == "StartEvent_2" and flow.get("target_ref") == first_component
+                    for flow in sequence_flows
+                )
+                
+                if not has_start_flow:
+                    print(f"🔧 Adding StartEvent_2 flow to {first_component}")
+                    start_flow = {
+                        "id": start_flow_id,
+                        "source_ref": "StartEvent_2",
+                        "target_ref": first_component,
+                        "is_immediate": True,
+                        "xml_content": f'<bpmn2:sequenceFlow id="{start_flow_id}" sourceRef="StartEvent_2" targetRef="{first_component}" isImmediate="true"/>'
+                    }
+                    sequence_flows.insert(0, start_flow)
+                    print(f"✅ Added StartEvent flow: {start_flow_id}")
+                else:
+                    print(f"✅ StartEvent flow already exists")
+            
+            # Fix 2: Add last component to EndEvent_2 flow
+            if flow_array:
+                last_component = flow_array[-1]
+                end_flow_id = f"flow_{last_component}_to_EndEvent_2"
+                
+                # Check if EndEvent flow already exists
+                has_end_flow = any(
+                    flow.get("source_ref") == last_component and flow.get("target_ref") == "EndEvent_2"
+                    for flow in sequence_flows
+                )
+                
+                if not has_end_flow:
+                    print(f"🔧 Adding EndEvent_2 flow from {last_component}")
+                    end_flow = {
+                        "id": end_flow_id,
+                        "source_ref": last_component,
+                        "target_ref": "EndEvent_2",
+                        "is_immediate": True,
+                        "xml_content": f'<bpmn2:sequenceFlow id="{end_flow_id}" sourceRef="{last_component}" targetRef="EndEvent_2" isImmediate="true"/>'
+                    }
+                    sequence_flows.append(end_flow)
+                    print(f"✅ Added EndEvent flow: {end_flow_id}")
+                else:
+                    print(f"✅ EndEvent flow already exists")
+            
+            # Fix 3: Preserve GenAI sequence flows and only validate they're consistent
+            print(f"🔧 Preserving GenAI sequence flows...")
+            
+            # Keep all original sequence flows from GenAI - they contain business logic
+            print(f"✅ Preserving {len(sequence_flows)} GenAI-generated sequence flows")
+            
+            # Only validate that all components in flow array have connections
+            flow_components = set(flow_array)
+            connected_components = set()
+            
+            for flow in sequence_flows:
+                source = flow.get("source_ref")
+                target = flow.get("target_ref")
+                if source in flow_components:
+                    connected_components.add(source)
+                if target in flow_components:
+                    connected_components.add(target)
+            
+            missing_components = flow_components - connected_components
+            if missing_components:
+                print(f"⚠️  Components in flow array but not in sequence flows: {missing_components}")
+            else:
+                print(f"✅ All flow components have sequence flow connections")
+            
+        print(f"✅ POST-VALIDATION: JSON validation and fixing completed for {iflow_name}")
+        return components
+
+    def _fix_and_normalize_json(self, components, iflow_name):
+        """
+        Fix and normalize the JSON components structure before iFlow generation
+        
+        Args:
+            components (dict): The raw API data
+            iflow_name (str): The name of the iFlow for debugging
+            
+        Returns:
+            dict: Fixed and normalized components
+        """
+        print(f"🔧 DEBUG: Starting JSON fixing and normalization for {iflow_name}")
+        print(f"🔧 DEBUG: Input components type: {type(components)}")
+        print(f"🔧 DEBUG: Input components keys: {list(components.keys()) if isinstance(components, dict) else 'Not a dict'}")
+        
+        # Create a deep copy to avoid modifying the original
+        import copy
+        fixed_components = copy.deepcopy(components)
+        
+        # Ensure we have the correct structure
+        if "endpoints" not in fixed_components:
+            if "components" in fixed_components:
+                print("🔧 DEBUG: Moving 'components' to 'endpoints' structure")
+                fixed_components = {"endpoints": fixed_components["components"]}
+            else:
+                print("🔧 DEBUG: Creating empty endpoints structure")
+                fixed_components = {"endpoints": []}
+        
+        # Normalize each endpoint
+        for endpoint in fixed_components.get("endpoints", []):
+            # Ensure components array exists
+            if "components" not in endpoint:
+                endpoint["components"] = []
+            
+            # Normalize each component
+            for component in endpoint.get("components", []):
+                # Ensure required fields exist
+                if "id" not in component:
+                    component["id"] = f"component_{len(endpoint['components'])}"
+                if "name" not in component:
+                    component["name"] = component.get("id", "Unknown")
+                if "type" not in component:
+                    component["type"] = "content_modifier"
+                if "config" not in component:
+                    component["config"] = {}
+            
+            # Ensure sequence_flows array exists
+            if "sequence_flows" not in endpoint:
+                endpoint["sequence_flows"] = []
+            
+            # Normalize sequence flows
+            for flow in endpoint.get("sequence_flows", []):
+                if "id" not in flow:
+                    flow["id"] = f"flow_{len(endpoint['sequence_flows'])}"
+                if "source_ref" not in flow:
+                    flow["source_ref"] = "StartEvent_2"
+                if "target_ref" not in flow:
+                    flow["target_ref"] = "EndEvent_2"
+            
+            # 🔧 CRITICAL FIX: Ensure there's always a flow from StartEvent_2 to the first component
+            if endpoint.get("components") and endpoint.get("flow"):
+                first_component_id = endpoint["flow"][0] if endpoint["flow"] else None
+                if first_component_id:
+                    # Check if there's already a flow from StartEvent_2 to the first component
+                    has_start_flow = any(
+                        flow.get("source_ref") == "StartEvent_2" and flow.get("target_ref") == first_component_id
+                        for flow in endpoint.get("sequence_flows", [])
+                    )
+                    
+                    if not has_start_flow:
+                        print(f"🔧 DEBUG: Adding missing StartEvent_2 flow to first component {first_component_id}")
+                        start_flow = {
+                            "id": f"flow_StartEvent_2_to_{first_component_id}",
+                            "source_ref": "StartEvent_2",
+                            "target_ref": first_component_id,
+                            "is_immediate": True,
+                            "xml_content": f'<bpmn2:sequenceFlow id="flow_StartEvent_2_to_{first_component_id}" sourceRef="StartEvent_2" targetRef="{first_component_id}" isImmediate="true"/>'
+                        }
+                        endpoint["sequence_flows"].insert(0, start_flow)
+                        print(f"✅ Added StartEvent_2 flow: {start_flow['id']}")
+            
+            # 🔧 CRITICAL FIX: Ensure there's always a flow from the last component to EndEvent_2
+            if endpoint.get("components") and endpoint.get("flow"):
+                last_component_id = endpoint["flow"][-1] if endpoint["flow"] else None
+                if last_component_id:
+                    # Check if there's already a flow from the last component to EndEvent_2
+                    has_end_flow = any(
+                        flow.get("source_ref") == last_component_id and flow.get("target_ref") == "EndEvent_2"
+                        for flow in endpoint.get("sequence_flows", [])
+                    )
+                    
+                    if not has_end_flow:
+                        print(f"🔧 DEBUG: Adding missing EndEvent_2 flow from last component {last_component_id}")
+                        end_flow = {
+                            "id": f"flow_{last_component_id}_to_EndEvent_2",
+                            "source_ref": last_component_id,
+                            "target_ref": "EndEvent_2",
+                            "is_immediate": True,
+                            "xml_content": f'<bpmn2:sequenceFlow id="flow_{last_component_id}_to_EndEvent_2" sourceRef="{last_component_id}" targetRef="EndEvent_2" isImmediate="true"/>'
+                        }
+                        endpoint["sequence_flows"].append(end_flow)
+                        print(f"✅ Added EndEvent_2 flow: {end_flow['id']}")
+        
+        # Save the fixed components to debug folder
+        debug_dir = os.path.join(os.path.dirname(__file__), "genai_debug")
+        os.makedirs(debug_dir, exist_ok=True)
+        
+        # Save fixed components alongside final_components.json
+        fixed_file = os.path.join(debug_dir, f"fixed_components_{iflow_name}.json")
+        with open(fixed_file, "w", encoding="utf-8") as f:
+            json.dump(fixed_components, f, indent=2)
+        print(f"✅ Saved fixed components to {fixed_file}")
+        
+        # Also save as final_components.json for consistency
+        final_file = os.path.join(debug_dir, "final_components.json")
+        with open(final_file, "w", encoding="utf-8") as f:
+            json.dump(fixed_components, f, indent=2)
+        print(f"✅ Saved final components to {final_file}")
+        
+        return fixed_components
+
     def _generate_iflw_content(self, components, iflow_name):
         """
         Generate the iFlow content using template-based generation with GenAI enhancements
@@ -4019,11 +4725,39 @@ def Message processMessage(Message message) {{
         Returns:
             str: The iFlow content
         """
-        # Save the input components for debugging
-        os.makedirs("genai_debug", exist_ok=True)
-        with open(f"genai_debug/iflow_input_components_{iflow_name}.json", "w", encoding="utf-8") as f:
+        # 🚫 CRITICAL FIX: If converter is enabled, DO NOT run template-based approach
+        print(f"🔍 DEBUG: _generate_iflw_content called with use_converter={getattr(self, 'use_converter', 'NOT SET')}")
+        print(f"🔍 DEBUG: self type: {type(self)}")
+        print(f"🔍 DEBUG: self dir: {dir(self)}")
+        
+        # 🚫 MORE AGGRESSIVE GUARD: Block ALL template-based generation when converter is enabled
+        print(f"🆔 VERSION: {getattr(self, 'VERSION_ID', 'UNKNOWN')}")
+        print(f"🆔 FILE: {getattr(self, 'FILE_PATH', 'UNKNOWN')}")
+        
+        use_converter_value = getattr(self, 'use_converter', None)
+        print(f"🔍 DEBUG: use_converter_value = {use_converter_value} (type: {type(use_converter_value)})")
+        
+        # ✅ Template-based generation is now enabled
+        print(f"✅ Template-based generation ENABLED - use_converter={use_converter_value}")
+        
+        # 🔧 FIX JSON FIRST: Fix and normalize the JSON components before processing
+        print(f"🔧 DEBUG: Fixing and normalizing JSON components for {iflow_name}")
+        print(f"🔧 DEBUG: About to call _fix_and_normalize_json")
+        components = self._fix_and_normalize_json(components, iflow_name)
+        print(f"🔧 DEBUG: _fix_and_normalize_json completed")
+        
+        # 🎯 POST-VALIDATION: Final validation and fixing before iFlow generation
+        print(f"🎯 POST-VALIDATION: Running final validation for {iflow_name}")
+        components = self._post_validate_and_fix_json(components, iflow_name)
+        print(f"🎯 POST-VALIDATION: Final validation completed")
+        
+        # Save the input components for debugging (after fixing)
+        debug_dir = os.path.join(os.path.dirname(__file__), "genai_debug")
+        os.makedirs(debug_dir, exist_ok=True)
+        debug_file = os.path.join(debug_dir, f"iflow_input_components_{iflow_name}.json")
+        with open(debug_file, "w", encoding="utf-8") as f:
             json.dump(components, f, indent=2)
-        print(f"Saved input components to genai_debug/iflow_input_components_{iflow_name}.json")
+        print(f"Saved input components to {debug_file}")
 
         # Default to template-based approach
         self.generation_approach = "template-based"
@@ -4040,8 +4774,8 @@ def Message processMessage(Message message) {{
         # We'll use GenAI only for specific enhancements if needed
         genai_enhancements = {}
 
-        if self.provider != "local":
-            # Use GenAI to generate descriptions or other metadata
+        if self.provider != "local" and not self.use_converter:
+            # Use GenAI to generate descriptions or other metadata (only for converter approach)
             try:
                 # Update generation approach to indicate GenAI is being used
                 self.generation_approach = "genai-enhanced"
@@ -4138,7 +4872,10 @@ def Message processMessage(Message message) {{
         used_ids.add("StartEvent_2")
 
         # Process each endpoint
-        for endpoint in components.get("endpoints", []):
+        print(f"🔍 DEBUG: Found {len(components.get('endpoints', []))} endpoints in JSON")
+        for i, endpoint in enumerate(components.get("endpoints", [])):
+            print(f"🔍 DEBUG: Processing endpoint {i+1}: {endpoint.get('name', 'Unknown')}")
+            print(f"🔍 DEBUG: Endpoint has {len(endpoint.get('components', []))} components")
             # Create components for the endpoint
             endpoint_components = self._create_endpoint_components(endpoint, templates)
 
@@ -4166,7 +4903,12 @@ def Message processMessage(Message message) {{
                     process_components.append(component)
 
             # Add sequence flows
-            sequence_flows.extend(endpoint_components.get("sequence_flows", []))
+            endpoint_flows = endpoint_components.get("sequence_flows", [])
+            print(f"🔍 DEBUG: Adding {len(endpoint_flows)} flows from endpoint to main sequence_flows")
+            for flow in endpoint_flows:
+                if "StartEvent_2" in flow:
+                    print(f"🔍 DEBUG: Found StartEvent_2 flow: {flow[:100]}...")
+            sequence_flows.extend(endpoint_flows)
 
         # Add end event
         end_event = templates.message_end_event_template(
@@ -4325,81 +5067,151 @@ def Message processMessage(Message message) {{
 
         sequence_flows = fixed_sequence_flows
 
-        # Ensure we have a sequence flow from last component to end event
-        if process_components and len(process_components) > 2:  # Start event + at least one component + end event
-            # Find the last component ID before the end event
-            last_component_id = None
-            for component in reversed(process_components[:-1]):  # Skip the end event
-                id_match = re.search(r'id="([^"]+)"', component)
-                if id_match and id_match.group(1) != "StartEvent_2":
-                    last_component_id = id_match.group(1)
-                    break
-
-            if last_component_id:
-                # Generate a unique sequence flow ID to avoid conflicts
-                end_flow_id = f"flow_{last_component_id}_to_EndEvent_2_end"
-                end_flow = templates.sequence_flow_template(
-                    id=end_flow_id,
-                    source_ref=last_component_id,
-                    target_ref="EndEvent_2"
-                )
-                sequence_flows.append(end_flow)
-                print(f"✅ Added sequence flow from {last_component_id} to EndEvent_2 with ID {end_flow_id}")
-
-                # Update the EndEvent to reference the correct incoming flow
-                for i, component in enumerate(process_components):
-                    if 'id="EndEvent_2"' in component:
-                        # Replace the hardcoded SequenceFlow_End with the actual flow ID
-                        updated_component = component.replace(
-                            "<bpmn2:incoming>SequenceFlow_End</bpmn2:incoming>",
-                            f"<bpmn2:incoming>{end_flow_id}</bpmn2:incoming>"
-                        )
-                        process_components[i] = updated_component
-                        print(f"✅ Updated EndEvent_2 incoming reference to {end_flow_id}")
+        # Check if flow array has been processed - if so, skip automatic sequence flow creation
+        if getattr(self, 'flow_array_processed', False):
+            print(f" FLOW ARRAY ALREADY PROCESSED - SKIPPING AUTOMATIC SEQUENCE FLOW CREATION")
+        else:
+            # Ensure we have a sequence flow from last component to end event
+            if process_components and len(process_components) > 2:  # Start event + at least one component + end event
+                # Find the last component ID before the end event, excluding exception subprocesses
+                last_component_id = None
+                for component in reversed(process_components[:-1]):  # Skip the end event
+                    id_match = re.search(r'id="([^"]+)"', component)
+                    if id_match and id_match.group(1) != "StartEvent_2":
+                        component_id = id_match.group(1)
+                        # Skip exception subprocesses - they should not connect to main EndEvent_2
+                        if ("SubProcess" in component_id or "exception" in component_id.lower() or 
+                            "error" in component_id.lower() or "bpmn2:subProcess" in component):
+                            print(f" Skipping exception subprocess {component_id} - should not connect to main EndEvent_2")
+                            continue
+                            
+                        # Skip LIP processes (Process_*) - they should not connect to main EndEvent_2
+                        if component_id.startswith("Process_") and component_id != "Process_1":
+                            print(f"🚫 Skipping LIP process {component_id} - should not connect to main EndEvent_2")
+                            continue
+                        
+                        last_component_id = component_id
                         break
 
-        # Add sequence flow from start event to first component (if any)
-        print(f"🔍 DEBUG: Total process components: {len(process_components)}")
-        for i, comp in enumerate(process_components):
-            comp_preview = comp[:100].replace('\n', ' ')
-            print(f"  Component {i}: {comp_preview}...")
+                if last_component_id:
+                    # Generate a unique sequence flow ID to avoid conflicts
+                    end_flow_id = f"flow_{last_component_id}_to_EndEvent_2_end"
+                    end_flow = templates.sequence_flow_template(
+                        id=end_flow_id,
+                        source_ref=last_component_id,
+                        target_ref="EndEvent_2"
+                    )
+                    sequence_flows.append(end_flow)
+                    print(f"✅ Added sequence flow from {last_component_id} to EndEvent_2 with ID {end_flow_id}")
 
-        if len(process_components) > 2:  # Start event + at least one component + end event
-            first_component_id = None
-            print(f"🔍 DEBUG: Looking for first component in {len(process_components[1:-1])} middle components")
+                    # Update the EndEvent to reference the correct incoming flow
+                    for i, component in enumerate(process_components):
+                        if 'id="EndEvent_2"' in component:
+                            # Replace the hardcoded SequenceFlow_End with the actual flow ID
+                            updated_component = component.replace(
+                                "<bpmn2:incoming>SequenceFlow_End</bpmn2:incoming>",
+                                f"<bpmn2:incoming>{end_flow_id}</bpmn2:incoming>"
+                            )
+                            process_components[i] = updated_component
+                            print(f"✅ Updated EndEvent_2 incoming reference to {end_flow_id}")
+                            break
 
-            for i, component in enumerate(process_components[1:-1]):  # Skip start and end events
-                id_match = re.search(r'id="([^"]+)"', component)
-                if id_match:
-                    first_component_id = id_match.group(1)
-                    print(f"🔍 DEBUG: Found first component ID: {first_component_id}")
-                    break
-                else:
-                    print(f"🔍 DEBUG: No ID found in component {i}: {component[:50]}...")
-
-            if first_component_id:
-                # Generate a unique sequence flow ID to avoid conflicts
-                start_flow_id = f"flow_StartEvent_2_to_{first_component_id}_start"
-                start_flow = templates.sequence_flow_template(
-                    id=start_flow_id,
-                    source_ref="StartEvent_2",
-                    target_ref=first_component_id
-                )
-                sequence_flows.append(start_flow)
-                print(f"✅ Added sequence flow from StartEvent_2 to {first_component_id} with ID {start_flow_id}")
-
-                # Update the StartEvent to reference the correct outgoing flow
-                for i, component in enumerate(process_components):
-                    if 'id="StartEvent_2"' in component:
-                        # Replace the hardcoded SequenceFlow_Start with the actual flow ID
-                        updated_component = component.replace(
-                            "<bpmn2:outgoing>SequenceFlow_Start</bpmn2:outgoing>",
-                            f"<bpmn2:outgoing>{start_flow_id}</bpmn2:outgoing>"
-                        )
-                        process_components[i] = updated_component
-                        print(f"✅ Updated StartEvent_2 outgoing reference to {start_flow_id}")
+        # Check if flow array has been processed - if so, skip automatic start flow creation
+        if getattr(self, 'flow_array_processed', False):
+            print(f" FLOW ARRAY ALREADY PROCESSED - SKIPPING AUTOMATIC START FLOW CREATION")
+            # Find the first explicit start flow and use it for StartEvent_2 outgoing reference
+            actual_flow_id = None
+            for flow in sequence_flows:
+                if 'sourceRef="StartEvent_2"' in flow:
+                    id_match = re.search(r'id="([^"]*)"', flow)
+                    if id_match:
+                        actual_flow_id = id_match.group(1)
+                        print(f"✅ Using explicit start flow ID: {actual_flow_id}")
                         break
+            
+            if not actual_flow_id:
+                print(f"⚠️  Warning: No explicit start flow found, but explicit flows exist")
+        else:
+            # Add sequence flow from start event to first component (if any)
+            print(f"🔍 DEBUG: Total process components: {len(process_components)}")
+            for i, comp in enumerate(process_components):
+                comp_preview = comp[:100].replace('\n', ' ')
+                print(f"  Component {i}: {comp_preview}...")
+
+            # Check if we have an explicit flow array in the JSON (not just auto-generated flows)
+            has_explicit_flow_array = False
+            if 'endpoints' in components and components['endpoints']:
+                for endpoint in components['endpoints']:
+                    if 'flow' in endpoint and endpoint['flow']:
+                        has_explicit_flow_array = True
+                        break
+            if has_explicit_flow_array:
+                print(f"🔍 EXPLICIT SEQUENCE FLOWS DETECTED ({len(sequence_flows)} total) - SKIPPING ALL AUTO-GENERATION")
+                # Find the first explicit start flow and use it for StartEvent_2 outgoing reference
+                actual_flow_id = None
+                for flow in sequence_flows:
+                    if 'sourceRef="StartEvent_2"' in flow:
+                        id_match = re.search(r'id="([^"]*)"', flow)
+                        if id_match:
+                            actual_flow_id = id_match.group(1)
+                            print(f"✅ Using explicit start flow ID: {actual_flow_id}")
+                            break
+                
+                if not actual_flow_id:
+                    print(f"⚠️  Warning: No explicit start flow found, but explicit flows exist")
             else:
+                # Only auto-generate if we have NO explicit flows at all
+                print(f"🔍 NO EXPLICIT FLOWS FOUND - PROCEEDING WITH AUTO-GENERATION")
+                if len(process_components) > 2:  # Start event + at least one component + end event
+                    first_component_id = None
+                    print(f" DEBUG: Looking for first component in {len(process_components[1:-1])} middle components")
+
+                    for i, component in enumerate(process_components[1:-1]):  # Skip start and end events
+                        id_match = re.search(r'id="([^"]+)"', component)
+                        if id_match:
+                            first_component_id = component_id = id_match.group(1)
+                            print(f" DEBUG: Found first component ID: {first_component_id}")
+                            break
+                        else:
+                            print(f" DEBUG: No ID found in component {i}: {component[:50]}...")
+
+                    if first_component_id:
+                        print(f"🔍 Auto-generating flow to {first_component_id}")
+                        start_flow_id = f"flow_StartEvent_2_to_{first_component_id}_start"
+                        start_flow = templates.sequence_flow_template(
+                            id=start_flow_id,
+                            source_ref="StartEvent_2",
+                            target_ref=first_component_id
+                        )
+                        sequence_flows.append(start_flow)
+                        print(f"✅ Added sequence flow from StartEvent_2 to {first_component_id} with ID {start_flow_id}")
+                        actual_flow_id = start_flow_id
+                    else:
+                        actual_flow_id = None
+                else:
+                    actual_flow_id = None
+
+        # Update the StartEvent outgoing reference if we have a flow ID
+        if actual_flow_id:
+            for i, component in enumerate(process_components):
+                if 'id="StartEvent_2"' in component:
+                    # Replace the hardcoded SequenceFlow_Start with the actual flow ID
+                    updated_component = component.replace(
+                        "<bpmn2:outgoing>SequenceFlow_Start</bpmn2:outgoing>",
+                        f"<bpmn2:outgoing>{actual_flow_id}</bpmn2:outgoing>"
+                    )
+                    process_components[i] = updated_component
+                    print(f"✅ Updated StartEvent_2 outgoing reference to {actual_flow_id}")
+                    break
+        else:
+            # Only create direct flow if there are truly no components between start and end
+            # Check if we have any intermediate components
+            has_intermediate_components = any(
+                'id="StartEvent_2"' not in comp and 'id="EndEvent_2"' not in comp 
+                for comp in process_components
+            )
+            
+            if not has_intermediate_components:
                 # If there are no intermediate components, connect start directly to end
                 direct_flow = templates.sequence_flow_template(
                     id="SequenceFlow_Direct",
@@ -4407,16 +5219,9 @@ def Message processMessage(Message message) {{
                     target_ref="EndEvent_2"
                 )
                 sequence_flows.append(direct_flow)
-                print(f"✅ Added direct flow from StartEvent_2 to EndEvent_2")
-        else:
-            # If there are no intermediate components, connect start directly to end
-            direct_flow = templates.sequence_flow_template(
-                id="SequenceFlow_Direct",
-                source_ref="StartEvent_2",
-                target_ref="EndEvent_2"
-            )
-            sequence_flows.append(direct_flow)
-
+            else:
+                print("⚠️  Warning: No start flow found but intermediate components exist - this may cause issues")
+        
         # If no endpoint components were created, add a simple content modifier
         if len(process_components) <= 2:  # Only start and end events
             dummy_component_id = templates.generate_unique_id("Component")
@@ -4435,7 +5240,8 @@ def Message processMessage(Message message) {{
                 source_ref="StartEvent_2",
                 target_ref=dummy_component_id
             )
-
+            sequence_flows.append(start_to_dummy)
+            
             # Update the StartEvent to reference the correct outgoing flow
             for i, component in enumerate(process_components):
                 if 'id="StartEvent_2"' in component:
@@ -4447,6 +5253,7 @@ def Message processMessage(Message message) {{
                     process_components[i] = updated_component
                     print(f"✅ Updated StartEvent_2 outgoing reference to {start_flow_id} (fallback case)")
                     break
+            
             # Connect dummy component to end event
             end_flow_id = f"flow_{dummy_component_id}_to_EndEvent_2_end"
             dummy_to_end = templates.sequence_flow_template(
@@ -4596,8 +5403,15 @@ def Message processMessage(Message message) {{
         # Replace the template placeholder with our unique placeholder
         process_template = process_template.replace("{{process_content}}", unique_placeholder)
 
+        # Collect additional processes from all endpoints
+        additional_processes = []
+        for endpoint in components.get("endpoints", []):
+            endpoint_components = self._create_endpoint_components(endpoint, templates)
+            if "additional_processes" in endpoint_components:
+                additional_processes.extend(endpoint_components["additional_processes"])
+
         # Generate the full XML by combining collaboration and process content
-        template_xml = templates.generate_iflow_xml(collaboration_content, process_template)
+        template_xml = templates.generate_iflow_xml(collaboration_content, process_template, additional_processes)
 
         # Replace our unique placeholder with the actual process content
         if unique_placeholder in template_xml:
@@ -4615,909 +5429,6 @@ def Message processMessage(Message message) {{
 
         return final_iflow_xml
 
-    def _create_iflow_xml_generation_prompt(self, components, iflow_name):
-        """
-        Create a prompt for the LLM to generate the iFlow XML
-
-        Args:
-            components (dict): Structured representation of components needed for the iFlow
-            iflow_name (str): Name of the iFlow
-
-        Returns:
-            str: The prompt for generating iFlow XML
-        """
-        # Update generation approach to indicate full GenAI is being used
-        self.generation_approach = "full-genai"
-        self.generation_details = {
-            "timestamp": datetime.datetime.now().isoformat(),
-            "iflow_name": iflow_name,
-            "approach": "full-genai",
-            "reason": "Using GenAI to generate complete iFlow XML"
-        }
-
-        # Convert components to a readable format for the prompt
-        components_str = json.dumps(components, indent=2)
-
-        # Get template examples from our existing templates
-        templates = self.templates
-
-        # Add examples of proper component definitions with shapes and edges
-        service_task_result = self._create_service_task("ServiceTask_Example", "Example Service Task", {"x": 500, "y": 150})
-        odata_receiver_result = self._create_odata_receiver_participant("Participant_OData_Example", "Example OData Receiver", {"x": 850, "y": 150})
-        odata_message_flow_result = self._create_odata_message_flow("MessageFlow_OData_Example", "ServiceTask_Example", "Participant_OData_Example", "Query(GET)", "https://example.com/odata/service", "Products")
-        sequence_flow_result = self._create_sequence_flow("SequenceFlow_Example", "StartEvent_Example", "ServiceTask_Example")
-
-        # Create examples from our helper methods
-        # These will be added directly to the component_examples variable below
-
-        # Create examples of component XML for reference using our templates
-        participant_example = templates.participant_template(
-            id="Participant_1",
-            name="Sender",
-            type="EndpointSender",
-            enable_basic_auth="false"
-        )
-
-        process_participant_example = templates.integration_process_participant_template(
-            id="Participant_Process_1",
-            name="Integration Process",
-            process_ref="Process_1"
-        )
-
-        https_flow_example = templates.https_sender_template(
-            id="MessageFlow_1",
-            name="HTTPS",
-            url_path="/api/v1/example",
-            sender_auth="RoleBased",
-            user_role="ESBMessaging.send"
-        ).replace("{{source_ref}}", "Participant_1").replace("{{target_ref}}", "StartEvent_2")
-
-        # Create a complete sequence flow example
-        sequence_flow_example = templates.sequence_flow_template(
-            id="SequenceFlow_1",
-            source_ref="StartEvent_2",
-            target_ref="ServiceTask_1",
-            is_immediate="true"
-        )
-
-        # Create a complete content modifier example with proper incoming/outgoing flows
-        content_modifier_example = templates.content_modifier_template(
-            id="ServiceTask_1",
-            name="Content_Modifier",
-            body_type="expression",
-            content="{\"status\": \"success\", \"message\": \"API is working\"}"
-        )
-        content_modifier_example = content_modifier_example.replace("<bpmn2:incoming>{{incoming_flow}}</bpmn2:incoming>", "<bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>")
-        content_modifier_example = content_modifier_example.replace("<bpmn2:outgoing>{{outgoing_flow}}</bpmn2:outgoing>", "<bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>")
-
-        # Create a complete request-reply example with proper incoming/outgoing flows
-        request_reply_example = templates.request_reply_template(
-            id="ServiceTask_2",
-            name="Request_Reply"
-        )
-        request_reply_example = request_reply_example.replace("<bpmn2:incoming>{{incoming_flow}}</bpmn2:incoming>", "<bpmn2:incoming>SequenceFlow_2</bpmn2:incoming>")
-        request_reply_example = request_reply_example.replace("<bpmn2:outgoing>{{outgoing_flow}}</bpmn2:outgoing>", "<bpmn2:outgoing>SequenceFlow_3</bpmn2:outgoing>")
-
-        # Create a complete example of a process with all necessary components
-        complete_process_example = f"""
-        <!-- Example of a complete process with proper sequence flows -->
-        <bpmn2:process id="Process_1" name="Integration Process">
-            <bpmn2:extensionElements>
-                <ifl:property>
-                    <key>transactionTimeout</key>
-                    <value>30</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>componentVersion</key>
-                    <value>1.2</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>cmdVariantUri</key>
-                    <value>ctype::FlowElementVariant/cname::IntegrationProcess/version::1.2.1</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>transactionalHandling</key>
-                    <value>Not Required</value>
-                </ifl:property>
-            </bpmn2:extensionElements>
-
-            <!-- Start Event -->
-            <bpmn2:startEvent id="StartEvent_2" name="Start">
-                <bpmn2:extensionElements>
-                    <ifl:property>
-                        <key>componentVersion</key>
-                        <value>1.0</value>
-                    </ifl:property>
-                    <ifl:property>
-                        <key>cmdVariantUri</key>
-                        <value>ctype::FlowstepVariant/cname::MessageStartEvent/version::1.0</value>
-                    </ifl:property>
-                </bpmn2:extensionElements>
-                <bpmn2:outgoing>SequenceFlow_1</bpmn2:outgoing>
-                <bpmn2:messageEventDefinition id="MessageEventDefinition_StartEvent_2"/>
-            </bpmn2:startEvent>
-
-            <!-- Content Enricher for Request Processing -->
-            <bpmn2:callActivity id="ContentEnricher_1" name="Process_Request">
-                <bpmn2:extensionElements>
-                    <ifl:property>
-                        <key>bodyType</key>
-                        <value>expression</value>
-                    </ifl:property>
-                    <ifl:property>
-                        <key>componentVersion</key>
-                        <value>1.5</value>
-                    </ifl:property>
-                    <ifl:property>
-                        <key>activityType</key>
-                        <value>Enricher</value>
-                    </ifl:property>
-                    <ifl:property>
-                        <key>cmdVariantUri</key>
-                        <value>ctype::FlowstepVariant/cname::Enricher/version::1.5.0</value>
-                    </ifl:property>
-                    <ifl:property>
-                        <key>bodyContent</key>
-                        <value>{{"status": "success", "message": "API is working"}}</value>
-                    </ifl:property>
-                </bpmn2:extensionElements>
-                <bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>
-                <bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>
-            </bpmn2:callActivity>
-
-            <!-- Request-Reply Component -->
-            <bpmn2:serviceTask id="ServiceTask_2" name="Call_External_Service">
-                <bpmn2:extensionElements>
-                    <ifl:property>
-                        <key>componentVersion</key>
-                        <value>1.0</value>
-                    </ifl:property>
-                    <ifl:property>
-                        <key>activityType</key>
-                        <value>ExternalCall</value>
-                    </ifl:property>
-                    <ifl:property>
-                        <key>cmdVariantUri</key>
-                        <value>ctype::FlowstepVariant/cname::ExternalCall/version::1.0.4</value>
-                    </ifl:property>
-                </bpmn2:extensionElements>
-                <bpmn2:incoming>SequenceFlow_2</bpmn2:incoming>
-                <bpmn2:outgoing>SequenceFlow_3</bpmn2:outgoing>
-            </bpmn2:serviceTask>
-
-            <!-- Content Modifier for Response Processing -->
-            <bpmn2:serviceTask id="ServiceTask_3" name="Process_Response">
-                <bpmn2:extensionElements>
-                    <ifl:property>
-                        <key>bodyType</key>
-                        <value>expression</value>
-                    </ifl:property>
-                    <ifl:property>
-                        <key>componentVersion</key>
-                        <value>1.5</value>
-                    </ifl:property>
-                    <ifl:property>
-                        <key>activityType</key>
-                        <value>Content Modifier</value>
-                    </ifl:property>
-                    <ifl:property>
-                        <key>cmdVariantUri</key>
-                        <value>ctype::FlowstepVariant/cname::ContentModifier/version::1.5.0</value>
-                    </ifl:property>
-                    <ifl:property>
-                        <key>contentValue</key>
-                        <value>{{"result": "processed"}}</value>
-                    </ifl:property>
-                </bpmn2:extensionElements>
-                <bpmn2:incoming>SequenceFlow_3</bpmn2:incoming>
-                <bpmn2:outgoing>SequenceFlow_4</bpmn2:outgoing>
-            </bpmn2:serviceTask>
-
-            <!-- End Event -->
-            <bpmn2:endEvent id="EndEvent_2" name="End">
-                <bpmn2:extensionElements>
-                    <ifl:property>
-                        <key>componentVersion</key>
-                        <value>1.1</value>
-                    </ifl:property>
-                    <ifl:property>
-                        <key>cmdVariantUri</key>
-                        <value>ctype::FlowstepVariant/cname::MessageEndEvent/version::1.1.0</value>
-                    </ifl:property>
-                </bpmn2:extensionElements>
-                <bpmn2:incoming>SequenceFlow_4</bpmn2:incoming>
-                <bpmn2:messageEventDefinition id="MessageEventDefinition_EndEvent_2"/>
-            </bpmn2:endEvent>
-
-            <!-- Sequence Flows -->
-            <bpmn2:sequenceFlow id="SequenceFlow_1" sourceRef="StartEvent_2" targetRef="ServiceTask_1" isImmediate="true"/>
-            <bpmn2:sequenceFlow id="SequenceFlow_2" sourceRef="ServiceTask_1" targetRef="ServiceTask_2" isImmediate="true"/>
-            <bpmn2:sequenceFlow id="SequenceFlow_3" sourceRef="ServiceTask_2" targetRef="ServiceTask_3" isImmediate="true"/>
-            <bpmn2:sequenceFlow id="SequenceFlow_4" sourceRef="ServiceTask_3" targetRef="EndEvent_2" isImmediate="true"/>
-        </bpmn2:process>
-
-        <!-- Example of a complete BPMN diagram that includes all components -->
-        <bpmndi:BPMNDiagram id="BPMNDiagram_1" name="Default Collaboration Diagram">
-            <bpmndi:BPMNPlane bpmnElement="Collaboration_1" id="BPMNPlane_1">
-                <!-- Start Event Shape -->
-                <bpmndi:BPMNShape bpmnElement="StartEvent_2" id="BPMNShape_StartEvent_2">
-                    <dc:Bounds height="32.0" width="32.0" x="100.0" y="142.0"/>
-                </bpmndi:BPMNShape>
-
-                <!-- Process Request Shape -->
-                <bpmndi:BPMNShape bpmnElement="ServiceTask_1" id="BPMNShape_ServiceTask_1">
-                    <dc:Bounds height="60.0" width="100.0" x="200.0" y="128.0"/>
-                </bpmndi:BPMNShape>
-
-                <!-- External Service Call Shape -->
-                <bpmndi:BPMNShape bpmnElement="ServiceTask_2" id="BPMNShape_ServiceTask_2">
-                    <dc:Bounds height="60.0" width="100.0" x="370.0" y="128.0"/>
-                </bpmndi:BPMNShape>
-
-                <!-- Process Response Shape -->
-                <bpmndi:BPMNShape bpmnElement="ServiceTask_3" id="BPMNShape_ServiceTask_3">
-                    <dc:Bounds height="60.0" width="100.0" x="540.0" y="128.0"/>
-                </bpmndi:BPMNShape>
-
-                <!-- End Event Shape -->
-                <bpmndi:BPMNShape bpmnElement="EndEvent_2" id="BPMNShape_EndEvent_2">
-                    <dc:Bounds height="32.0" width="32.0" x="710.0" y="142.0"/>
-                </bpmndi:BPMNShape>
-
-                <!-- Sequence Flow Edges -->
-                <bpmndi:BPMNEdge bpmnElement="SequenceFlow_1" id="BPMNEdge_SequenceFlow_1">
-                    <di:waypoint x="132.0" y="158.0"/>
-                    <di:waypoint x="200.0" y="158.0"/>
-                </bpmndi:BPMNEdge>
-
-                <bpmndi:BPMNEdge bpmnElement="SequenceFlow_2" id="BPMNEdge_SequenceFlow_2">
-                    <di:waypoint x="300.0" y="158.0"/>
-                    <di:waypoint x="370.0" y="158.0"/>
-                </bpmndi:BPMNEdge>
-
-                <bpmndi:BPMNEdge bpmnElement="SequenceFlow_3" id="BPMNEdge_SequenceFlow_3">
-                    <di:waypoint x="470.0" y="158.0"/>
-                    <di:waypoint x="540.0" y="158.0"/>
-                </bpmndi:BPMNEdge>
-
-                <bpmndi:BPMNEdge bpmnElement="SequenceFlow_4" id="BPMNEdge_SequenceFlow_4">
-                    <di:waypoint x="640.0" y="158.0"/>
-                    <di:waypoint x="710.0" y="158.0"/>
-                </bpmndi:BPMNEdge>
-            </bpmndi:BPMNPlane>
-        </bpmndi:BPMNDiagram>
-        """
-
-        # Combine all examples
-        component_examples = f"""
-        <!-- Example of a sender participant -->
-        {participant_example}
-
-        <!-- Example of a process participant -->
-        {process_participant_example}
-
-        <!-- Example of an HTTP sender -->
-        {https_flow_example}
-
-        <!-- Example of a sequence flow -->
-        {sequence_flow_example}
-
-        <!-- Example of a content modifier -->
-        {content_modifier_example}
-
-        <!-- Example of a request-reply component -->
-        {request_reply_example}
-
-        <!-- Examples from our helper methods -->
-        <!-- Example of a service task with proper shape -->
-        {service_task_result["definition"]}
-
-        <!-- Example of the corresponding shape for the service task -->
-        {service_task_result["shape"]}
-
-        <!-- Example of an OData receiver participant with proper shape -->
-        {odata_receiver_result["definition"]}
-
-        <!-- Example of the corresponding shape for the OData receiver -->
-        {odata_receiver_result["shape"]}
-
-        <!-- Example of an OData message flow with proper edge -->
-        {odata_message_flow_result["definition"]}
-
-        <!-- Example of the corresponding edge for the OData message flow -->
-        {odata_message_flow_result["edge"]}
-
-        <!-- Example of a sequence flow with proper edge -->
-        {sequence_flow_result["definition"]}
-
-        <!-- Example of the corresponding edge for the sequence flow -->
-        {sequence_flow_result["edge"]}
-
-        {complete_process_example}
-        """
-
-        # Create folder structure information
-        folder_structure = """
-        # IFLOW FOLDER STRUCTURE
-        An iFlow project has the following folder structure:
-
-        - src/main/resources/scenarioflows/integrationflow/[iflow_name].iflw (Main iFlow XML file)
-        - src/main/resources/parameters.prop (Parameters properties file)
-        - src/main/resources/parameters.propdef (Parameters property definitions)
-        - src/main/resources/script/ (Directory for Groovy scripts)
-        - META-INF/MANIFEST.MF (Manifest file with bundle information)
-        - .project (Project file)
-        - metainfo.prop (Metadata properties)
-
-        We are currently generating only the main iFlow XML file (.iflw). The other files will be generated separately.
-        """
-
-        # Create request-reply pattern guidance with detailed instructions
-        request_reply_guidance = """
-        # REQUEST-REPLY PATTERN GUIDANCE
-        For request-reply patterns, follow these guidelines:
-
-        1. The pattern should start with an HTTP/HTTPS sender connecting to a start event
-        2. The start event should connect to a content modifier or enricher for request processing
-        3. The content modifier should connect to a request-reply component for external service calls
-        4. The request-reply component should connect to another content modifier for response formatting
-        5. The response formatter should connect to the end event
-        6. All components should have proper sequence flows connecting them
-        7. All components should have appropriate properties set
-
-        # ODATA COMPONENT (MANDATORY APPROACH)
-        For OData connections, you MUST use the dedicated "odata" component type in your JSON:
-        ```json
-        {
-            "type": "odata",  // CRITICAL: Use "odata" type for all OData components
-            "name": "Get_Products",
-            "id": "odata_1",
-            "config": {
-                "address": "https://example.com/odata/service",
-                "resource_path": "Products",
-                "operation": "Query(GET)",
-                "query_options": "$select=Id,Name,Description"
-            }
-        }
-        ```
-
-        This will automatically create all three required parts (service task, participant, message flow) with proper connections.
-
-        IMPORTANT: If you detect any OData-related functionality in the requirements, you MUST use the "odata" component type, not "request_reply" or any other type. This ensures proper creation of all required components and connections.
-
-        # ODATA REQUEST-REPLY PATTERN (ALTERNATIVE)
-        If you're not using the dedicated "odata" component type, you MUST include all three parts of the connection and ensure they are properly connected:
-
-        CRITICAL: For OData components, you MUST use the exact structure below with these specific component types and properties.
-        All three components MUST be present and properly connected for OData to work in SAP Integration Suite:
-
-        1. A service task with activityType="ExternalCall" in the process section:
-           <bpmn2:serviceTask id="ServiceTask_OData_1" name="Call_OData_Service">
-               <bpmn2:extensionElements>
-                   <ifl:property>
-                       <key>componentVersion</key>
-                       <value>1.0</value>
-                   </ifl:property>
-                   <ifl:property>
-                       <key>activityType</key>
-                       <value>ExternalCall</value>
-                   </ifl:property>
-                   <ifl:property>
-                       <key>cmdVariantUri</key>
-                       <value>ctype::FlowstepVariant/cname::ExternalCall/version::1.0.4</value>
-                   </ifl:property>
-               </bpmn2:extensionElements>
-               <bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>
-               <bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>
-           </bpmn2:serviceTask>
-
-        2. A participant with ifl:type="EndpointReceiver" in the collaboration section:
-           <bpmn2:participant id="Participant_OData_1" ifl:type="EndpointReceiver" name="OData_Service">
-               <bpmn2:extensionElements>
-                   <ifl:property>
-                       <key>ifl:type</key>
-                       <value>EndpointReceiver</value>
-                   </ifl:property>
-               </bpmn2:extensionElements>
-           </bpmn2:participant>
-
-        3. A message flow with ComponentType="HCIOData" connecting the service task to the participant:
-           <bpmn2:messageFlow id="MessageFlow_OData_1" name="OData" sourceRef="ServiceTask_OData_1" targetRef="Participant_OData_1">
-               <bpmn2:extensionElements>
-                   <ifl:property>
-                       <key>Description</key>
-                       <value/>
-                   </ifl:property>
-                   <ifl:property>
-                       <key>ComponentNS</key>
-                       <value>sap</value>
-                   </ifl:property>
-                   <ifl:property>
-                       <key>Name</key>
-                       <value>OData</value>
-                   </ifl:property>
-                   <ifl:property>
-                       <key>TransportProtocolVersion</key>
-                       <value>1.25.0</value>
-                   </ifl:property>
-                   <ifl:property>
-                       <key>ComponentSWCVName</key>
-                       <value>external</value>
-                   </ifl:property>
-                   <ifl:property>
-                       <key>enableMPLAttachments</key>
-                       <value>true</value>
-                   </ifl:property>
-                   <ifl:property>
-                       <key>contentType</key>
-                       <value>application/atom+xml</value>
-                   </ifl:property>
-                   <ifl:property>
-                       <key>ComponentSWCVId</key>
-                       <value>1.25.0</value>
-                   </ifl:property>
-                   <ifl:property>
-                       <key>MessageProtocol</key>
-                       <value>OData V2</value>
-                   </ifl:property>
-                   <ifl:property>
-                       <key>direction</key>
-                       <value>Receiver</value>
-                   </ifl:property>
-                   <ifl:property>
-                       <key>ComponentType</key>
-                       <value>HCIOData</value>
-                   </ifl:property>
-                   <ifl:property>
-                       <key>address</key>
-                       <value>https://example.com/odata/service</value>
-                   </ifl:property>
-                   <ifl:property>
-                       <key>proxyType</key>
-                       <value>default</value>
-                   </ifl:property>
-                   <ifl:property>
-                       <key>isCSRFEnabled</key>
-                       <value>true</value>
-                   </ifl:property>
-                   <ifl:property>
-                       <key>componentVersion</key>
-                       <value>1.25</value>
-                   </ifl:property>
-                   <ifl:property>
-                       <key>operation</key>
-                       <value>Query(GET)</value>
-                   </ifl:property>
-                   <ifl:property>
-                       <key>MessageProtocolVersion</key>
-                       <value>1.25.0</value>
-                   </ifl:property>
-                   <ifl:property>
-                       <key>TransportProtocol</key>
-                       <value>HTTP</value>
-                   </ifl:property>
-                   <ifl:property>
-                       <key>cmdVariantUri</key>
-                       <value>ctype::AdapterVariant/cname::sap:HCIOData/tp::HTTP/mp::OData V2/direction::Receiver/version::1.25.0</value>
-                   </ifl:property>
-                   <ifl:property>
-                       <key>authenticationMethod</key>
-                       <value>None</value>
-                   </ifl:property>
-               </bpmn2:extensionElements>
-           </bpmn2:messageFlow>
-
-        4. BPMN diagram shapes and edges for all components with proper IDs:
-           <bpmndi:BPMNShape bpmnElement="ServiceTask_OData_1" id="BPMNShape_ServiceTask_OData_1">
-               <dc:Bounds height="60.0" width="100.0" x="400.0" y="128.0"/>
-           </bpmndi:BPMNShape>
-
-           <bpmndi:BPMNShape bpmnElement="Participant_OData_1" id="BPMNShape_Participant_OData_1">
-               <dc:Bounds height="140.0" width="100.0" x="850.0" y="150.0"/>
-           </bpmndi:BPMNShape>
-
-           <bpmndi:BPMNEdge bpmnElement="MessageFlow_OData_1" id="BPMNEdge_MessageFlow_OData_1" sourceElement="BPMNShape_ServiceTask_OData_1" targetElement="BPMNShape_Participant_OData_1">
-               <di:waypoint x="450.0" y="158.0"/>
-               <di:waypoint x="850.0" y="220.0"/>
-           </bpmndi:BPMNEdge>
-
-        CRITICAL: The OData component MUST have these exact properties and structure to work in SAP Integration Suite.
-
-        1. The components in the process section with proper sequence flows:
-           <bpmn2:startEvent id="StartEvent_2" name="Start">
-               <bpmn2:extensionElements>
-                   <ifl:property>
-                       <key>componentVersion</key>
-                       <value>1.0</value>
-                   </ifl:property>
-               </bpmn2:extensionElements>
-               <bpmn2:outgoing>SequenceFlow_1</bpmn2:outgoing>
-           </bpmn2:startEvent>
-
-           <bpmn2:callActivity id="JSONtoXMLConverter_root" name="JSONtoXMLConverter_root">
-               <bpmn2:extensionElements>
-                   <ifl:property>
-                       <key>activityType</key>
-                       <value>JsonToXmlConverter</value>
-                   </ifl:property>
-               </bpmn2:extensionElements>
-               <bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>
-               <bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>
-           </bpmn2:callActivity>
-
-           <bpmn2:callActivity id="ContentModifier_root_headers" name="SetRequestHeaders_root">
-               <bpmn2:extensionElements>
-                   <ifl:property>
-                       <key>activityType</key>
-                       <value>Enricher</value>
-                   </ifl:property>
-               </bpmn2:extensionElements>
-               <bpmn2:incoming>SequenceFlow_2</bpmn2:incoming>
-               <bpmn2:outgoing>SequenceFlow_3</bpmn2:outgoing>
-           </bpmn2:callActivity>
-
-           <bpmn2:serviceTask id="RequestReply_root" name="Send_root">
-               <bpmn2:extensionElements>
-                   <ifl:property>
-                       <key>activityType</key>
-                       <value>ExternalCall</value>
-                   </ifl:property>
-               </bpmn2:extensionElements>
-               <bpmn2:incoming>SequenceFlow_3</bpmn2:incoming>
-           </bpmn2:serviceTask>
-
-           <bpmn2:sequenceFlow id="SequenceFlow_1" sourceRef="StartEvent_2" targetRef="JSONtoXMLConverter_root"/>
-           <bpmn2:sequenceFlow id="SequenceFlow_2" sourceRef="JSONtoXMLConverter_root" targetRef="ContentModifier_root_headers"/>
-           <bpmn2:sequenceFlow id="SequenceFlow_3" sourceRef="ContentModifier_root_headers" targetRef="RequestReply_root"/>
-
-        2. The participant representing the external OData service:
-           <bpmn2:participant id="Participant_ID" ifl:type="EndpointReceiver" name="OData_Receiver">
-               <bpmn2:extensionElements>
-                   <ifl:property>
-                       <key>ifl:type</key>
-                       <value>EndpointReceiver</value>
-                   </ifl:property>
-               </bpmn2:extensionElements>
-           </bpmn2:participant>
-
-        3. The message flow connecting them with OData-specific properties:
-           <bpmn2:messageFlow id="MessageFlow_ID" name="OData" sourceRef="ServiceTask_ID" targetRef="Participant_ID">
-               <bpmn2:extensionElements>
-                   <!-- OData-specific properties -->
-                   <ifl:property>
-                       <key>ComponentType</key>
-                       <value>HCIOData</value>
-                   </ifl:property>
-                   <ifl:property>
-                       <key>resourcePath</key>
-                       <value>${{property.ResourcePath}}</value>
-                   </ifl:property>
-                   <ifl:property>
-                       <key>edmxFilePath</key>
-                       <value>edmx/Products.edmx</value>
-                   </ifl:property>
-                   <ifl:property>
-                       <key>operation</key>
-                       <value>Create(POST)</value>
-                   </ifl:property>
-                   <ifl:property>
-                       <key>MessageProtocol</key>
-                       <value>OData V2</value>
-                   </ifl:property>
-                   <!-- Many other properties required -->
-               </bpmn2:extensionElements>
-           </bpmn2:messageFlow>
-
-        4. The BPMN diagram shapes and edges for all components with exact coordinates:
-           <!-- CRITICAL: Component shapes with CONSISTENT IDs -->
-           <!-- Note how the bpmnElement matches the component ID and the shape ID is BPMNShape_[component ID] -->
-           <bpmndi:BPMNShape bpmnElement="StartEvent_2" id="BPMNShape_StartEvent_2">
-               <dc:Bounds height="32.0" width="32.0" x="263.0" y="128.0"/>
-           </bpmndi:BPMNShape>
-
-           <bpmndi:BPMNShape bpmnElement="JSONtoXMLConverter_root" id="BPMNShape_JSONtoXMLConverter_root">
-               <dc:Bounds height="60.0" width="100.0" x="362.0" y="110.0"/>
-           </bpmndi:BPMNShape>
-
-           <bpmndi:BPMNShape bpmnElement="ContentModifier_root_headers" id="BPMNShape_ContentModifier_root_headers">
-               <dc:Bounds height="60.0" width="100.0" x="536.0" y="110.0"/>
-           </bpmndi:BPMNShape>
-
-           <bpmndi:BPMNShape bpmnElement="RequestReply_root" id="BPMNShape_RequestReply_root">
-               <dc:Bounds height="60.0" width="100.0" x="707.0" y="110.0"/>
-           </bpmndi:BPMNShape>
-
-           <!-- IMPORTANT: Position OData participants outside the collaboration perimeter -->
-           <!-- Note how the bpmnElement matches the participant ID and the shape ID is BPMNShape_[participant ID] -->
-           <bpmndi:BPMNShape bpmnElement="Participant_root" id="BPMNShape_Participant_root">
-               <dc:Bounds height="140.0" width="100.0" x="850.0" y="150.0"/>
-           </bpmndi:BPMNShape>
-
-           <!-- CRITICAL: Sequence flow edges with exact waypoints and CONSISTENT IDs -->
-           <!-- Note how the bpmnElement matches the flow ID, the edge ID is BPMNEdge_[flow ID], -->
-           <!-- and sourceElement/targetElement match the shape IDs of the connected components -->
-           <bpmndi:BPMNEdge bpmnElement="SequenceFlow_1" id="BPMNEdge_SequenceFlow_1" sourceElement="BPMNShape_StartEvent_2" targetElement="BPMNShape_JSONtoXMLConverter_root">
-               <di:waypoint x="279.0" xsi:type="dc:Point" y="142.0"/>
-               <di:waypoint x="362.0" xsi:type="dc:Point" y="142.0"/>
-           </bpmndi:BPMNEdge>
-
-           <bpmndi:BPMNEdge bpmnElement="SequenceFlow_2" id="BPMNEdge_SequenceFlow_2" sourceElement="BPMNShape_JSONtoXMLConverter_root" targetElement="BPMNShape_ContentModifier_root_headers">
-               <di:waypoint x="412.0" xsi:type="dc:Point" y="140.0"/>
-               <di:waypoint x="536.0" xsi:type="dc:Point" y="140.0"/>
-           </bpmndi:BPMNEdge>
-
-           <bpmndi:BPMNEdge bpmnElement="SequenceFlow_3" id="BPMNEdge_SequenceFlow_3" sourceElement="BPMNShape_ContentModifier_root_headers" targetElement="BPMNShape_RequestReply_root">
-               <di:waypoint x="586.0" xsi:type="dc:Point" y="140.0"/>
-               <di:waypoint x="707.0" xsi:type="dc:Point" y="140.0"/>
-           </bpmndi:BPMNEdge>
-
-           <!-- CRITICAL: OData message flow edge with CONSISTENT IDs -->
-           <!-- Note how the bpmnElement matches the flow ID, the edge ID is BPMNEdge_[flow ID], -->
-           <!-- and sourceElement/targetElement match the shape IDs of the connected components -->
-           <bpmndi:BPMNEdge bpmnElement="MessageFlow_root" id="BPMNEdge_MessageFlow_root" sourceElement="BPMNShape_RequestReply_root" targetElement="BPMNShape_Participant_root">
-               <di:waypoint x="757.0" xsi:type="dc:Point" y="140.0"/>
-               <di:waypoint x="850.0" xsi:type="dc:Point" y="170.0"/>
-           </bpmndi:BPMNEdge>
-
-        CRITICAL: All components MUST be present and properly connected for OData to work:
-        1. The service task must have activityType="ExternalCall"
-        2. The participant must have ifl:type="EndpointReceiver"
-        3. The message flow must have name="OData" and ComponentType="HCIOData"
-        4. The message flow must connect the service task to the participant
-        5. The BPMN diagram must include shapes for both components and an edge for the message flow
-        6. The edge must include sourceElement and targetElement attributes
-
-        If the API description mentions OData in any way, you MUST use this pattern.
-
-        IMPORTANT: Each component must have EXACTLY ONE incoming and ONE outgoing sequence flow (except start and end events).
-        - Start events have only outgoing flows
-        - End events have only incoming flows
-        - All other components must have both incoming and outgoing flows
-
-        CRITICAL: Every component referenced in a sequence flow MUST be defined in the XML.
-        For example, if you have:
-        <bpmn2:sequenceFlow id="SequenceFlow_1" sourceRef="StartEvent_2" targetRef="ServiceTask_1" isImmediate="true"/>
-
-        Then both "StartEvent_2" and "ServiceTask_1" MUST be defined as components in the XML.
-
-        CRITICAL: Do NOT use generic sequence flow IDs like "SequenceFlow_1" or "SequenceFlow_2" in multiple components.
-        Each sequence flow must have a unique ID, and each component must reference the correct sequence flow IDs.
-
-        CRITICAL: Message flows (like HTTP senders) connect participants, not process components. Do not reference
-        message flow IDs in sequence flows within the process.
-
-        Example flow:
-        HTTP Sender -> Start Event -> Request Processor -> External Service Call -> Response Formatter -> End Event
-
-        COMPLETE COMPONENT DEFINITIONS: You must include complete definitions for ALL components referenced in sequence flows.
-        For example, if you reference RequestReply1, ExceptionHandler1, Logger1, etc. in sequence flows, you MUST include
-        their complete definitions in the process section, like this:
-
-        <bpmn2:serviceTask id="RequestReply1" name="Call_External_Service">
-            <bpmn2:extensionElements>
-                <ifl:property>
-                    <key>componentVersion</key>
-                    <value>1.0</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>activityType</key>
-                    <value>ExternalCall</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>cmdVariantUri</key>
-                    <value>ctype::FlowstepVariant/cname::ExternalCall/version::1.0.4</value>
-                </ifl:property>
-            </bpmn2:extensionElements>
-            <bpmn2:incoming>SequenceFlow_3066_fafd899c</bpmn2:incoming>
-            <bpmn2:outgoing>SequenceFlow_3066_22446b04</bpmn2:outgoing>
-        </bpmn2:serviceTask>
-
-        <bpmn2:serviceTask id="ExceptionHandler1" name="Exception_Handler">
-            <bpmn2:extensionElements>
-                <ifl:property>
-                    <key>componentVersion</key>
-                    <value>1.0</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>activityType</key>
-                    <value>ExceptionHandler</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>cmdVariantUri</key>
-                    <value>ctype::FlowstepVariant/cname::ExceptionHandler/version::1.0.0</value>
-                </ifl:property>
-            </bpmn2:extensionElements>
-            <bpmn2:incoming>SequenceFlow_3066_d480a4fb</bpmn2:incoming>
-            <bpmn2:outgoing>SequenceFlow_3066_5cb12682</bpmn2:outgoing>
-        </bpmn2:serviceTask>
-        """
-
-        # Create validation checklist
-        validation_checklist = """
-        # VALIDATION CHECKLIST
-        Before finalizing the XML, verify that:
-
-        1. All components referenced in sequence flows are defined in the XML
-           - Every component ID used in a sourceRef or targetRef attribute MUST have a corresponding component definition
-           - This includes RequestReply, ExceptionHandler, Logger, and all other components
-
-        2. All sequence flows have valid sourceRef and targetRef attributes
-           - Each sequence flow must connect exactly two existing components
-           - The source and target must be appropriate components (e.g., a sequence flow can't start from a participant)
-
-        3. No sequence flow references a component that doesn't exist
-           - Double-check all component IDs to ensure they match their references
-
-        4. Each component has the correct number of incoming and outgoing flows
-           - Start events: 0 incoming, 1+ outgoing
-           - End events: 1+ incoming, 0 outgoing
-           - All other components: 1+ incoming, 1+ outgoing
-
-        5. The process has exactly one start event and at least one end event
-           - The start event must be properly connected to the process flow
-           - The end event must be reachable from the start event through sequence flows
-
-        6. All IDs are unique across the entire XML
-           - No duplicate IDs for components, sequence flows, or any other elements
-           - Do NOT use generic IDs like "SequenceFlow_1" in multiple components
-
-        7. Message flows connect participants, not process components
-           - Message flows should connect a sender participant to a start event or a process to a receiver participant
-           - Do NOT reference message flow IDs in sequence flows
-
-        8. All required properties are set for each component
-           - Each component type has specific required properties
-           - Ensure all components have the correct activityType and cmdVariantUri values
-
-        9. The XML is well-formed and properly indented
-           - All tags are properly closed
-           - The XML structure follows the correct hierarchy
-
-        10. The BPMN diagram MUST accurately represent all components and flows
-            - OData participants MUST be positioned outside the collaboration perimeter at x="850.0" y="150.0"
-            - OData message flows MUST connect horizontally from the service task to the OData participant
-            - Components MUST be positioned in a linear flow with these exact coordinates:
-                * StartEvent_2: x="263.0" y="128.0" width="32.0" height="32.0"
-                * JSONtoXMLConverter_root: x="362.0" y="110.0" width="100.0" height="60.0"
-                * ContentModifier_root_headers: x="536.0" y="110.0" width="100.0" height="60.0"
-                * RequestReply_root: x="707.0" y="110.0" width="100.0" height="60.0"
-                * EndEvent_2: x="850.0" y="128.0" width="32.0" height="32.0"
-            - Sequence flows MUST connect components in this exact order: StartEvent_2 → JSONtoXMLConverter_root → ContentModifier_root_headers → RequestReply_root → EndEvent_2
-            - Sequence flow IDs MUST be sequential: SequenceFlow_1, SequenceFlow_2, SequenceFlow_3
-            - Each component MUST have exactly one incoming and one outgoing connection (except start/end events)
-            - All sequence flows MUST have proper BPMNEdge elements with sourceElement and targetElement attributes
-            - Sequence flow waypoints MUST have these exact coordinates:
-                * SequenceFlow_1: source_x="279.0" source_y="142.0" target_x="362.0" target_y="142.0"
-                * SequenceFlow_2: source_x="412.0" source_y="140.0" target_x="536.0" target_y="140.0"
-                * SequenceFlow_3: source_x="586.0" source_y="140.0" target_x="707.0" target_y="140.0"
-
-        11. CRITICAL: All IDs MUST be consistent across all references
-            - For each component with id="Component_ID" in the process section:
-                * The corresponding BPMNShape MUST have bpmnElement="Component_ID" and id="BPMNShape_Component_ID"
-            - For each sequence flow with id="SequenceFlow_ID" in the process section:
-                * The corresponding BPMNEdge MUST have bpmnElement="SequenceFlow_ID" and id="BPMNEdge_SequenceFlow_ID"
-                * The sourceElement MUST be "BPMNShape_SourceComponent_ID" (matching the source component's shape)
-                * The targetElement MUST be "BPMNShape_TargetComponent_ID" (matching the target component's shape)
-            - For each message flow with id="MessageFlow_ID" in the collaboration section:
-                * The corresponding BPMNEdge MUST have bpmnElement="MessageFlow_ID" and id="BPMNEdge_MessageFlow_ID"
-                * The sourceElement MUST be "BPMNShape_SourceComponent_ID" (matching the source component's shape)
-                * The targetElement MUST be "BPMNShape_TargetComponent_ID" (matching the target component's shape)
-            - EXAMPLE of consistent IDs:
-                * Component in process: <bpmn2:serviceTask id="ServiceTask_1" ...>
-                * Shape in diagram: <bpmndi:BPMNShape bpmnElement="ServiceTask_1" id="BPMNShape_ServiceTask_1" ...>
-                * Edge in diagram: <bpmndi:BPMNEdge bpmnElement="SequenceFlow_1" id="BPMNEdge_SequenceFlow_1" sourceElement="BPMNShape_StartEvent_2" targetElement="BPMNShape_ServiceTask_1" ...>
-            - The diagram MUST include visual representations (bpmndi:BPMNShape) for ALL components in the process
-            - The diagram MUST include edges (bpmndi:BPMNEdge) for ALL flows in the process
-            - For OData message flows, the edges MUST include sourceElement and targetElement attributes
-            - Example: <bpmndi:BPMNEdge bpmnElement="MessageFlow_ID" id="BPMNEdge_MessageFlow_ID" sourceElement="BPMNShape_ServiceTask_ID" targetElement="BPMNShape_Participant_ID">
-            - Without these diagram elements, components will be INVISIBLE in SAP Integration Suite
-
-        11. The sequence flows form a complete, connected path from start to end
-            - There should be no "islands" of disconnected components
-            - Every component should be reachable from the start event
-            - There should be a clear path to the end event
-
-        12. Component references are consistent throughout the XML
-            - If a component is named "RequestReply1" in one place, it must be "RequestReply1" everywhere
-            - Don't mix different naming conventions for the same component
-        """
-
-        # Create a comprehensive prompt for the LLM
-        return f"""
-        You are an expert in SAP Integration Suite and iFlow development. Your task is to generate a complete iFlow XML file
-        based on the provided component structure. The XML must follow the BPMN 2.0 standard with SAP-specific extensions.
-
-        # IFLOW NAME
-        {iflow_name}
-
-        # COMPONENT STRUCTURE
-        {components_str}
-
-        # COMPONENT XML EXAMPLES
-        Here are examples of how different components should be formatted in the XML:
-        {component_examples}
-
-        {folder_structure}
-
-        {request_reply_guidance}
-
-        {validation_checklist}
-
-        # IFLOW XML STRUCTURE
-        The iFlow XML should follow this structure:
-        1. XML declaration and namespace definitions
-        2. bpmn2:definitions element as the root
-        3. bpmn2:collaboration element containing participants and message flows
-        4. bpmn2:process element containing process components and sequence flows
-        5. bpmndi:BPMNDiagram element for visualization
-
-        # REQUIRED ELEMENTS
-        The iFlow must include:
-        - At least one participant (sender)
-        - One integration process participant
-        - A start event and an end event
-        - Proper sequence flows connecting all components
-        - All components specified in the component structure
-        - Proper IDs and references between elements
-
-        # IMPORTANT GUIDELINES
-        1. Generate valid XML with proper indentation
-        2. Ensure all IDs are unique and properly referenced
-        3. Include all necessary SAP-specific properties for each component
-        4. Create proper sequence flows to connect all components
-        5. Include a start event (id="StartEvent_2") and an end event (id="EndEvent_2")
-        6. If no components are specified, add a default content modifier
-        7. Ensure the process participant has id="Participant_Process_1" and processRef="Process_1"
-        8. The process element must have id="Process_1"
-        9. For request-reply patterns, ensure proper connection between components
-        10. Follow the SAP Integration Suite naming conventions and structure
-
-        # CRITICAL ODATA REQUIREMENTS
-        For OData components, you MUST:
-        1. Use the dedicated "odata" component type in your JSON whenever possible
-        2. If not using the dedicated component type, create all three parts: service task, OData participant, and message flow
-        3. The service task must be in the process section with activityType="ExternalCall"
-        4. The OData participant must be in the collaboration section with ifl:type="EndpointReceiver" (not "EndpointReceiver")
-        5. The message flow must connect the service task to the OData participant with ComponentType="HCIOData"
-        6. All three components must have corresponding BPMN diagram elements (shapes and edges)
-        7. The OData participant must be positioned outside the process boundary at x=850, y=150
-        8. The message flow edge must connect the service task to the OData participant with proper waypoints
-        9. The sequence flows must connect to the service task, NOT to the OData participant
-        10. All IDs must be consistent across all references (component, shape, edge)
-        11. The message flow edge MUST include sourceElement and targetElement attributes
-
-        # XML FORMATTING RULES
-        1. All XML tags must be properly closed
-        2. Use consistent indentation (2 or 4 spaces)
-        3. Avoid special characters in attribute values without proper escaping
-        4. Ensure all XML namespaces are properly declared
-        5. Do not use HTML-style self-closing tags (use <tag></tag> instead of <tag/>)
-        6. Ensure all attribute values are enclosed in double quotes
-        7. Avoid using reserved XML characters (&, <, >, ", ') in text content without proper escaping
-        8. Do not include any comments or processing instructions that might break XML parsing
-        9. Ensure all XML elements are properly nested
-        10. Do not include any BOM (Byte Order Mark) characters
-
-        # HTTP SENDER HANDLING
-        1. HTTP/HTTPS senders should be defined as message flows, not as process components
-        2. Message flows connect participants, not process components
-        3. HTTP/HTTPS senders should have sourceRef pointing to a participant (e.g., "Participant_1")
-        4. HTTP/HTTPS senders should have targetRef pointing to a start event (e.g., "StartEvent_2")
-        5. Do NOT reference HTTP/HTTPS senders in sequence flows within the process
-
-        # SEQUENCE FLOW RULES
-        1. Every sequence flow must have a unique ID
-        2. Every sequence flow must have a sourceRef and targetRef attribute
-        3. Every sequence flow must have an isImmediate attribute set to "true"
-        4. The sourceRef and targetRef must reference existing component IDs
-        5. Start events can only be sourceRef, not targetRef
-        6. End events can only be targetRef, not sourceRef
-        7. All other components must appear in both sourceRef and targetRef attributes
-
-        # RESPONSE FORMAT
-        Return only the complete iFlow XML content without any explanations or markdown formatting.
-        Do not include ```xml or ``` tags around the XML.
-        """
 
     def _clean_xml_response(self, xml_response, iflow_name=None):
         """
@@ -5678,12 +5589,12 @@ def Message processMessage(Message message) {{
         if position is None:
             position = {"x": 850, "y": 150}
 
-        # CRITICAL: The type must be "EndpointReceiver" (not "EndpointReceiver" which is a typo)
-        definition = f'''<bpmn2:participant id="{id}" ifl:type="EndpointReceiver" name="{name}">
+                # CRITICAL: The type must be "EndpointRecevier" (SAP's intentional typo)
+        definition = f'''<bpmn2:participant id="{id}" ifl:type="EndpointRecevier" name="{name}">
     <bpmn2:extensionElements>
         <ifl:property>
             <key>ifl:type</key>
-            <value>EndpointReceiver</value>
+                    <value>EndpointRecevier</value>
         </ifl:property>
     </bpmn2:extensionElements>
 </bpmn2:participant>'''
@@ -6274,7 +6185,7 @@ def Message processMessage(Message message) {{
                 elif "Receiver" in participant or "Endpoint" in participant_id:
                     # Check if this is an OData participant
                     is_odata_participant = (("InboundProduct" in participant or "OData" in participant) and
-                                          "EndpointReceiver" in participant) or "Participant_OData_" in participant_id
+                                          "EndpointRecevier" in participant) or "Participant_OData_" in participant_id
 
                     if is_odata_participant:
                         # Position OData participants to the right of the process
@@ -6351,6 +6262,12 @@ def Message processMessage(Message message) {{
                     elif "JSONtoXMLConverter" in component_id or "JsonToXml" in component_id:
                         result = self._create_json_to_xml_converter(component_id, name, position)
                         component_shapes.append(result["shape"])
+                    elif "callActivity" in component or "CallActivity" in component_id:
+                        # Handle callActivity components (like LIP process calls)
+                        shape = f'''<bpmndi:BPMNShape bpmnElement="{component_id}" id="BPMNShape_{component_id}">
+    <dc:Bounds height="60.0" width="100.0" x="{position['x']}" y="{position['y']}"/>
+</bpmndi:BPMNShape>'''
+                        component_shapes.append(shape)
                     else:
                         # Generic shape for other components
                         shape = f'''<bpmndi:BPMNShape bpmnElement="{component_id}" id="BPMNShape_{component_id}">
@@ -6389,6 +6306,12 @@ def Message processMessage(Message message) {{
                     elif "JSONtoXMLConverter" in component_id or "JsonToXml" in component_id:
                         result = self._create_json_to_xml_converter(component_id, name, position)
                         component_shapes.append(result["shape"])
+                    elif "callActivity" in component or "CallActivity" in component_id:
+                        # Handle callActivity components (like LIP process calls)
+                        shape = f'''<bpmndi:BPMNShape bpmnElement="{component_id}" id="BPMNShape_{component_id}">
+    <dc:Bounds height="60.0" width="100.0" x="{position['x']}" y="{position['y']}"/>
+</bpmndi:BPMNShape>'''
+                        component_shapes.append(shape)
                     else:
                         # Generic shape for other components
                         shape = f'''<bpmndi:BPMNShape bpmnElement="{component_id}" id="BPMNShape_{component_id}">
@@ -7366,8 +7289,24 @@ def Message processMessage(Message message) {{
         # Replace the process content placeholder - IMPORTANT: Use double curly braces to escape them in f-strings
         process_content_with_components = process_template.replace("{{process_content}}", real_process_content)
 
+        # Collect additional processes from all endpoints
+        additional_processes = []
+        print(f"🔍 DEBUG: Starting to collect additional processes from {len(components.get('endpoints', []))} endpoints")
+        for i, endpoint in enumerate(components.get("endpoints", [])):
+            print(f"🔍 DEBUG: Processing endpoint {i+1}: {endpoint.get('name', 'Unknown')}")
+            endpoint_components = self._create_endpoint_components(endpoint, templates)
+            if "additional_processes" in endpoint_components:
+                additional_processes.extend(endpoint_components["additional_processes"])
+                print(f"🔍 DEBUG: Found {len(endpoint_components['additional_processes'])} additional processes in endpoint {i+1}")
+            else:
+                print(f"🔍 DEBUG: No additional_processes found in endpoint {i+1}")
+        
+        print(f"🔍 DEBUG: Total additional processes collected: {len(additional_processes)}")
+        for i, process in enumerate(additional_processes):
+            print(f"  Process {i+1}: {process[:100]}...")
+
         # Generate the complete iFlow XML
-        iflow_xml = templates.generate_iflow_xml(collaboration_content, process_content_with_components)
+        iflow_xml = templates.generate_iflow_xml(collaboration_content, process_content_with_components, additional_processes)
 
         # Verify that the process_content placeholder was replaced
         if "{{process_content}}" in iflow_xml:
@@ -7375,11 +7314,218 @@ def Message processMessage(Message message) {{
             # Try a direct replacement as a fallback
             iflow_xml = iflow_xml.replace("{{process_content}}", real_process_content)
 
-        # Add proper BPMN diagram layout for ALL components
-        iflow_xml = self._add_bpmn_diagram_layout(iflow_xml, participants, message_flows, process_components)
+        # Add proper BPMN diagram layout for ALL components including additional processes
+        all_process_components = process_components + additional_processes
+        iflow_xml = self._add_bpmn_diagram_layout(iflow_xml, participants, message_flows, all_process_components)
 
         return iflow_xml
 
+    def _generate_iflw_with_converter(self, components, iflow_name):
+        """
+        Generate iFlow XML using the JSON-to-iFlow converter
+
+        Args:
+            components (dict): Components structure from GenAI analysis
+            iflow_name (str): Name of the iFlow
+
+        Returns:
+            str: Generated iFlow XML content
+        """
+        try:
+            # 🔧 FIX JSON FIRST: Fix and normalize the JSON components before processing
+            print(f"🔧 DEBUG: Fixing and normalizing JSON components for {iflow_name} (converter path)")
+            print(f"🔧 DEBUG: About to call _fix_and_normalize_json")
+            components = self._fix_and_normalize_json(components, iflow_name)
+            print(f"🔧 DEBUG: _fix_and_normalize_json completed")
+            
+            # 🎯 POST-VALIDATION: Final validation and fixing before iFlow generation
+            print(f"🎯 POST-VALIDATION: Running final validation for {iflow_name} (converter path)")
+            components = self._post_validate_and_fix_json(components, iflow_name)
+            print(f"🎯 POST-VALIDATION: Final validation completed")
+            
+            # 🎯 CRITICAL FIX: Use the FIXED components instead of latest timestamped JSON
+            print("🔍 Using FIXED components for conversion (with StartEvent/EndEvent flows)")
+            # Don't override the fixed components with timestamped JSON
+            # The fixed components already have the proper StartEvent/EndEvent connections
+            process_name = components.get("process_name", "Unknown")
+            print(f"📋 Integration: {process_name}")
+            
+            # Pre-normalize components to match converter schema
+            components = self._normalize_components_for_converter(components)
+            
+            # Debug: Show what the normalized components look like
+            print("🔍 Normalized components structure:")
+            for endpoint in components.get("endpoints", []):
+                for comp in endpoint.get("components", []):
+                    if comp.get("type") == "request_reply":
+                        print(f"   Component: {comp.get('name')}")
+                        print(f"     SAP Component Type: {comp.get('sap_component_type', 'NOT SET')}")
+                        print(f"     SAP Protocol: {comp.get('sap_protocol', 'NOT SET')}")
+                        print(f"     SAP Endpoint Path: {comp.get('sap_endpoint_path', 'NOT SET')}")
+                        print(f"     Original endpoint_path: {comp.get('config', {}).get('endpoint_path', 'NOT SET')}")
+                        print("     ---")
+            
+            # Import the converter
+           
+            from json_to_iflow_converter import EnhancedJSONToIFlowConverter
+            print("Using JSON-to-iFlow converter for generation...")
+            
+            # Initialize the converter
+            converter = EnhancedJSONToIFlowConverter()
+            
+            # Convert the components to iFlow XML
+            iflow_xml = converter.convert(components)
+            
+            print("Successfully generated iFlow XML using converter")
+            return iflow_xml
+            
+        except ImportError as e:
+            print(f"Error importing EnhancedJSONToIFlowConverter: {e}")
+            # 🚫 DO NOT FALL BACK TO TEMPLATE APPROACH
+            # Instead, raise the error to fail fast
+            raise RuntimeError(f"Converter import failed: {e}")
+        except Exception as e:
+            print(f"Error using converter: {e}")
+            # 🚫 DO NOT FALL BACK TO TEMPLATE APPROACH
+            # Instead, raise the error to fail fast
+            raise RuntimeError(f"Converter failed: {e}")
+
+    def _normalize_components_for_converter(self, components: dict) -> dict:
+        """
+        Normalize LLM JSON to the converter's expected schema:
+        - Lift error_handling.exception_subprocess into endpoints[].components as an exception_subprocess with nested config.components
+        - Map type aliases: groovy_script->script; keep 'enricher' accepted
+        - Normalize odata config: address/resource_path -> service_url/entity_set
+        - Normalize request_reply config: endpoint_path -> method/url
+        - Remove deprecated 'sequence' keys
+        """
+        try:
+            import copy
+            normalized = copy.deepcopy(components) if isinstance(components, dict) else components
+            endpoints = normalized.get("endpoints", []) if isinstance(normalized, dict) else []
+            for endpoint in endpoints:
+                if not isinstance(endpoint, dict):
+                    continue
+                comp_list = endpoint.get("components")
+                if not isinstance(comp_list, list):
+                    comp_list = []
+                    endpoint["components"] = comp_list
+
+                # Lift exception subprocess from error_handling
+                err = endpoint.get("error_handling", {}) if isinstance(endpoint.get("error_handling"), dict) else {}
+                exc_list = err.get("exception_subprocess", []) if isinstance(err.get("exception_subprocess"), list) else []
+                if exc_list:
+                    nested = []
+                    for item in exc_list:
+                        if not isinstance(item, dict):
+                            continue
+                        itype = (item.get("type") or "").lower()
+                        # Map aliases
+                        if itype == "groovy_script":
+                            itype = "script"
+                        nested.append({
+                            "type": itype,
+                            "id": item.get("id") or f"sub_{len(nested)}",
+                            "name": item.get("name") or "Subprocess Step",
+                            "config": item.get("config", {}) or {}
+                        })
+                    exc_comp = {
+                        "type": "exception_subprocess",
+                        "id": endpoint.get("id", "endpoint") + "_errors",
+                        "name": "Error Processing",
+                        "config": {"components": nested}
+                    }
+                    comp_list.append(exc_comp)
+                    # Optional: keep metadata but not required
+
+                # Normalize each component
+                for comp in comp_list:
+                    if not isinstance(comp, dict):
+                        continue
+                    ctype = (comp.get("type") or "").lower()
+                    if ctype == "groovy_script":
+                        comp["type"] = "script"
+                        comp["sap_activity_type"] = "Script"
+                        comp["sap_sub_activity_type"] = "GroovyScript"
+                    elif ctype == "enricher":
+                        comp["sap_activity_type"] = "Enricher"
+                    elif ctype == "request_reply":
+                        # SuccessFactors, SFTP, and HTTP components will be handled by the detection logic above
+                        comp["sap_activity_type"] = "ExternalCall"
+                    # Remove deprecated keys
+                    comp.pop("sequence", None)
+                    # Config normalizations
+                    cfg = comp.get("config", {})
+                    if isinstance(cfg, dict):
+                        # request_reply: Detect component type and preserve endpoint paths
+                        if ctype == "request_reply":
+                            endpoint_path = cfg.get("endpoint_path", "")
+                            component_name = comp.get("name", "").lower()
+                            
+                            print(f"🔍 Processing component: {comp.get('name')} (type: {ctype})")
+                            print(f"   Endpoint path: {endpoint_path}")
+                            print(f"   Component name: {component_name}")
+                            
+                            # Detect SuccessFactors components by endpoint path OR component name patterns
+                            if (endpoint_path and any(pattern in endpoint_path.lower() for pattern in [
+                                "odata", "successfactors", "sf", "picklist", "compoundemployee", "employee"
+                            ])) or (component_name and any(pattern in component_name for pattern in [
+                                "successfactors", "sf", "employee", "picklist", "odata"
+                            ])):
+                                # SuccessFactors component - preserve endpoint path and mark as SuccessFactors
+                                comp["sap_component_type"] = "SuccessFactors"
+                                comp["sap_protocol"] = "OData V4"
+                                comp["sap_endpoint_path"] = endpoint_path
+                                comp["sap_operation"] = "get"
+                                print(f"   ✅ Detected as SuccessFactors component")
+                                # Keep endpoint_path for proper mapping
+                            elif (endpoint_path and any(pattern in endpoint_path.lower() for pattern in [
+                                "sftp", "incoming", "archive", "file"
+                            ])) or (component_name and any(pattern in component_name for pattern in [
+                                "sftp", "file", "archive", "deliver", "upload"
+                            ])):
+                                # SFTP component - preserve endpoint path and mark as SFTP
+                                comp["sap_component_type"] = "SFTP"
+                                comp["sap_protocol"] = "SFTP"
+                                comp["sap_endpoint_path"] = endpoint_path
+                                comp["sap_operation"] = "put"
+                                print(f"   ✅ Detected as SFTP component")
+                                # Keep endpoint_path for proper mapping
+                            elif (endpoint_path and any(pattern in endpoint_path.lower() for pattern in [
+                                "email", "notification", "http", "api"
+                            ])) or (component_name and any(pattern in component_name for pattern in [
+                                "email", "notification", "http", "api", "send", "post"
+                            ])):
+                                # HTTP component - preserve endpoint path and mark as HTTP
+                                comp["sap_component_type"] = "HTTP"
+                                comp["sap_protocol"] = "HTTP"
+                                comp["sap_endpoint_path"] = endpoint_path
+                                comp["sap_operation"] = "post"
+                                print(f"   ✅ Detected as HTTP component")
+                                # Keep endpoint_path for proper mapping
+                            else:
+                                # Generic HTTP component - use existing logic as fallback
+                                if "url" not in cfg:
+                                    p = endpoint_path or "/"
+                                    # Try to construct URL from available fields
+                                    base_url = cfg.get("address", cfg.get("base_url", "https://example.com"))
+                                    cfg["url"] = f"{base_url}{p}" if not base_url.endswith('/') and not p.startswith('/') else f"{base_url}{p}"
+                                    cfg.setdefault("method", "GET")
+                                    cfg.pop("endpoint_path", None)
+                                print(f"   🔧 Constructed HTTP URL: {cfg['url']} (method: {cfg.get('method', 'GET')})")
+                        
+                        # odata: address/resource_path -> service_url/entity_set
+                        if ctype == "odata":
+                            if "address" in cfg and "service_url" not in cfg:
+                                cfg["service_url"] = cfg.pop("address")
+                            if "resource_path" in cfg and "entity_set" not in cfg:
+                                cfg["entity_set"] = cfg.pop("resource_path")
+                # Remove endpoint-level deprecated keys
+                endpoint.pop("sequence", None)
+                endpoint.pop("branching", None)
+            return normalized
+        except Exception:
+            return components
 
     def _generate_iflow_files(self, components, iflow_name, markdown_content):
         """
@@ -7395,9 +7541,33 @@ def Message processMessage(Message message) {{
         """
         iflow_files = {}
 
-        # Generate the main .iflw file using GenAI
-        print(f"Generating iFlow XML for {iflow_name} using GenAI...")
-        iflw_content = self._generate_iflw_content(components, iflow_name)
+        # Choose generation approach based on use_converter flag
+        print(f"🆔 VERSION: {getattr(self, 'VERSION_ID', 'UNKNOWN')}")
+        print(f"🆔 FILE: {getattr(self, 'FILE_PATH', 'UNKNOWN')}")
+        print(f"🔍 DEBUG: _generate_iflow_files: self.use_converter={self.use_converter}")
+        print(f"🔍 DEBUG: _generate_iflow_files: self type={type(self)}")
+        print(f"🔍 DEBUG: _generate_iflow_files: self dir={dir(self)}")
+        
+        # Check if we have LIP components that require template approach
+        has_lip_components = False
+        for endpoint in components.get("endpoints", []):
+            for comp in endpoint.get("components", []):
+                if comp.get("type") in ["lip", "local_integration_process"]:
+                    has_lip_components = True
+                    break
+            if has_lip_components:
+                break
+        
+        # Use the appropriate approach based on use_converter flag
+        if self.use_converter and not has_lip_components:
+            print(f"Generating iFlow XML for {iflow_name} using JSON-to-iFlow converter...")
+            iflw_content = self._generate_iflw_with_converter(components, iflow_name)
+        elif has_lip_components:
+            print(f"⚠️  LIP components detected - forcing template-based approach for {iflow_name}...")
+            iflw_content = self._generate_iflw_content(components, iflow_name)
+        else:
+            print(f"Generating iFlow XML for {iflow_name} using template-based approach...")
+            iflw_content = self._generate_iflw_content(components, iflow_name)
 
         # Create debug directory
         os.makedirs("genai_debug", exist_ok=True)
@@ -7456,14 +7626,14 @@ def Message processMessage(Message message) {{
 - **Reason**: {self.generation_details.get('reason', 'N/A')}
 
 ## Implementation Notes
-- OData components are implemented with proper EndpointReceiver participants
+- OData components are implemented with proper EndpointRecevier participants
 - Message flows connect service tasks to OData participants
 - BPMN diagram layout includes proper positioning of all components
 - Sequence flows connect components in the correct order
 
 ## Troubleshooting
 If the iFlow is not visible in SAP Integration Suite after import:
-1. Check that all OData participants have type="EndpointReceiver"
+1. Check that all OData participants have type="EndpointRecevier"
 2. Verify that message flows connect service tasks to participants
 3. Ensure all components have corresponding BPMNShape elements
 4. Confirm that all connections have corresponding BPMNEdge elements
@@ -7506,6 +7676,27 @@ If the iFlow is not visible in SAP Integration Suite after import:
                     script_path = f"src/main/resources/script/{script_name}"
                     iflow_files[script_path] = script_content
                     print(f"Added Groovy script: {script_path}")
+            
+            # Add scripts from script components
+            for component in endpoint.get("components", []):
+                if component.get("type") in ("groovy_script", "script") and "config" in component:
+                    script_content = component["config"].get("script_content")
+                    # Use centralized script name extraction for consistency
+                    script_name = self._extract_script_name(component, component.get("id", ""))
+                    if script_content:
+                        script_path = f"src/main/resources/script/{script_name}"
+                        iflow_files[script_path] = script_content
+                        print(f"Added script component file: {script_path}")
+                
+                # Add scripts from LIP components
+                elif component.get("type") in ("lip", "local_integration_process") and "config" in component:
+                    lip_config = component["config"]
+                    script_name = lip_config.get("script_name")
+                    script_content = lip_config.get("script_content")
+                    if script_name and script_content:
+                        script_path = f"src/main/resources/script/{script_name}"
+                        iflow_files[script_path] = script_content
+                        print(f"Added LIP script file: {script_path}")
 
         return iflow_files
 

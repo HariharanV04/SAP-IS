@@ -19,15 +19,16 @@ from cors_config import get_cors_origin
 
 # Set up NLTK data
 try:
-    import nltk_setup
+    from utils.nltk_setup import setup_nltk
+    setup_nltk()
     logging.info("NLTK setup completed")
 except Exception as e:
     logging.warning(f"Warning: NLTK setup failed: {str(e)}")
 
 # Run startup checks
 try:
-    import cf_startup_check
-    if cf_startup_check.check_imports():
+    from utils.cf_startup_check import check_imports
+    if check_imports():
         logging.info("Startup checks completed successfully!")
     else:
         logging.warning("WARNING: Startup checks failed!")
@@ -37,6 +38,16 @@ except Exception as e:
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
+# DEBUG: Log current working directory and Python path
+logger.info("=" * 80)
+logger.info("DEBUG: Application startup information")
+logger.info(f"Current working directory: {os.getcwd()}")
+logger.info(f"Python executable: {sys.executable}")
+logger.info(f"Python version: {sys.version}")
+logger.info(f"Python path: {sys.path}")
+logger.info(f"Script directory: {os.path.dirname(os.path.abspath(__file__))}")
+logger.info("=" * 80)
 
 # Load environment variables from .env file
 try:
@@ -338,7 +349,8 @@ def process_iflow_generation(job_id, markdown_content, iflow_name=None):
             api_key=ANTHROPIC_API_KEY,
             output_dir=job_result_dir,
             iflow_name=iflow_name,
-            job_id=job_id
+            job_id=job_id,
+            use_converter=False  # Use template-based approach for proper SAP Integration Suite XML
         )
 
         if result["status"] == "success":
@@ -709,8 +721,8 @@ def fix_iflow():
         file_path = data['file_path']
         create_backup = data.get('create_backup', True)
 
-        # Initialize the iFlow generator API
-        generator_api = IFlowGeneratorAPI(api_key=ANTHROPIC_API_KEY)
+        # Initialize the iFlow generator API  
+        generator_api = IFlowGeneratorAPI(api_key=ANTHROPIC_API_KEY, use_converter=False)
 
         # Fix the iFlow file
         result = generator_api.fix_iflow_file(file_path, create_backup)

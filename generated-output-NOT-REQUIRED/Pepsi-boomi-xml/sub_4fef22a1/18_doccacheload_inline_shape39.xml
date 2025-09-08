@@ -1,0 +1,7 @@
+<?xml version="1.0" ?>
+<shape image="doccacheload_icon" name="shape39" shapetype="doccacheload" userlabel="" x="1151.0" y="16.0">
+  <configuration>
+    <doccacheload docCache="a77d2345-1a73-44fd-8386-d4ee281812b7"/>
+  </configuration>
+  <dragpoints/>
+</shape>

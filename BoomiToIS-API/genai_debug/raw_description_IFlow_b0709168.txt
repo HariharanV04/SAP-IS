@@ -1,1 +1,0 @@
-This integration flow extracts employee data from SAP SuccessFactors via API call, transforms the data using a Groovy script to convert it into Kafka Avro format, and transfers the processed data to an SFTP server. Error handling includes email notifications for any failures during processing.

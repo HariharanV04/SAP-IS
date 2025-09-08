@@ -1,1 +1,0 @@
-This integration flow retrieves employee data from SAP SuccessFactors via OData, validates the required fields, transforms the data into Kafka Avro format, and transfers it to an SFTP server. It includes comprehensive error handling with email notifications, logging of successful transfers, and configurable retry logic for SFTP connection failures.

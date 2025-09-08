@@ -1,0 +1,18 @@
+#Tue Aug 19 12:04:50 UTC 2025
+SuccessFactors_Credential=<SF_Credentials>
+SF_Parameters=queryMode\=periodDelta
+ExecutionFromDate(YYYY-MM-DDT00\:00\:00Z)=&lt;yyyy-mm-ddThh\:mm\:ss&gt;
+GRCAccessControlHRTriggerEndpoint_proxyType_21=sapcc
+SF_Suffix=/odata/v2
+FutureNoOfDays=30
+SF_URL=<SF_URL>
+SF_HTTP_SESSION_REUSE=None
+GRC_URL=<GRC_URL>
+GRC_Timeout=60000
+SF_SESSION_REUSE=onIntegrationFlow
+SF_Page_Size=200
+GRC_Location=
+GRCAccessControlHRTriggerEndpoint_Credentail=<GRC_Credentials>
+TimerEventDefinition_1_scheduleKey_5=<row><cell>dayValue</cell><cell></cell></row><row><cell>monthValue</cell><cell></cell></row><row><cell>yearValue</cell><cell></cell></row><row><cell>dateType</cell><cell>DAILY</cell></row><row><cell>secondValue</cell><cell>0</cell></row><row><cell>minutesValue</cell><cell></cell></row><row><cell>hourValue</cell><cell></cell></row><row><cell>toInterval</cell><cell>1</cell></row><row><cell>fromInterval</cell><cell>0</cell></row><row><cell>OnEveryMinute</cell><cell>5</cell></row><row><cell>timeType</cell><cell>TIME_INTERVAL</cell></row><row><cell>timeZone</cell><cell>( UTC 0\:00 ) Greenwich Mean Time(Etc/GMT)</cell></row><row><cell>throwExceptionOnExpiry</cell><cell>true</cell></row><row><cell>second</cell><cell>*</cell></row><row><cell>minute</cell><cell>*</cell></row><row><cell>hour</cell><cell>*</cell></row><row><cell>day_of_month</cell><cell>?</cell></row><row><cell>month</cell><cell>*</cell></row><row><cell>dayOfWeek</cell><cell>*</cell></row><row><cell>year</cell><cell>*</cell></row><row><cell>startAt</cell><cell></cell></row><row><cell>endAt</cell><cell></cell></row><row><cell>attributeBehaviour</cell><cell>isRunOnceRequired,isScheduleOnDayRequired,isScheduleRecurRequired</cell></row><row><cell>triggerType</cell><cell>cron</cell></row><row><cell>noOfSchedules</cell><cell>1</cell></row><row><cell>schedule1</cell><cell>0+0/5+0-0+?+*+*+*&amp;trigger.timeZone\=Etc/GMT</cell></row>
+GRCAccessControlHRTriggerEndpoint_privateKeyAlias=<GRC_PrivateKeyAlias>
+GRCAccessControlHRTriggerEndpoint_authentication_65=Basic

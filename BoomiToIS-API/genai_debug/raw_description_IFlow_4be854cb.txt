@@ -1,1 +1,0 @@
-This integration flow receives Stripe subscription webhook notifications, validates the signature, transforms subscription data into Salesforce Opportunity format using Groovy, and creates corresponding Opportunities in Salesforce CRM. It handles authentication via dynamic properties and properly formats the payload for Salesforce's OData API.

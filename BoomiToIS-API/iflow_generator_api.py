@@ -17,30 +17,63 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 # Import the generator
+import_successful = False
 try:
-    # Try to import from the current directory first
-    from enhanced_genai_iflow_generator import EnhancedGenAIIFlowGenerator
-    logger.info("Successfully imported EnhancedGenAIIFlowGenerator from local directory")
+    # Try to import from the current directory first - use absolute import path
+    logger.info("🔍 Attempting local import...")
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    local_module_path = os.path.join(current_dir, "enhanced_genai_iflow_generator.py")
+    
+    logger.info(f"🔍 Current directory: {current_dir}")
+    logger.info(f"🔍 Local module path: {local_module_path}")
+    logger.info(f"🔍 File exists: {os.path.exists(local_module_path)}")
+    
+    if os.path.exists(local_module_path):
+        # Force import from local directory by temporarily modifying sys.path
+        original_path = sys.path.copy()
+        sys.path.insert(0, current_dir)
+        
+        logger.info(f"🔍 Modified sys.path: {sys.path[:3]}...")
+        
+        try:
+            import enhanced_genai_iflow_generator
+            from enhanced_genai_iflow_generator import EnhancedGenAIIFlowGenerator
+            logger.info("✅ Successfully imported EnhancedGenAIIFlowGenerator from local directory")
+            logger.info(f"✅ Module file: {enhanced_genai_iflow_generator.__file__}")
+            logger.info(f"✅ Module version: {getattr(EnhancedGenAIIFlowGenerator, 'VERSION_ID', 'Unknown')}")
+            import_successful = True
+        finally:
+            # Restore original sys.path
+            sys.path = original_path
+            logger.info(f"🔍 Restored sys.path: {sys.path[:3]}...")
+    else:
+        logger.error(f"❌ Local module not found at: {local_module_path}")
+        
 except ImportError as e:
-    logger.warning(f"Could not import from local directory: {str(e)}")
+    logger.error(f"❌ Local import failed: {str(e)}")
+    logger.error(f"❌ Import error type: {type(e)}")
+    import traceback
+    logger.error(f"❌ Full traceback:")
+    traceback.print_exc()
+except Exception as e:
+    logger.error(f"❌ Unexpected error during local import: {str(e)}")
+    logger.error(f"❌ Error type: {type(e)}")
+    import traceback
+    logger.error(f"❌ Full traceback:")
+    traceback.print_exc()
 
-    # If that fails, try to import from the MuleToIflowGenAI Approach directory
-    try:
-        # Add MuleToIFlow GenAI Approach directory to path
-        MULE_TO_IFLOW_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "MuleToIflowGenAI Approach")
-        sys.path.append(MULE_TO_IFLOW_DIR)
-
-        # Import the module
-        from enhanced_genai_iflow_generator import EnhancedGenAIIFlowGenerator
-        logger.info("Successfully imported EnhancedGenAIIFlowGenerator from MuleToIflowGenAI Approach directory")
-    except ImportError as e:
-        logger.error(f"Error importing EnhancedGenAIIFlowGenerator: {str(e)}")
-        raise ImportError(f"Could not import EnhancedGenAIIFlowGenerator: {str(e)}")
+# REMOVE THE FALLBACK IMPORT - it's causing the wrong module to be imported
+if not import_successful:
+    logger.error("❌ Failed to import EnhancedGenAIIFlowGenerator from local directory")
+    logger.error("❌ This is a critical error - the application cannot continue")
+    raise ImportError("Could not import EnhancedGenAIIFlowGenerator from local directory. Please check the file exists and is not corrupted.")
+else:
+    logger.info("✅ Using local EnhancedGenAIIFlowGenerator - this is the correct version")
 
 class IFlowGeneratorAPI:
     """API wrapper for the MuleToIFlow GenAI approach"""
 
-    def __init__(self, api_key=None, model="claude-sonnet-4-20250514", provider="claude"):
+    def __init__(self, api_key=None, model="claude-sonnet-4-20250514", provider="claude", use_converter=False):
         """
         Initialize the iFlow generator API
 
@@ -48,16 +81,19 @@ class IFlowGeneratorAPI:
             api_key (str): API key for the LLM service (optional)
             model (str): Model to use for the LLM service
             provider (str): AI provider to use ('openai', 'claude', or 'local')
+            use_converter (bool): If True, use JSON-to-iFlow converter; if False, use template-based approach
         """
         self.api_key = api_key
         self.model = model
         self.provider = provider
+        self.use_converter = use_converter
 
         # Initialize the generator
         self.generator = EnhancedGenAIIFlowGenerator(
             api_key=self.api_key,
             model=self.model,
-            provider=self.provider
+            provider=self.provider,
+            use_converter=self.use_converter
         )
 
         logger.info(f"Initialized IFlowGeneratorAPI with {provider} provider and {model} model")
@@ -200,7 +236,7 @@ class IFlowGeneratorAPI:
             }
 
 # Function to generate iFlow from markdown content
-def generate_iflow_from_markdown(markdown_content, api_key, output_dir=None, iflow_name=None, model="claude-sonnet-4-20250514", provider="claude", job_id=None):
+def generate_iflow_from_markdown(markdown_content, api_key, output_dir=None, iflow_name=None, model="claude-sonnet-4-20250514", provider="claude", job_id=None, use_converter=False):
     """
     Generate an iFlow from markdown content
 
@@ -212,11 +248,12 @@ def generate_iflow_from_markdown(markdown_content, api_key, output_dir=None, ifl
         model (str, optional): Model to use for the LLM service
         provider (str, optional): AI provider to use ('openai', 'claude', or 'local')
         job_id (str, optional): Job ID for progress tracking
+        use_converter (bool, optional): If True, use JSON-to-iFlow converter; if False, use template-based approach
 
     Returns:
         dict: Dictionary with paths to generated files and other information
     """
-    generator_api = IFlowGeneratorAPI(api_key=api_key, model=model, provider=provider)
+    generator_api = IFlowGeneratorAPI(api_key=api_key, model=model, provider=provider, use_converter=use_converter)
     return generator_api.generate_from_markdown(markdown_content, output_dir, iflow_name, job_id)
 
 # Test function

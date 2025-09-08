@@ -1,0 +1,33 @@
+<?xml version="1.0" ?>
+<bns:Component xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bns="http://api.platform.boomi.com/" folderFullPath="PepsiCo/2.0 Development/2.1 Global Integrations/EC372 - EC to NAVEX (OB)" componentId="5b4547ef-a82e-45d0-be86-ac17de030c90" version="1" name="ControlReportMap" type="transform.map" createdDate="2018-04-25T11:38:37Z" createdBy="Deep.Singh.Chauhan@accenture.com" modifiedDate="2018-04-25T11:38:37Z" modifiedBy="Deep.Singh.Chauhan@accenture.com" deleted="false" currentVersion="true" folderName="EC372 - EC to NAVEX (OB)" folderId="RjoxOTM3OTEx" branchName="main" branchId="QjoyOTk5NDY">
+  <bns:encryptedValues/>
+  <bns:description/>
+  <bns:object>
+    <Map xmlns="" fromProfile="d84190ff-37b9-45e7-9f4a-fc15549ac646" toProfile="b5346e87-6548-4995-800c-9a42fdb2d36f">
+      <Mappings>
+        <Mapping fromFunction="2" fromKey="1" fromType="function" toKey="3" toKeyPath="*[@key='1']/*[@key='2']/*[@key='3']" toNamePath="Record/Elements/text" toType="profile"/>
+      </Mappings>
+      <Functions optimizeExecutionOrder="true">
+        <FunctionStep cacheEnabled="true" cacheOption="none" category="ProcessProperty" key="1" name="Get Dynamic Process Property" position="1" sumEnabled="false" type="PropertyGet" x="30.0" y="15.0">
+          <Inputs>
+            <Input default="RPT_INT_ALL_BRULE_ERR_CNT" key="1" name="Property Name"/>
+            <Input default="" key="2" name="Default Value"/>
+          </Inputs>
+          <Outputs>
+            <Output key="3" name="Result"/>
+          </Outputs>
+          <Configuration/>
+        </FunctionStep>
+        <FunctionStep category="userdefined" id="5c4a91aa-a397-456a-9759-f44104968db9" key="2" name="Total RecordCount" position="2" type="userdefined" x="30.0" y="150.0">
+          <Inputs/>
+          <Outputs>
+            <Output key="1" name="Total Count"/>
+          </Outputs>
+          <Configuration/>
+        </FunctionStep>
+      </Functions>
+      <Defaults/>
+      <DocumentCacheJoins/>
+    </Map>
+  </bns:object>
+</bns:Component>

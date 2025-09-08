@@ -1,0 +1,82 @@
+<?xml version="1.0" ?>
+<shape image="documentproperties_icon" name="shape9" shapetype="documentproperties" userlabel="Error Message Details" x="1135.0" y="416.0">
+  <configuration>
+    <documentproperties>
+      <documentproperty defaultValue="" isTradingPartner="false" name="Mail - File Name" persist="false" propertyId="connector.mail.filename">
+        <sourcevalues>
+          <parametervalue key="1" valueType="static">
+            <staticparameter staticproperty="SFEC_EC372 EC to NAVEX Employee Demographics -Error Report.txt"/>
+          </parametervalue>
+        </sourcevalues>
+      </documentproperty>
+      <documentproperty defaultValue="" isTradingPartner="false" name="Mail - Subject" persist="false" propertyId="connector.mail.subject">
+        <sourcevalues>
+          <parametervalue key="2" valueType="static">
+            <staticparameter staticproperty="SFEC_EC372 EC to NAVEX Employee Demographics -Error Report - "/>
+          </parametervalue>
+          <parametervalue key="3" valueType="date">
+            <dateparameter dateparametertype="current" datetimemask="yyyy-MM-dd HH:mm:ss"/>
+          </parametervalue>
+        </sourcevalues>
+      </documentproperty>
+      <documentproperty defaultValue="" isTradingPartner="false" name="Mail - From Address" persist="false" propertyId="connector.mail.fromAddress">
+        <sourcevalues>
+          <parametervalue key="4" valueType="definedparameter">
+            <definedprocessparameter componentId="795e769e-a9c3-442e-bff3-a96b04f9b531" componentName="EC372 - EC to NAVEX (OB)" propertyKey="a6b2e057-49d9-4cbc-9c94-16fe27cf011b" propertyLabel="fromEmailAddressForErrors"/>
+          </parametervalue>
+        </sourcevalues>
+      </documentproperty>
+      <documentproperty defaultValue="" isTradingPartner="false" name="Mail - To Address" persist="false" propertyId="connector.mail.toAddress">
+        <sourcevalues>
+          <parametervalue key="5" valueType="definedparameter">
+            <definedprocessparameter componentId="795e769e-a9c3-442e-bff3-a96b04f9b531" componentName="EC372 - EC to NAVEX (OB)" propertyKey="630bd0e1-a257-4ac9-b3c6-b4213140f7ff" propertyLabel="toEmailAddressForErrors"/>
+          </parametervalue>
+        </sourcevalues>
+      </documentproperty>
+      <documentproperty defaultValue="" isTradingPartner="false" name="Mail - Body" persist="false" propertyId="connector.mail.body">
+        <sourcevalues>
+          <parametervalue key="6" valueType="static">
+            <staticparameter staticproperty=""/>
+          </parametervalue>
+        </sourcevalues>
+      </documentproperty>
+      <documentproperty defaultValue="" isTradingPartner="false" name="Dynamic Document Property - File_Name" persist="false" propertyId="dynamicdocument.File_Name">
+        <sourcevalues>
+          <parametervalue key="7" valueType="static">
+            <staticparameter staticproperty="SFEC_EC372 EC to NAVEX Employee Demographics -Error Report."/>
+          </parametervalue>
+          <parametervalue key="8" valueType="date">
+            <dateparameter dateparametertype="current" datetimemask="yyyy-MM-dd"/>
+          </parametervalue>
+          <parametervalue key="9" valueType="static">
+            <staticparameter staticproperty=".csv"/>
+          </parametervalue>
+        </sourcevalues>
+      </documentproperty>
+      <documentproperty defaultValue="" isTradingPartner="false" name="Dynamic Document Property - SFTPLocation" persist="false" propertyId="dynamicdocument.SFTPLocation">
+        <sourcevalues>
+          <parametervalue key="10" valueType="definedparameter">
+            <definedprocessparameter componentId="795e769e-a9c3-442e-bff3-a96b04f9b531" componentName="EC372 - EC to NAVEX (OB)" propertyKey="6c4f4625-a39d-4368-b986-85499c5dd7d2" propertyLabel="Archive path on SFTP server"/>
+          </parametervalue>
+        </sourcevalues>
+      </documentproperty>
+      <documentproperty defaultValue="" isTradingPartner="false" name="SFTP - Remote Directory" persist="false" propertyId="connector.sftp.remoteDirectory">
+        <sourcevalues>
+          <parametervalue key="11" valueType="track">
+            <trackparameter defaultValue="" propertyId="dynamicdocument.SFTPLocation" propertyName="Dynamic Document Property - SFTPLocation"/>
+          </parametervalue>
+        </sourcevalues>
+      </documentproperty>
+      <documentproperty defaultValue="" isTradingPartner="false" name="SFTP - File Name" persist="false" propertyId="connector.sftp.filename">
+        <sourcevalues>
+          <parametervalue key="12" valueType="track">
+            <trackparameter defaultValue="" propertyId="dynamicdocument.File_Name" propertyName="Dynamic Document Property - File_Name"/>
+          </parametervalue>
+        </sourcevalues>
+      </documentproperty>
+    </documentproperties>
+  </configuration>
+  <dragpoints>
+    <dragpoint name="shape9.dragpoint1" toShape="shape11" x="1280.0" y="424.0"/>
+  </dragpoints>
+</shape>

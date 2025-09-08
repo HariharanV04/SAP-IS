@@ -418,11 +418,11 @@ class BpmnTemplates:
     # 11. SFTP Receiver Components
     def sftp_receiver_participant_template(self, id="Participant_SFTP", name="SFTP_Server"):
         """Generate an SFTP receiver participant template."""
-        definition = f'''<bpmn2:participant id="{id}" ifl:type="EndpointReceiver" name="{name}">
-    <bpmn2:extensionElements>
-        <ifl:property>
-            <key>ifl:type</key>
-            <value>EndpointReceiver</value>
+        definition = f'''<bpmn2:participant id="{id}" ifl:type="EndpointRecevier" name="{name}">
+            <bpmn2:extensionElements>
+                <ifl:property>
+                    <key>ifl:type</key>
+                    <value>EndpointRecevier</value>
         </ifl:property>
     </bpmn2:extensionElements>
 </bpmn2:participant>'''

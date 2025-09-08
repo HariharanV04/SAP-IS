@@ -1,0 +1,40 @@
+{
+  "components": {
+    "process_name": "Simple Test Integration",
+    "description": "A simple test integration with basic components",
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/test",
+        "purpose": "Simple test endpoint",
+        "components": [
+          {
+            "type": "enricher",
+            "name": "Set Properties",
+            "id": "enricher_1",
+            "config": {
+              "content": "Set basic properties"
+            }
+          },
+          {
+            "type": "request_reply",
+            "name": "Call External API",
+            "id": "request_reply_1",
+            "config": {
+              "endpoint_path": "/api/test",
+              "method": "GET"
+            }
+          },
+          {
+            "type": "groovy_script",
+            "name": "Transform Data",
+            "id": "script_1",
+            "config": {
+              "script": "TransformData.groovy"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

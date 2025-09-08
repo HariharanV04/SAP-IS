@@ -1,1 +1,0 @@
-This iFlow retrieves detailed product information from SAP HANA via OData based on a product identifier provided in the request query parameters. It validates the product identifier against a configured list of valid identifiers using a Groovy script, then fetches the product details if valid, or returns a formatted error response if the product is not found.

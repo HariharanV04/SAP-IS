@@ -1,1 +1,0 @@
-This integration flow processes Stripe subscription webhook notifications by converting JSON data to XML, transforming it using a Groovy script, and creating corresponding Salesforce Opportunities. It enriches the message with subscription properties, performs the necessary data mapping, and formats the response for delivery back to the caller.

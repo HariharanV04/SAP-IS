@@ -1,0 +1,6 @@
+#Store metainfo properties
+#Sat Aug 23 07:05:00 UTC 2025
+description=To Update the changed Employee data from SAP SuccessFactors Employee system to SAP Access Control system.
+SAP-MarkedSAP2SAP=SAP_TO_SAP_INTEGRATION
+source=SAPSuccessFactorsEmployeeCentral
+target=SAPAccessControl

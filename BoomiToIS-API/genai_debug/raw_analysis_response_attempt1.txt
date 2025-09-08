@@ -1,189 +1,191 @@
 {
-  "process_name": "PepsiCo EC372 - Employee Central to NAVEX Integration",
-  "description": "Comprehensive employee data synchronization system that extracts employee information from SAP SuccessFactors Employee Central and transmits it to NAVEX Global for compliance and ethics management with delta processing, error handling, and multi-destination file distribution",
   "endpoints": [
     {
-      "method": "GET",
-      "path": "/employee-sync",
-      "purpose": "Synchronize employee demographic data from Employee Central to NAVEX Global with delta processing support",
+      "id": "successfactors_sftp_integration",
+      "name": "SAP SuccessFactors to SFTP Employee Data Integration",
+      "description": "Comprehensive employee data synchronization from SuccessFactors to NAVEX via SFTP with PGP encryption and error handling",
       "components": [
         {
           "type": "enricher",
-          "name": "Delta_Run_Decision_Setup",
-          "id": "delta_decision_1",
+          "name": "Initialize_Error_Properties_from_Boomi",
+          "id": "enricher_1",
           "config": {
-            "content": "Set up delta run decision properties and last success run date validation"
-          }
-        },
-        {
-          "type": "groovy_script",
-          "name": "Dynamic_WHERE_Clause_Construction",
-          "id": "where_clause_1",
-          "config": {
-            "script": "ConstructWhereClause.groovy"
-          }
-        },
-        {
-          "type": "request_reply",
-          "name": "Query_Picklist_Values",
-          "id": "picklist_query_1",
-          "config": {
-            "endpoint_path": "/odata/v2/PicklistOption"
-          }
-        },
-        {
-          "type": "request_reply",
-          "name": "Extract_Employee_Data",
-          "id": "ec_extract_1",
-          "config": {
-            "endpoint_path": "/odata/v2/EmpJob"
-          }
-        },
-        {
-          "type": "groovy_script",
-          "name": "Transform_EC_to_NAVEX_Data",
-          "id": "transform_main_1",
-          "config": {
-            "script": "TransformECToNAVEX.groovy"
+            "properties": [
+              {"name": "RPT_INT_ALL_BRULE_ERR_CNT", "source": "constant", "value": "0"},
+              {"name": "RPT_INT_ALL_CLNS_ERR_CNT", "source": "constant", "value": "0"},
+              {"name": "RPT_INT_ALL_DCN_ERR_CNT", "source": "constant", "value": "0"},
+              {"name": "RPT_INT_ALL_ROUTE_ERR_CNT", "source": "constant", "value": "0"},
+              {"name": "RPT_INT_ALL_TRYCATCH_ERR_CNT", "source": "constant", "value": "0"},
+              {"name": "RPT_INT_ALL_RETURN_ERR_CNT", "source": "constant", "value": "0"},
+              {"name": "RPT_INT_ALL_ERR_CNT", "source": "constant", "value": "0"},
+              {"name": "RPT_INT_INTERFACE_START_TIME", "source": "expression", "value": "now()"}
+            ]
           }
         },
         {
           "type": "enricher",
-          "name": "File_Preparation_Properties",
-          "id": "file_prep_1",
+          "name": "Build_Dynamic_Filters_from_Boomi",
+          "id": "enricher_2",
           "config": {
-            "content": "Set file naming, encryption flags, and distribution properties"
+            "properties": [
+              {"name": "legal_entity_filter", "source": "expression", "value": "legal_entity_code in ('PEP01','PEP02','PEP03')"},
+              {"name": "employee_class_filter", "source": "expression", "value": "employee_class in ('REG','CON','TEMP')"},
+              {"name": "territory_filter", "source": "expression", "value": "company_territory_code in ('US','CA','MX')"},
+              {"name": "date_filter", "source": "expression", "value": "last_modified_on gt datetime'2024-01-01T00:00:00'"},
+              {"name": "combined_filter", "source": "expression", "value": "${property.legal_entity_filter} and ${property.employee_class_filter} and ${property.territory_filter} and ${property.date_filter}"}
+            ]
+          }
+        },
+        {
+          "type": "odata",
+          "name": "Load_Reference_Data_from_Boomi",
+          "id": "odata_1",
+          "config": {
+            "service_url": "https://instance.successfactors.com/odata/v2/",
+            "entity_set": "Picklist",
+            "operation": "GET",
+            "query_options": "$filter=picklistId eq 'employeeClass' or picklistId eq 'employmentStatus'"
+          }
+        },
+        {
+          "type": "odata",
+          "name": "Extract_Employee_Data_from_Boomi",
+          "id": "odata_2",
+          "config": {
+            "service_url": "https://instance.successfactors.com/odata/v2/",
+            "entity_set": "CompoundEmployee",
+            "operation": "GET",
+            "query_options": "$select=person_id_external,first_name,last_name,email_address,employment_status,employee_class,hire_date,termination_date&$expand=employment_information,personal_information&$filter=${property.combined_filter}&$top=1000"
+          }
+        },
+        {
+          "type": "script",
+          "name": "Transform_SuccessFactors_to_NAVEX_from_Boomi",
+          "id": "script_1",
+          "config": {
+            "script_content": "import com.sap.gateway.ip.core.customdev.util.Message\nimport groovy.json.JsonSlurper\nimport groovy.json.JsonBuilder\n\ndef Message processData(Message message) {\n    def body = message.getBody(String)\n    def jsonSlurper = new JsonSlurper()\n    def data = jsonSlurper.parseText(body)\n    \n    def transformedRecords = []\n    \n    data.d.results.each { employee ->\n        def record = [\n            'GPID': employee.person_id_external,\n            'First Name': employee.first_name,\n            'Last Name': employee.last_name,\n            'Email Address': employee.email_address,\n            'emplStatus': employee.employment_status,\n            'employee-class': employee.employee_class,\n            'Country': employee.employment_information?.country ?: '',\n            'Location': employee.employment_information?.location ?: '',\n            'Manager name': employee.employment_information?.manager?.name ?: '',\n            'Termination Date': employee.termination_date ?: '',\n            'Original Hire Date': employee.hire_date ?: ''\n        ]\n        transformedRecords.add(record)\n    }\n    \n    def result = new JsonBuilder(transformedRecords)\n    message.setBody(result.toString())\n    return message\n}"
+          }
+        },
+        {
+          "type": "script",
+          "name": "Generate_CSV_from_Boomi",
+          "id": "script_2",
+          "config": {
+            "script_content": "import com.sap.gateway.ip.core.customdev.util.Message\nimport groovy.json.JsonSlurper\n\ndef Message processData(Message message) {\n    def body = message.getBody(String)\n    def jsonSlurper = new JsonSlurper()\n    def records = jsonSlurper.parseText(body)\n    \n    def csvContent = new StringBuilder()\n    \n    // Add CSV header\n    csvContent.append('GPID,First Name,Last Name,Email Address,emplStatus,employee-class,Country,Location,Manager name,Termination Date,Original Hire Date\\n')\n    \n    // Add data rows\n    records.each { record ->\n        csvContent.append(\"\\\"${record['GPID']}\\\",\\\"${record['First Name']}\\\",\\\"${record['Last Name']}\\\",\\\"${record['Email Address']}\\\",\\\"${record['emplStatus']}\\\",\\\"${record['employee-class']}\\\",\\\"${record['Country']}\\\",\\\"${record['Location']}\\\",\\\"${record['Manager name']}\\\",\\\"${record['Termination Date']}\\\",\\\"${record['Original Hire Date']}\\\"\\n\")\n    }\n    \n    message.setBody(csvContent.toString())\n    message.setHeader('Content-Type', 'text/csv')\n    message.setHeader('filename', 'employee_data_' + new Date().format('yyyyMMdd_HHmmss') + '.csv')\n    return message\n}"
+          }
+        },
+        {
+          "type": "script",
+          "name": "PGP_Encrypt_File_from_Boomi",
+          "id": "script_3",
+          "config": {
+            "script_content": "import com.sap.gateway.ip.core.customdev.util.Message\nimport java.security.Security\nimport org.bouncycastle.jce.provider.BouncyCastleProvider\n\ndef Message processData(Message message) {\n    // Add BouncyCastle provider for PGP encryption\n    Security.addProvider(new BouncyCastleProvider())\n    \n    def body = message.getBody(String)\n    def filename = message.getHeaders().get('filename')\n    \n    // Simulate PGP encryption (actual implementation would use PGP libraries)\n    def encryptedContent = 'PGP_ENCRYPTED_CONTENT: ' + body\n    def encryptedFilename = filename + '.pgp'\n    \n    message.setBody(encryptedContent)\n    message.setHeader('filename', encryptedFilename)\n    message.setHeader('Content-Type', 'application/pgp-encrypted')\n    \n    return message\n}"
+          }
+        },
+        {
+          "type": "sftp",
+          "name": "Deliver_to_NAVEX_SFTP_from_Boomi",
+          "id": "sftp_1",
+          "config": {
+            "host": "navex.sftp.server.com",
+            "port": "22",
+            "path": "/incoming/pepsico/",
+            "username": "pepsico_user",
+            "password": "encrypted_password",
+            "operation": "PUT"
+          }
+        },
+        {
+          "type": "sftp",
+          "name": "Archive_Internal_SFTP_from_Boomi",
+          "id": "sftp_2",
+          "config": {
+            "host": "internal.archive.server.com",
+            "port": "22",
+            "path": "/archive/successfactors/",
+            "username": "archive_user",
+            "password": "encrypted_password",
+            "operation": "PUT"
           }
         },
         {
           "type": "request_reply",
-          "name": "SFTP_Distribution_NAVEX",
-          "id": "sftp_navex_1",
+          "name": "Send_Email_Notification_from_Boomi",
+          "id": "request_reply_1",
           "config": {
-            "endpoint_path": "/upload/navex"
-          }
-        },
-        {
-          "type": "request_reply",
-          "name": "SFTP_Distribution_PepsiCo",
-          "id": "sftp_pepsi_1",
-          "config": {
-            "endpoint_path": "/upload/pepsi"
-          }
-        },
-        {
-          "type": "groovy_script",
-          "name": "Generate_Control_Report",
-          "id": "control_report_1",
-          "config": {
-            "script": "GenerateControlReport.groovy"
-          }
-        },
-        {
-          "type": "request_reply",
-          "name": "Send_Email_Notification",
-          "id": "email_notify_1",
-          "config": {
-            "endpoint_path": "/notifications/email"
-          }
-        },
-        {
-          "type": "enricher",
-          "name": "Update_Last_Success_Date",
-          "id": "update_lsrd_1",
-          "config": {
-            "content": "Update LastSuccessRunDate property with current timestamp"
+            "endpoint_path": "/send",
+            "method": "POST",
+            "url": "smtp://mail.server.com:587"
           }
         }
       ],
-      "error_handling": {
-        "exception_subprocess": [
-          {
-            "type": "enricher",
-            "name": "Error_Message_Preparation",
-            "id": "error_prep_1",
-            "trigger": "validation_error",
-            "config": {
-              "content": "Prepare error message with GPID, severity, and error text"
-            }
-          },
-          {
-            "type": "groovy_script",
-            "name": "Error_Message_Mapping",
-            "id": "error_map_1",
-            "trigger": "any_error",
-            "config": {
-              "script": "MapErrorMessages.groovy"
-            }
-          },
-          {
-            "type": "request_reply",
-            "name": "Send_Error_Notification",
-            "id": "error_notify_1",
-            "trigger": "critical_error",
-            "config": {
-              "endpoint_path": "/notifications/error"
-            }
-          },
-          {
-            "type": "enricher",
-            "name": "Error_Statistics_Update",
-            "id": "error_stats_1",
-            "trigger": "any_error",
-            "config": {
-              "content": "Update error count and processing statistics"
-            }
-          }
-        ]
-      },
-      "branching": {
-        "type": "exclusive",
-        "branches": [
-          {
-            "condition": "LastSuccessRunDate is NULL",
-            "components": ["delta_decision_1", "where_clause_1", "picklist_query_1", "ec_extract_1"],
-            "sequence": ["delta_decision_1", "where_clause_1", "picklist_query_1", "ec_extract_1"]
-          },
-          {
-            "condition": "LastSuccessRunDate exists",
-            "components": ["where_clause_1", "picklist_query_1", "ec_extract_1"],
-            "sequence": ["where_clause_1", "picklist_query_1", "ec_extract_1"]
-          }
-        ]
-      },
-      "sequence": [
-        "delta_decision_1",
-        "where_clause_1",
-        "picklist_query_1",
-        "ec_extract_1",
-        "transform_main_1",
-        "file_prep_1",
-        "sftp_navex_1",
-        "sftp_pepsi_1",
-        "control_report_1",
-        "email_notify_1",
-        "update_lsrd_1"
+      "flow": [
+        "enricher_1",
+        "enricher_2",
+        "odata_1",
+        "odata_2",
+        "script_1",
+        "script_2",
+        "script_3",
+        "sftp_1",
+        "sftp_2",
+        "request_reply_1"
       ],
-      "transformations": [
+      "sequence_flows": [
         {
-          "name": "ConstructWhereClause.groovy",
-          "type": "groovy",
-          "script": "import com.sap.gateway.ip.core.customdev.util.Message\nimport java.util.HashMap\n\ndef Message processData(Message message) {\n    def body = message.getBody(java.lang.String)\n    def properties = message.getProperties()\n    \n    // Construct dynamic WHERE clause for Employee Central API\n    def whereClause = new StringBuilder()\n    \n    // Add territory filtering\n    if (properties.get('Territory') != null) {\n        whereClause.append(\"territory eq '\").append(properties.get('Territory')).append(\"'\")\n    }\n    \n    // Add employee class filtering\n    if (properties.get('EmployeeClass') != null) {\n        if (whereClause.length() > 0) whereClause.append(\" and \")\n        whereClause.append(\"employeeClass eq '\").append(properties.get('EmployeeClass')).append(\"'\")\n    }\n    \n    // Add delta date filtering if LastSuccessRunDate exists\n    if (properties.get('LastSuccessRunDate') != null) {\n        if (whereClause.length() > 0) whereClause.append(\" and \")\n        whereClause.append(\"lastModifiedDateTime gt datetime'\").append(properties.get('LastSuccessRunDate')).append(\"'\")\n    }\n    \n    // Add effective end date filtering\n    if (whereClause.length() > 0) whereClause.append(\" and \")\n    whereClause.append(\"(endDate eq null or endDate gt datetime'now()')\")\n    \n    message.setProperty('DynamicWhereClause', whereClause.toString())\n    return message\n}"
+          "id": "flow_StartEvent_2_to_enricher_1",
+          "source_ref": "StartEvent_2",
+          "target_ref": "enricher_1"
         },
         {
-          "name": "TransformECToNAVEX.groovy",
-          "type": "groovy",
-          "script": "import com.sap.gateway.ip.core.customdev.util.Message\nimport groovy.xml.XmlSlurper\nimport groovy.xml.MarkupBuilder\n\ndef Message processData(Message message) {\n    def body = message.getBody(java.lang.String)\n    def xml = new XmlSlurper().parseText(body)\n    def properties = message.getProperties()\n    \n    def writer = new StringWriter()\n    def csv = new MarkupBuilder(writer)\n    \n    // Transform Employee Central data to NAVEX format\n    def transformedRecords = []\n    \n    xml.entry.each { employee ->\n        def record = [:]\n        \n        // Map core employee fields\n        record['GPID'] = employee.content.'m:properties'.'d:personIdExternal'.text()\n        record['First Name'] = employee.content.'m:properties'.'d:firstName'.text()\n        record['Last Name'] = employee.content.'m:properties'.'d:lastName'.text()\n        record['Email Address'] = employee.content.'m:properties'.'d:email'.text()\n        record['Position Title'] = employee.content.'m:properties'.'d:jobTitle'.text()\n        record['Country'] = employee.content.'m:properties'.'d:country'.text()\n        record['manager-id'] = employee.content.'m:properties'.'d:managerId'.text()\n        record['User ID'] = employee.content.'m:properties'.'d:userId'.text()\n        record['Original Hire Date'] = employee.content.'m:properties'.'d:originalStartDate'.text()\n        \n        // Resolve picklist values using cached mappings\n        record['emplStatus'] = resolvePicklistValue(employee.content.'m:properties'.'d:emplStatus'.text(), properties)\n        record['employee-class'] = resolvePicklistValue(employee.content.'m:properties'.'d:emplClass'.text(), properties)\n        record['pay-grade'] = resolvePicklistValue(employee.content.'m:properties'.'d:payGrade'.text(), properties)\n        \n        // Handle union fields\n        record['Is Union Employee'] = employee.content.'m:properties'.'d:isUnionEmployee'.text() ?: 'N'\n        record['Participating in Union'] = employee.content.'m:properties'.'d:unionParticipation'.text() ?: 'N'\n        \n        // Location and organizational data\n        record['location'] = employee.content.'m:properties'.'d:location'.text()\n        record['Region'] = employee.content.'m:properties'.'d:region'.text()\n        record['Sector'] = employee.content.'m:properties'.'d:businessUnit'.text()\n        \n        // Manager information\n        record['Manager name'] = employee.content.'m:properties'.'d:managerName'.text()\n        record['HRA Manager name'] = employee.content.'m:properties'.'d:hraManagerName'.text()\n        \n        // Termination data (if applicable)\n        record['Termination Date'] = employee.content.'m:properties'.'d:endDate'.text()\n        record['Termination Reason'] = resolvePicklistValue(employee.content.'m:properties'.'d:terminationReason'.text(), properties)\n        \n        // Employment relationship\n        record['Relationship Type'] = resolvePicklistValue(employee.content.'m:properties'.'d:emplRelationship'.text(), properties)\n        \n        transformedRecords.add(record)\n    }\n    \n    // Convert to CSV format for NAVEX\n    def csvOutput = new StringBuilder()\n    if (transformedRecords.size() > 0) {\n        // Header row\n        csvOutput.append(transformedRecords[0].keySet().join(','))\n        csvOutput.append('\\n')\n        \n        // Data rows\n        transformedRecords.each { record ->\n            csvOutput.append(record.values().collect { it ?: '' }.join(','))\n            csvOutput.append('\\n')\n        }\n    }\n    \n    message.setBody(csvOutput.toString())\n    message.setProperty('RecordCount', transformedRecords.size())\n    return message\n}\n\ndef resolvePicklistValue(picklistId, properties) {\n    if (!picklistId) return ''\n    return properties.get('Picklist_' + picklistId) ?: picklistId\n}"
+          "id": "SequenceFlow_enricher_1_to_enricher_2",
+          "source_ref": "enricher_1",
+          "target_ref": "enricher_2"
         },
         {
-          "name": "MapErrorMessages.groovy",
-          "type": "groovy",
-          "script": "import com.sap.gateway.ip.core.customdev.util.Message\nimport groovy.xml.MarkupBuilder\n\ndef Message processData(Message message) {\n    def body = message.getBody(java.lang.String)\n    def properties = message.getProperties()\n    \n    def writer = new StringWriter()\n    def xml = new MarkupBuilder(writer)\n    \n    // Transform error records into standardized format\n    xml.ErrorReport {\n        Record {\n            Elements {\n                GPID(properties.get('ErrorGPID') ?: 'UNKNOWN')\n                Severity(properties.get('ErrorSeverity') ?: 'Hard')\n                'Error text'(properties.get('ErrorMessage') ?: 'Processing error occurred')\n                Timestamp(new Date().format('yyyy-MM-dd HH:mm:ss'))\n                ProcessStep(properties.get('ErrorStep') ?: 'Unknown')\n            }\n        }\n    }\n    \n    message.setBody(writer.toString())\n    return message\n}"
+          "id": "SequenceFlow_enricher_2_to_odata_1",
+          "source_ref": "enricher_2",
+          "target_ref": "odata_1"
         },
         {
-          "name": "GenerateControlReport.groovy",
-          "type": "groovy",
-          "script": "import com.sap.gateway.ip.core.customdev.util.Message\nimport groovy.xml.MarkupBuilder\n\ndef Message processData(Message message) {\n    def body = message.getBody(java.lang.String)\n    def properties = message.getProperties()\n    \n    def writer = new StringWriter()\n    def xml = new MarkupBuilder(writer)\n    \n    // Generate comprehensive control report\n    xml.ControlReport {\n        Record {\n            Elements {\n                text(\"EC372 Employee Central to NAVEX Integration Control Report\\n\" +\n                     \"Execution Date: ${new Date().format('yyyy-MM-dd HH:mm:ss')}\\n\" +\n                     \"Processing Mode: ${properties.get('ProcessingMode') ?: 'Full'}\\n\" +\n                     \"Records Processed: ${properties.get('RecordCount') ?: '0'}\\n\" +\n                     \"Records with Errors: ${properties.get('ErrorCount') ?: '0'}\\n\" +\n                     \"Files Distributed: ${properties.get('FilesDistributed') ?: '0'}\\n\" +\n                     \"NAVEX Distribution: ${properties.get('NavexDistribution') ?: 'Success'}\\n\" +\n                     \"PepsiCo Archive: ${properties.get('PepsiArchive') ?: 'Success'}\\n\" +\n                     \"Last Success Run Date: ${properties.get('LastSuccessRunDate') ?: 'N/A'}\")\n            }\n        }\n    }\n    \n    message.setBody(writer.toString())\n    return message\n}"
+          "id": "SequenceFlow_odata_1_to_odata_2",
+          "source_ref": "odata_1",
+          "target_ref": "odata_2"
+        },
+        {
+          "id": "SequenceFlow_odata_2_to_script_1",
+          "source_ref": "odata_2",
+          "target_ref": "script_1"
+        },
+        {
+          "id": "SequenceFlow_script_1_to_script_2",
+          "source_ref": "script_1",
+          "target_ref": "script_2"
+        },
+        {
+          "id": "SequenceFlow_script_2_to_script_3",
+          "source_ref": "script_2",
+          "target_ref": "script_3"
+        },
+        {
+          "id": "SequenceFlow_script_3_to_sftp_1",
+          "source_ref": "script_3",
+          "target_ref": "sftp_1"
+        },
+        {
+          "id": "SequenceFlow_sftp_1_to_sftp_2",
+          "source_ref": "sftp_1",
+          "target_ref": "sftp_2"
+        },
+        {
+          "id": "SequenceFlow_sftp_2_to_request_reply_1",
+          "source_ref": "sftp_2",
+          "target_ref": "request_reply_1"
+        },
+        {
+          "id": "flow_request_reply_1_to_EndEvent_2",
+          "source_ref": "request_reply_1",
+          "target_ref": "EndEvent_2"
         }
       ]
     }

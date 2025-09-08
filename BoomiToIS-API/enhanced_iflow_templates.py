@@ -22,6 +22,8 @@ class EnhancedIFlowTemplates:
     def __init__(self):
         """Initialize the templates library"""
         pass
+    
+
 
     # ===== iFlow Configuration =====
 
@@ -150,7 +152,7 @@ class EnhancedIFlowTemplates:
         if not resource_path and entity_set:
             resource_path = entity_set
 
-        return f'''<bpmn2:messageFlow id="{id}" name="OData" sourceRef="{{{{source_ref}}}}" targetRef="{{{{target_ref}}}}">
+        return f'''<bpmn2:messageFlow id="{id}" name="{name}" sourceRef="{{{{source_ref}}}}" targetRef="{{{{target_ref}}}}">
             <bpmn2:extensionElements>
                 <ifl:property>
                     <key>ComponentType</key>
@@ -159,6 +161,10 @@ class EnhancedIFlowTemplates:
                 <ifl:property>
                     <key>Description</key>
                     <value>OData connection to {entity_set}</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>Name</key>
+                    <value>OData</value>
                 </ifl:property>
                 <ifl:property>
                     <key>address</key>
@@ -215,6 +221,14 @@ class EnhancedIFlowTemplates:
                 <ifl:property>
                     <key>system</key>
                     <value>{system}</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>ComponentSWCVName</key>
+                    <value>external</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>ComponentSWCVId</key>
+                    <value>1.25.0</value>
                 </ifl:property>
                 <ifl:property>
                     <key>cmdVariantUri</key>
@@ -299,7 +313,7 @@ class EnhancedIFlowTemplates:
         Returns:
             str: XML template for HTTP Receiver Adapter
         """
-        return f'''<bpmn2:messageFlow id="{id}" name="HTTP" sourceRef="{{{{source_ref}}}}" targetRef="{{{{target_ref}}}}">
+        return f'''<bpmn2:messageFlow id="{id}" name="{name}" sourceRef="{{{{source_ref}}}}" targetRef="{{{{target_ref}}}}">
             <bpmn2:extensionElements>
                 <ifl:property>
                     <key>Description</key>
@@ -395,8 +409,20 @@ class EnhancedIFlowTemplates:
                     <value>{url_path}</value>
                 </ifl:property>
                 <ifl:property>
+                    <key>Name</key>
+                    <value>HTTPS</value>
+                </ifl:property>
+                <ifl:property>
                     <key>TransportProtocolVersion</key>
                     <value>1.4.1</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>ComponentSWCVName</key>
+                    <value>external</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>system</key>
+                    <value>ESBMessaging</value>
                 </ifl:property>
                 <ifl:property>
                     <key>xsrfProtection</key>
@@ -424,6 +450,10 @@ class EnhancedIFlowTemplates:
                 </ifl:property>
                 <ifl:property>
                     <key>MessageProtocolVersion</key>
+                    <value>1.4.1</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>ComponentSWCVId</key>
                     <value>1.4.1</value>
                 </ifl:property>
                 <ifl:property>
@@ -457,7 +487,7 @@ class EnhancedIFlowTemplates:
         Returns:
             str: XML template for SOAP Receiver Adapter
         """
-        return f'''<bpmn2:messageFlow id="{id}" name="SOAP" sourceRef="{{{{source_ref}}}}" targetRef="{{{{target_ref}}}}">
+        return f'''<bpmn2:messageFlow id="{id}" name="{name}" sourceRef="{{{{source_ref}}}}" targetRef="{{{{target_ref}}}}">
             <bpmn2:extensionElements>
                 <ifl:property>
                     <key>cleanupHeaders</key>
@@ -838,6 +868,44 @@ class EnhancedIFlowTemplates:
             <bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>
         </bpmn2:callActivity>'''
 
+    def local_integration_process_template(self, id, name):
+        """
+        Template for Local Integration Process (represented as a callActivity).
+
+        Args:
+            id (str): Component ID
+            name (str): Component name
+
+        Returns:
+            str: XML template for a Local Integration Process call
+        """
+        return f'''<bpmn2:callActivity id="{id}" name="{name}">
+            <bpmn2:extensionElements>
+                <ifl:property>
+                    <key>activityType</key>
+                    <value>ProcessCallElement</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>componentVersion</key>
+                    <value>1.0</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>cmdVariantUri</key>
+                    <value>ctype::FlowstepVariant/cname::NonLoopingProcess/version::1.0.3</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>subActivityType</key>
+                    <value>NonLoopingProcess</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>processId</key>
+                    <value></value>
+                </ifl:property>
+            </bpmn2:extensionElements>
+            <bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>
+            <bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>
+        </bpmn2:callActivity>'''
+
     def exception_subprocess_template(self, id, name, error_type="All"):
         """
         Template for Exception Subprocess
@@ -850,7 +918,10 @@ class EnhancedIFlowTemplates:
         Returns:
             str: XML template for Exception Subprocess
         """
-        return f'''<bpmn2:subProcess id="{id}" name="{name}" triggeredByEvent="true">
+        start_id = f"StartEvent_{id}"
+        end_id = f"EndEvent_{id}"
+        flow_id = f"SequenceFlow_{id}"
+        return f'''<bpmn2:subProcess id="{id}" name="{name}">
             <bpmn2:extensionElements>
                 <ifl:property>
                     <key>componentVersion</key>
@@ -858,22 +929,186 @@ class EnhancedIFlowTemplates:
                 </ifl:property>
                 <ifl:property>
                     <key>activityType</key>
-                    <value>Exception Subprocess</value>
+                    <value>ErrorEventSubProcessTemplate</value>
                 </ifl:property>
                 <ifl:property>
                     <key>cmdVariantUri</key>
-                    <value>ctype::FlowstepVariant/cname::ExceptionSubprocess/version::1.1.0</value>
+                    <value>ctype::FlowstepVariant/cname::ErrorEventSubProcessTemplate/version::1.1.0</value>
                 </ifl:property>
             </bpmn2:extensionElements>
-            <bpmn2:startEvent id="StartEvent_1" name="Start Event 1">
-                <bpmn2:outgoing>SequenceFlow_3</bpmn2:outgoing>
-                <bpmn2:errorEventDefinition id="ErrorEventDefinition_1"/>
-            </bpmn2:startEvent>
-            <bpmn2:endEvent id="EndEvent_1" name="End Event 1">
-                <bpmn2:incoming>SequenceFlow_3</bpmn2:incoming>
+            <bpmn2:endEvent id="{end_id}" name="End 1">
+                <bpmn2:extensionElements>
+                    <ifl:property>
+                        <key>componentVersion</key>
+                        <value>1.1</value>
+                    </ifl:property>
+                    <ifl:property>
+                        <key>cmdVariantUri</key>
+                        <value>ctype::FlowstepVariant/cname::MessageEndEvent/version::1.1.0</value>
+                    </ifl:property>
+                </bpmn2:extensionElements>
+                <bpmn2:incoming>{flow_id}</bpmn2:incoming>
+                <bpmn2:messageEventDefinition/>
             </bpmn2:endEvent>
-            <bpmn2:sequenceFlow id="SequenceFlow_3" sourceRef="StartEvent_1" targetRef="EndEvent_1"/>
+            <bpmn2:startEvent id="{start_id}" name="Error Start 1">
+                <bpmn2:outgoing>{flow_id}</bpmn2:outgoing>
+                <bpmn2:errorEventDefinition>
+                    <bpmn2:extensionElements>
+                        <ifl:property><key>cmdVariantUri</key><value>ctype::FlowstepVariant/cname::ErrorStartEvent</value></ifl:property>
+                        <ifl:property><key>activityType</key><value>StartErrorEvent</value></ifl:property>
+                    </bpmn2:extensionElements>
+                </bpmn2:errorEventDefinition>
+            </bpmn2:startEvent>
+            <bpmn2:sequenceFlow id="{flow_id}" sourceRef="{start_id}" targetRef="{end_id}"/>
         </bpmn2:subProcess>'''
+
+    # ===== Additional Activity Templates from reference iFlow =====
+    def filter_template(self, id, name, expression=""):
+        return f'''<bpmn2:callActivity id="{id}" name="{name}">
+            <bpmn2:extensionElements>
+                <ifl:property><key>activityType</key><value>Filter</value></ifl:property>
+                <ifl:property><key>componentVersion</key><value>1.0</value></ifl:property>
+                <ifl:property><key>filterExpression</key><value>{expression}</value></ifl:property>
+            </bpmn2:extensionElements>
+            <bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>
+            <bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>
+        </bpmn2:callActivity>'''
+
+    def multicast_template(self, id, name):
+        return f'''<bpmn2:callActivity id="{id}" name="{name}">
+            <bpmn2:extensionElements>
+                <ifl:property><key>activityType</key><value>Multicast</value></ifl:property>
+                <ifl:property><key>componentVersion</key><value>1.0</value></ifl:property>
+            </bpmn2:extensionElements>
+            <bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>
+            <bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>
+        </bpmn2:callActivity>'''
+
+    def sequential_multicast_template(self, id, name):
+        return f'''<bpmn2:callActivity id="{id}" name="{name}">
+            <bpmn2:extensionElements>
+                <ifl:property><key>activityType</key><value>SequentialMulticast</value></ifl:property>
+                <ifl:property><key>componentVersion</key><value>1.0</value></ifl:property>
+            </bpmn2:extensionElements>
+            <bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>
+            <bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>
+        </bpmn2:callActivity>'''
+
+    def process_call_element_template(self, id, name):
+        return f'''<bpmn2:callActivity id="{id}" name="{name}">
+            <bpmn2:extensionElements>
+                <ifl:property><key>activityType</key><value>ProcessCallElement</value></ifl:property>
+                <ifl:property><key>componentVersion</key><value>1.0</value></ifl:property>
+            </bpmn2:extensionElements>
+            <bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>
+            <bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>
+        </bpmn2:callActivity>'''
+
+    def send_template(self, id, name):
+        return f'''<bpmn2:callActivity id="{id}" name="{name}">
+            <bpmn2:extensionElements>
+                <ifl:property><key>activityType</key><value>Send</value></ifl:property>
+                <ifl:property><key>componentVersion</key><value>1.0</value></ifl:property>
+            </bpmn2:extensionElements>
+            <bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>
+            <bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>
+        </bpmn2:callActivity>'''
+
+    def xml_to_csv_converter_template(self, id, name):
+        return f'''<bpmn2:callActivity id="{id}" name="{name}">
+            <bpmn2:extensionElements>
+                <ifl:property><key>activityType</key><value>XmlToCsvConverter</value></ifl:property>
+                <ifl:property><key>componentVersion</key><value>1.0</value></ifl:property>
+            </bpmn2:extensionElements>
+            <bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>
+            <bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>
+        </bpmn2:callActivity>'''
+
+    def xml_to_json_converter_template(self, id, name):
+        return f'''<bpmn2:callActivity id="{id}" name="{name}">
+            <bpmn2:extensionElements>
+                <ifl:property><key>activityType</key><value>XmlToJsonConverter</value></ifl:property>
+                <ifl:property><key>componentVersion</key><value>1.0</value></ifl:property>
+            </bpmn2:extensionElements>
+            <bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>
+            <bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>
+        </bpmn2:callActivity>'''
+
+    def json_to_xml_converter_template(self, id, name):
+        return f'''<bpmn2:callActivity id="{id}" name="{name}">
+            <bpmn2:extensionElements>
+                <ifl:property><key>activityType</key><value>JsonToXmlConverter</value></ifl:property>
+                <ifl:property><key>componentVersion</key><value>1.0</value></ifl:property>
+            </bpmn2:extensionElements>
+            <bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>
+            <bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>
+        </bpmn2:callActivity>'''
+
+    def parallel_gateway_template(self, id, name, gateway_type="parallel"):
+        """
+        Template for Parallel Gateway
+
+        Args:
+            id (str): Component ID
+            name (str): Component name
+            gateway_type (str): Gateway type (parallel, exclusive)
+
+        Returns:
+            str: XML template for Parallel Gateway
+        """
+        return f'''<bpmn2:parallelGateway id="{id}" name="{name}">
+            <bpmn2:extensionElements>
+                <ifl:property>
+                    <key>activityType</key>
+                    <value>ParallelGateway</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>componentVersion</key>
+                    <value>1.0</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>cmdVariantUri</key>
+                    <value>ctype::FlowstepVariant/cname::ParallelGateway/version::1.0.0</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>gatewayType</key>
+                    <value>{gateway_type}</value>
+                </ifl:property>
+            </bpmn2:extensionElements>
+        </bpmn2:parallelGateway>'''
+
+    def join_gateway_template(self, id, name, join_type="parallel"):
+        """
+        Template for Join Gateway (Parallel Gateway)
+
+        Args:
+            id (str): Component ID
+            name (str): Component name
+            join_type (str): Join type (parallel, exclusive)
+
+        Returns:
+            str: XML template for Join Gateway
+        """
+        return f'''<bpmn2:parallelGateway id="{id}" name="{name}">
+            <bpmn2:extensionElements>
+                <ifl:property>
+                    <key>activityType</key>
+                    <value>ParallelGateway</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>componentVersion</key>
+                    <value>1.0</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>cmdVariantUri</key>
+                    <value>ctype::FlowstepVariant/cname::ParallelGateway/version::1.0.0</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>joinType</key>
+                    <value>{join_type}</value>
+                </ifl:property>
+            </bpmn2:extensionElements>
+        </bpmn2:parallelGateway>'''
 
     def write_to_log_template(self, id, name, log_level="Info", message="Log message"):
         """
@@ -888,7 +1123,7 @@ class EnhancedIFlowTemplates:
         Returns:
             str: XML template for Write to Log
         """
-        return f'''<bpmn2:task id="{id}" name="{name}">
+        return f'''<bpmn2:callActivity id="{id}" name="{name}">
             <bpmn2:extensionElements>
                 <ifl:property>
                     <key>logLevel</key>
@@ -900,7 +1135,7 @@ class EnhancedIFlowTemplates:
                 </ifl:property>
                 <ifl:property>
                     <key>activityType</key>
-                    <value>Write to Log</value>
+                    <value>Logger</value>
                 </ifl:property>
                 <ifl:property>
                     <key>cmdVariantUri</key>
@@ -911,9 +1146,7 @@ class EnhancedIFlowTemplates:
                     <value>{message}</value>
                 </ifl:property>
             </bpmn2:extensionElements>
-            <bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>
-            <bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>
-        </bpmn2:task>'''
+        </bpmn2:callActivity>'''
 
     def message_mapping_template(self, id, name, source_type="XML", target_type="XML"):
         """
@@ -954,6 +1187,63 @@ class EnhancedIFlowTemplates:
             <bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>
             <bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>
         </bpmn2:task>'''
+
+    def enhanced_message_mapping_template(self, id, name, mapping_name="DataMapping", source_schema="Source.xsd", target_schema="Target.xsd"):
+        """
+        Enhanced Message Mapping template based on real SAP iFlow structure
+        
+        Args:
+            id (str): Component ID
+            name (str): Component name
+            mapping_name (str): Name of the mapping bundle
+            source_schema (str): Source XSD file name
+            target_schema (str): Target XSD file name
+            
+        Returns:
+            str: XML template for enhanced Message Mapping
+        """
+        return f'''<bpmn2:callActivity id="{id}" name="{name}">
+            <bpmn2:extensionElements>
+                <ifl:property>
+                    <key>componentVersion</key>
+                    <value>1.3</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>activityType</key>
+                    <value>Mapping</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>cmdVariantUri</key>
+                    <value>ctype::FlowstepVariant/cname::MessageMapping/version::1.3.1</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>mappinguri</key>
+                    <value>dir://mapping/{mapping_name}.mmap</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>mappingType</key>
+                    <value>MessageMapping</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>messageMappingBundleId</key>
+                    <value>{mapping_name}</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>sourceSchema</key>
+                    <value>src/main/resources/xsd/{source_schema}</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>targetSchema</key>
+                    <value>src/main/resources/xsd/{target_schema}</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>customFunctions</key>
+                    <value>src/main/resources/script</value>
+                </ifl:property>
+            </bpmn2:extensionElements>
+            <bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>
+            <bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>
+        </bpmn2:callActivity>'''
 
     # ===== Event Templates =====
 
@@ -1095,6 +1385,19 @@ class EnhancedIFlowTemplates:
             <bpmn2:incoming>{{{{incoming_flow}}}}</bpmn2:incoming>
             <bpmn2:outgoing>{{{{outgoing_flow}}}}</bpmn2:outgoing>
         </bpmn2:serviceTask>'''
+
+    # ===== Generic Embedded Subprocess (Safe Addition) =====
+
+    def subprocess_template(self, id, name):
+        """Create a generic embedded subprocess container (non-breaking)."""
+        return f'''<bpmn2:subProcess id="{id}" name="{name}">
+    <bpmn2:extensionElements>
+        <ifl:property><key>componentVersion</key><value>1.0</value></ifl:property>
+        <ifl:property><key>activityType</key><value>EmbeddedSubprocess</value></ifl:property>
+        <ifl:property><key>cmdVariantUri</key><value>ctype::FlowstepVariant/cname::Subprocess/version::1.0.0</value></ifl:property>
+    </bpmn2:extensionElements>
+    <!-- Add internal flow elements here (start, tasks, end) as needed by generator -->
+</bpmn2:subProcess>'''
 
     def odata_request_reply_pattern(self, service_task_id, participant_id, message_flow_id, name, service_url="https://example.com/odata/service", operation="Query(GET)", resource_path=""):
         """
@@ -1826,19 +2129,23 @@ class EnhancedIFlowTemplates:
             "end_component_id": end_event_id
         }
 
-    def groovy_script_template(self, id, name, script_name, script_function=""):
+    def groovy_script_template(self, id, name, script_name="", script_function="", script_content=""):
         """
-        Template for Groovy Script
+        Template for Groovy Script (SAP Integration Suite compatible)
 
         Args:
             id (str): Component ID
             name (str): Component name
-            script_name (str): Name of the Groovy script file
+            script_name (str): Name of the Groovy script file (e.g., "validation.groovy")
             script_function (str): Name of the function to call in the script
+            script_content (str): Inline script content (fallback if no file reference)
 
         Returns:
             str: XML template for Groovy Script
         """
+        # Always use script file name if provided, otherwise use inline content
+        script_value = script_name if script_name and script_name != "GroovyScript.groovy" else script_content
+        
         return f'''<bpmn2:callActivity id="{id}" name="{name}">
             <bpmn2:extensionElements>
                 <ifl:property>
@@ -1867,11 +2174,10 @@ class EnhancedIFlowTemplates:
                 </ifl:property>
                 <ifl:property>
                     <key>script</key>
-                    <value>{script_name}</value>
+                    <value>{script_value}</value>
                 </ifl:property>
+
             </bpmn2:extensionElements>
-            <bpmn2:incoming>SequenceFlow_In</bpmn2:incoming>
-            <bpmn2:outgoing>SequenceFlow_Out</bpmn2:outgoing>
         </bpmn2:callActivity>'''
 
     def mapping_template(self, id, name, mapping_name, mapping_path):
@@ -2021,7 +2327,7 @@ class EnhancedIFlowTemplates:
         Returns:
             str: XML template for Integration Process
         """
-        return f'''<bpmn2:process id="{id}" name="{name}">
+        return f'''<bpmn2:process id="{id}" name="{name}" isExecutable="true">
         <bpmn2:extensionElements>
             <ifl:property>
                 <key>transactionTimeout</key>
@@ -2058,13 +2364,14 @@ class EnhancedIFlowTemplates:
             return f"{prefix}_{timestamp}_{unique_id}"
         return f"ID_{timestamp}_{unique_id}"
 
-    def generate_iflow_xml(self, collaboration_content, process_content):
+    def generate_iflow_xml(self, collaboration_content, process_content, additional_processes=None):
         """
         Generate complete iFlow XML
 
         Args:
             collaboration_content (str): XML content for collaboration section
             process_content (str): XML content for process section
+            additional_processes (list, optional): List of additional process definitions
 
         Returns:
             str: Complete iFlow XML
@@ -2072,6 +2379,11 @@ class EnhancedIFlowTemplates:
         # Make sure process_content doesn't contain any unresolved placeholders
         if "{{process_content}}" in process_content:
             print("Warning: process_content still contains unresolved placeholder!")
+
+        # Prepare additional processes content
+        additional_processes_content = ""
+        if additional_processes:
+            additional_processes_content = "\n    " + "\n    ".join(additional_processes)
 
         # Use string concatenation instead of f-string to avoid issues with curly braces
         xml_template = '<?xml version="1.0" encoding="UTF-8"?>\n' + \
@@ -2085,6 +2397,7 @@ class EnhancedIFlowTemplates:
             '        {}\n' + \
             '    </bpmn2:collaboration>\n' + \
             '    {}\n' + \
+            '    {}\n' + \
             '    <bpmndi:BPMNDiagram id="BPMNDiagram_1" name="Default Collaboration Diagram">\n' + \
             '        <bpmndi:BPMNPlane bpmnElement="Collaboration_1" id="BPMNPlane_1">\n' + \
             '            <!-- Diagram layout information would go here -->\n' + \
@@ -2093,7 +2406,7 @@ class EnhancedIFlowTemplates:
             '</bpmn2:definitions>'
 
         # Format the XML template with the provided content
-        return xml_template.format(collaboration_content, process_content)
+        return xml_template.format(collaboration_content, process_content, additional_processes_content)
 
     # ===== SFTP Receiver Components =====
 
@@ -2114,83 +2427,201 @@ class EnhancedIFlowTemplates:
 
         return {"definition": definition, "shape": shape}
 
-    def sftp_receiver_message_flow_template(self, id="MessageFlow_SFTP", source_ref="ServiceTask_1", target_ref="Participant_SFTP",
-                                          host="sftp.example.com", port="22", path="/uploads", username="${sftp_username}",
-                                          auth_type="Password", operation="PUT"):
-        """Generate an SFTP receiver message flow template."""
-        definition = f'''<bpmn2:messageFlow id="{id}" name="SFTP" sourceRef="{source_ref}" targetRef="{target_ref}">
+    def sftp_component_template(self, id, name, host="sftp.example.com", port="22", path="/uploads", username="${sftp_username}",
+                               auth_type="Password", operation="PUT"):
+        """Generate a main SFTP component template for file operations."""
+        definition = f'''<bpmn2:serviceTask id="{id}" name="{name}">
     <bpmn2:extensionElements>
         <ifl:property>
-            <key>ComponentType</key>
-            <value>SFTP</value>
-        </ifl:property>
-        <ifl:property>
-            <key>Description</key>
-            <value>SFTP Connection for file upload</value>
-        </ifl:property>
-        <ifl:property>
-            <key>ComponentNS</key>
-            <value>sap</value>
-        </ifl:property>
-        <ifl:property>
-            <key>host</key>
-            <value>{host}</value>
-        </ifl:property>
-        <ifl:property>
-            <key>port</key>
-            <value>{port}</value>
-        </ifl:property>
-        <ifl:property>
-            <key>path</key>
-            <value>{path}</value>
-        </ifl:property>
-        <ifl:property>
-            <key>authentication</key>
-            <value>{auth_type.lower()}</value>
-        </ifl:property>
-        <ifl:property>
-            <key>username</key>
-            <value>{username}</value>
-        </ifl:property>
-        <ifl:property>
-            <key>operation</key>
-            <value>{operation}</value>
-        </ifl:property>
-        <ifl:property>
-            <key>TransportProtocolVersion</key>
-            <value>1.11.2</value>
-        </ifl:property>
-        <ifl:property>
-            <key>MessageProtocol</key>
-            <value>File</value>
-        </ifl:property>
-        <ifl:property>
-            <key>direction</key>
-            <value>Receiver</value>
-        </ifl:property>
-        <ifl:property>
-            <key>TransportProtocol</key>
-            <value>SFTP</value>
-        </ifl:property>
-        <ifl:property>
             <key>componentVersion</key>
-            <value>1.11</value>
+            <value>1.0</value>
+        </ifl:property>
+        <ifl:property>
+            <key>activityType</key>
+            <value>ExternalCall</value>
         </ifl:property>
         <ifl:property>
             <key>cmdVariantUri</key>
-            <value>ctype::AdapterVariant/cname::sap:SFTP/tp::SFTP/mp::File/direction::Receiver/version::1.11.2</value>
+            <value>ctype::FlowstepVariant/cname::ExternalCall/version::1.0.4</value>
+        </ifl:property>
+    </bpmn2:extensionElements>
+</bpmn2:serviceTask>'''
+
+        shape = f'''<bpmndi:BPMNShape bpmnElement="{id}" id="BPMNShape_{id}">
+    <dc:Bounds height="80.0" width="100.0" x="400" y="140"/>
+</bpmndi:BPMNShape>'''
+
+        return {"definition": definition, "shape": shape}
+
+    def sftp_receiver_message_flow_template(self, id="MessageFlow_SFTP", name="SFTP", source_ref="ServiceTask_1", target_ref="Participant_SFTP",
+                                          host="sftp.example.com", port="22", path="/uploads", username="${sftp_username}",
+                                          auth_type="Password", operation="PUT"):
+        """Generate an SFTP receiver message flow template."""
+        definition = f'''<bpmn2:messageFlow id="{id}" name="{name}" sourceRef="{source_ref}" targetRef="{target_ref}">
+    <bpmn2:extensionElements>
+        <ifl:property>
+            <key>disconnect</key>
+            <value>0</value>
+        </ifl:property>
+        <ifl:property>
+            <key>fileName</key>
+            <value/>
+        </ifl:property>
+        <ifl:property>
+            <key>Description</key>
+            <value/>
+        </ifl:property>
+        <ifl:property>
+            <key>maximumReconnectAttempts</key>
+            <value>3</value>
+        </ifl:property>
+        <ifl:property>
+            <key>stepwise</key>
+            <value>1</value>
         </ifl:property>
         <ifl:property>
             <key>fileExist</key>
             <value>Override</value>
         </ifl:property>
         <ifl:property>
+            <key>ComponentNS</key>
+            <value>sap</value>
+        </ifl:property>
+        <ifl:property>
             <key>autoCreate</key>
             <value>1</value>
         </ifl:property>
         <ifl:property>
+            <key>privateKeyAlias</key>
+            <value/>
+        </ifl:property>
+        <ifl:property>
+            <key>location_id</key>
+            <value/>
+        </ifl:property>
+        <ifl:property>
+            <key>Name</key>
+            <value>SFTP</value>
+        </ifl:property>
+        <ifl:property>
+            <key>TransportProtocolVersion</key>
+            <value>1.20.1</value>
+        </ifl:property>
+        <ifl:property>
+            <key>flatten</key>
+            <value/>
+        </ifl:property>
+        <ifl:property>
+            <key>sftpSecEnabled</key>
+            <value>1</value>
+        </ifl:property>
+        <ifl:property>
+            <key>useTempFile</key>
+            <value>0</value>
+        </ifl:property>
+        <ifl:property>
+            <key>ComponentSWCVName</key>
+            <value>external</value>
+        </ifl:property>
+        <ifl:property>
+            <key>path</key>
+            <value>{path}</value>
+        </ifl:property>
+        <ifl:property>
+            <key>proxyPort</key>
+            <value>8080</value>
+        </ifl:property>
+        <ifl:property>
+            <key>host</key>
+            <value>{host}</value>
+        </ifl:property>
+        <ifl:property>
             <key>connectTimeout</key>
             <value>10000</value>
+        </ifl:property>
+        <ifl:property>
+            <key>fastExistsCheck</key>
+            <value>1</value>
+        </ifl:property>
+        <ifl:property>
+            <key>MessageProtocol</key>
+            <value>File</value>
+        </ifl:property>
+        <ifl:property>
+            <key>ComponentSWCVId</key>
+            <value>1.20.1</value>
+        </ifl:property>
+        <ifl:property>
+            <key>direction</key>
+            <value>Receiver</value>
+        </ifl:property>
+        <ifl:property>
+            <key>authentication</key>
+            <value>public_key</value>
+        </ifl:property>
+        <ifl:property>
+            <key>ComponentType</key>
+            <value>SFTP</value>
+        </ifl:property>
+        <ifl:property>
+            <key>fileAppendTimeStamp</key>
+            <value>0</value>
+        </ifl:property>
+        <ifl:property>
+            <key>credential_name</key>
+            <value/>
+        </ifl:property>
+        <ifl:property>
+            <key>proxyProtocol</key>
+            <value>socks5</value>
+        </ifl:property>
+        <ifl:property>
+            <key>proxyType</key>
+            <value>none</value>
+        </ifl:property>
+        <ifl:property>
+            <key>proxyAlias</key>
+            <value/>
+        </ifl:property>
+        <ifl:property>
+            <key>componentVersion</key>
+            <value>1.13</value>
+        </ifl:property>
+        <ifl:property>
+            <key>reconnectDelay</key>
+            <value>1000</value>
+        </ifl:property>
+        <ifl:property>
+            <key>proxyHost</key>
+            <value/>
+        </ifl:property>
+        <ifl:property>
+            <key>system</key>
+            <value>{target_ref}</value>
+        </ifl:property>
+        <ifl:property>
+            <key>tempFileName</key>
+            <value>${{file:name}}.tmp</value>
+        </ifl:property>
+        <ifl:property>
+            <key>allowDeprecatedAlgorithms</key>
+            <value>0</value>
+        </ifl:property>
+        <ifl:property>
+            <key>TransportProtocol</key>
+            <value>SFTP</value>
+        </ifl:property>
+        <ifl:property>
+            <key>cmdVariantUri</key>
+            <value>ctype::AdapterVariant/cname::sap:SFTP/tp::SFTP/mp::File/direction::Receiver/version::1.13.3</value>
+        </ifl:property>
+        <ifl:property>
+            <key>MessageProtocolVersion</key>
+            <value>1.20.1</value>
+        </ifl:property>
+        <ifl:property>
+            <key>username</key>
+            <value>{username}</value>
         </ifl:property>
     </bpmn2:extensionElements>
 </bpmn2:messageFlow>'''
@@ -2310,5 +2741,159 @@ class EnhancedIFlowTemplates:
     <bpmn2:incoming>{incoming_flow}</bpmn2:incoming>
     <bpmn2:outgoing>{outgoing_flow}</bpmn2:outgoing>
 </bpmn2:serviceTask>'''
+
+        return definition
+
+    # ===== Process Call Activity Components =====
+
+    def process_call_template(self, id, name, process_id="Process_1", incoming_flow="{{incoming_flow}}", outgoing_flow="{{outgoing_flow}}"):
+        """Generate a process call activity template for Local Integration Process."""
+        definition = f'''<bpmn2:callActivity id="{id}" name="{name}">
+    <bpmn2:extensionElements>
+        <ifl:property>
+            <key>processId</key>
+            <value>{process_id}</value>
+        </ifl:property>
+        <ifl:property>
+            <key>componentVersion</key>
+            <value>1.0</value>
+        </ifl:property>
+        <ifl:property>
+            <key>activityType</key>
+            <value>ProcessCallElement</value>
+        </ifl:property>
+        <ifl:property>
+            <key>cmdVariantUri</key>
+            <value>ctype::FlowstepVariant/cname::NonLoopingProcess/version::1.0.4</value>
+        </ifl:property>
+        <ifl:property>
+            <key>subActivityType</key>
+            <value>NonLoopingProcess</value>
+        </ifl:property>
+        <ifl:property>
+            <key>transactionalHandling</key>
+            <value>From Calling Process</value>
+        </ifl:property>
+        <ifl:property>
+            <key>transactionTimeout</key>
+            <value>30</value>
+        </ifl:property>
+    </bpmn2:extensionElements>
+    <bpmn2:incoming>{incoming_flow}</bpmn2:incoming>
+    <bpmn2:outgoing>{outgoing_flow}</bpmn2:outgoing>
+</bpmn2:callActivity>'''
+
+        return definition
+
+    # ===== Local Integration Process Components =====
+
+    def local_integration_process_template(self, id="Process_1", name="Local Integration Process 1"):
+        """Generate a local integration process template."""
+        definition = f'''<bpmn2:process id="{id}" name="{name}">
+    <bpmn2:extensionElements>
+        <ifl:property>
+            <key>transactionTimeout</key>
+            <value>30</value>
+        </ifl:property>
+        <ifl:property>
+            <key>processType</key>
+            <value>directCall</value>
+        </ifl:property>
+        <ifl:property>
+            <key>componentVersion</key>
+            <value>1.1</value>
+        </ifl:property>
+        <ifl:property>
+            <key>cmdVariantUri</key>
+            <value>ctype::FlowElementVariant/cname::LocalIntegrationProcess/version::1.1.3</value>
+        </ifl:property>
+        <ifl:property>
+            <key>transactionalHandling</key>
+            <value>From Calling Process</value>
+        </ifl:property>
+    </bpmn2:extensionElements>
+    {{process_content}}
+</bpmn2:process>'''
+
+        return definition
+
+    # ===== Enhanced Groovy Script Components =====
+
+    def enhanced_groovy_script_template(self, id, name, script_name="script.groovy", script_function="processMessage", incoming_flow="{{incoming_flow}}", outgoing_flow="{{outgoing_flow}}"):
+        """Generate an enhanced Groovy script template for Local Integration Process."""
+        definition = f'''<bpmn2:callActivity id="{id}" name="{name}">
+    <bpmn2:extensionElements>
+        <ifl:property>
+            <key>scriptFunction</key>
+            <value>{script_function}</value>
+        </ifl:property>
+        <ifl:property>
+            <key>scriptBundleId</key>
+            <value/>
+        </ifl:property>
+        <ifl:property>
+            <key>componentVersion</key>
+            <value>1.1</value>
+        </ifl:property>
+        <ifl:property>
+            <key>activityType</key>
+            <value>Script</value>
+        </ifl:property>
+        <ifl:property>
+            <key>cmdVariantUri</key>
+            <value>ctype::FlowstepVariant/cname::GroovyScript/version::1.1.2</value>
+        </ifl:property>
+        <ifl:property>
+            <key>subActivityType</key>
+            <value>GroovyScript</value>
+        </ifl:property>
+        <ifl:property>
+            <key>script</key>
+            <value>{script_name}</value>
+        </ifl:property>
+    </bpmn2:extensionElements>
+    <bpmn2:incoming>{incoming_flow}</bpmn2:incoming>
+    <bpmn2:outgoing>{outgoing_flow}</bpmn2:outgoing>
+</bpmn2:callActivity>'''
+
+        return definition
+
+    # ===== Enhanced Start Event Components =====
+
+    def enhanced_start_event_template(self, id="StartEvent_1", name="Start 1"):
+        """Generate an enhanced start event template for Local Integration Process."""
+        definition = f'''<bpmn2:startEvent id="{id}" name="{name}">
+    <bpmn2:extensionElements>
+        <ifl:property>
+            <key>cmdVariantUri</key>
+            <value>ctype::FlowstepVariant/cname::StartEvent/version::1.0</value>
+        </ifl:property>
+        <ifl:property>
+            <key>activityType</key>
+            <value>StartEvent</value>
+        </ifl:property>
+    </bpmn2:extensionElements>
+    <bpmn2:outgoing>{{outgoing_flow}}</bpmn2:outgoing>
+</bpmn2:startEvent>'''
+
+        return definition
+
+    # ===== Enhanced End Event Components =====
+
+    def enhanced_end_event_template(self, id="EndEvent_1", name="End 1", incoming_flow="{{incoming_flow}}"):
+        """Generate an enhanced end event template for Local Integration Process."""
+        definition = f'''<bpmn2:endEvent id="{id}" name="{name}">
+    <bpmn2:extensionElements>
+        <ifl:property>
+            <key>cmdVariantUri</key>
+            <value>ctype::FlowstepVariant/cname::EndEvent/version::1.0</value>
+        </ifl:property>
+        <ifl:property>
+            <key>activityType</key>
+            <value>EndEvent</value>
+        </ifl:property>
+    </bpmn2:extensionElements>
+    <bpmn2:incoming>{incoming_flow}</bpmn2:incoming>
+</bpmn2:endEvent>'''
 
         return definition

@@ -1,1 +1,0 @@
-This iFlow receives Stripe webhook events for subscription changes, extracts key subscription data, transforms it using a Groovy script, and creates corresponding opportunities in Salesforce. It includes error handling with logging and email notifications for any failures during processing.

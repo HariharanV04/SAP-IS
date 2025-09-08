@@ -191,9 +191,17 @@ class JsonToIflowConverter:
         process_components.append(end_event["definition"])
         shapes.append(end_event["shape"])
 
-        # Add HTTP sender message flow
+        # Determine inbound path from first endpoint (default to /api)
+        inbound_path = "/api"
+        if endpoints and isinstance(endpoints, list):
+            try:
+                inbound_path = endpoints[0].get("path", "/api") or "/api"
+            except Exception:
+                inbound_path = "/api"
+
+        # Add HTTP sender message flow using endpoint path
         http_flow_id = "MessageFlow_10"
-        http_flow = self._create_http_sender_message_flow(http_flow_id, sender_id, start_event_id, "/api")
+        http_flow = self._create_http_sender_message_flow(http_flow_id, sender_id, start_event_id, inbound_path)
         message_flows.append(http_flow["definition"])
         edges.append(http_flow["edge"])
 
@@ -286,6 +294,31 @@ class JsonToIflowConverter:
             if component_result:
                 component_ids.append(component_id)
 
+            # Handle gateway branches with conditions
+            if component_type in ["gateway", "router"]:
+                config = component.get("config", {})
+                branches = config.get("branches", []) if isinstance(config, dict) else []
+                for bi, branch in enumerate(branches):
+                    target_id = branch.get("to")
+                    condition = branch.get("condition")
+                    if target_id:
+                        flow_id = f"SequenceFlow_Branch_{component_id}_{bi}_{endpoint_index}"
+                        flow = self._create_sequence_flow(flow_id, component_id, target_id, condition)
+                        sequence_flows.append(flow["definition"])
+                        edges.append(flow["edge"])
+
+        # Identify gateways that have explicit branches to skip linear flow after them
+        skip_linear_after = set()
+        for component in components:
+            ctype = component.get("type", "").lower()
+            if ctype in ["gateway", "router"]:
+                cfg = component.get("config", {})
+                branches = cfg.get("branches", []) if isinstance(cfg, dict) else []
+                if branches:
+                    cid = component.get("id")
+                    if cid:
+                        skip_linear_after.add(cid)
+
         # Create sequence flows to connect components
         if component_ids:
             # Connect start event to first component
@@ -294,8 +327,10 @@ class JsonToIflowConverter:
             sequence_flows.append(start_flow["definition"])
             edges.append(start_flow["edge"])
 
-            # Connect components in sequence
+            # Connect components in sequence (skip linear after gateways with branches)
             for i in range(len(component_ids) - 1):
+                if component_ids[i] in skip_linear_after:
+                    continue
                 flow_id = f"SequenceFlow_{i}_{endpoint_index}"
                 flow = self._create_sequence_flow(flow_id, component_ids[i], component_ids[i+1])
                 sequence_flows.append(flow["definition"])
@@ -417,6 +452,71 @@ class JsonToIflowConverter:
 
             return True
 
+        elif component_type in ["sftp", "sftp_receiver", "file_sftp"]:
+            # SFTP Service Task + Participant + Message Flow
+            service_task_id = f"ServiceTask_{component_id}"
+            service_task = self._create_service_task(service_task_id, f"Call_{component_name}", position)
+            process_components.append(service_task["definition"])
+            shapes.append(service_task["shape"])
+
+            participant_id = f"Participant_SFTP_{component_id}"
+            participant_position = {"x": position["x"], "y": position["y"] + 200}
+            sftp_participant = self._create_sftp_receiver_participant(participant_id, f"SFTP_{component_name}", participant_position)
+            participants.append(sftp_participant["definition"])
+            shapes.append(sftp_participant["shape"])
+
+            message_flow_id = f"MessageFlow_SFTP_{component_id}"
+            sftp_message_flow = self._create_sftp_message_flow(
+                message_flow_id,
+                service_task_id,
+                participant_id,
+                config.get("host", "sftp.example.com"),
+                config.get("port", "22"),
+                config.get("path", "/uploads"),
+                config.get("username", "${sftp_username}"),
+                config.get("auth_type", "Password"),
+                config.get("operation", "PUT"),
+            )
+            message_flows.append(sftp_message_flow["definition"])
+            edges.append(sftp_message_flow["edge"])
+
+            return True
+
+        elif component_type in ["successfactors", "sf", "success_factors", "sfsf"]:
+            # SuccessFactors OData Service Task + Participant + Message Flow
+            service_task_id = f"ServiceTask_{component_id}"
+            service_task = self._create_service_task(service_task_id, f"Call_{component_name}", position)
+            process_components.append(service_task["definition"])
+            shapes.append(service_task["shape"])
+
+            participant_id = f"Participant_SuccessFactors_{component_id}"
+            participant_position = {"x": position["x"], "y": position["y"] + 200}
+            sf_participant = self._create_successfactors_receiver_participant(participant_id, f"SuccessFactors_{component_name}", participant_position)
+            participants.append(sf_participant["definition"])
+            shapes.append(sf_participant["shape"])
+
+            message_flow_id = f"MessageFlow_SuccessFactors_{component_id}"
+            sf_message_flow = self._create_successfactors_message_flow(
+                message_flow_id,
+                service_task_id,
+                participant_id,
+                config.get("url", "https://api.successfactors.com/odata/v2/User"),
+                config.get("operation", "Query(GET)"),
+                config.get("auth_method", "OAuth"),
+            )
+            message_flows.append(sf_message_flow["definition"])
+            edges.append(sf_message_flow["edge"])
+
+            return True
+
+        elif component_type in ["subprocess", "embedded_subprocess"]:
+            # Embedded Subprocess container with nested components
+            nested_components = component.get("config", {}).get("components", [])
+            subprocess_component = self._create_subprocess_with_nested(component_id, component_name, nested_components, position)
+            process_components.append(subprocess_component["definition"])
+            shapes.append(subprocess_component["shape"])
+            return True
+
         elif component_type in ["gateway", "router"]:
             # Gateway
             gateway = self._create_gateway(component_id, component_name, position)
@@ -429,6 +529,21 @@ class JsonToIflowConverter:
             script = self._create_script(component_id, component_name, config, position)
             process_components.append(script["definition"])
             shapes.append(script["shape"])
+            return True
+
+        elif component_type in ["message_mapping", "mapping"]:
+            # Message Mapping
+            mapping = self._create_message_mapping(component_id, component_name, config, position)
+            process_components.append(mapping["definition"])
+            shapes.append(mapping["shape"])
+            return True
+
+        elif component_type in ["exception_subprocess"]:
+            # Exception Subprocess container (triggeredByEvent) with nested components
+            nested_components = component.get("config", {}).get("components", [])
+            exception_component = self._create_exception_subprocess_with_nested(component_id, component_name, nested_components, position)
+            process_components.append(exception_component["definition"])
+            shapes.append(exception_component["shape"])
             return True
 
         # Default: Content Modifier
@@ -721,6 +836,249 @@ class JsonToIflowConverter:
 </bpmndi:BPMNEdge>'''
 
         return {"definition": definition, "edge": edge}
+
+    def _create_sftp_receiver_participant(self, id: str, name: str, position: Dict[str, int]) -> Dict[str, str]:
+        """Create an SFTP receiver participant."""
+        definition = f'''<bpmn2:participant id="{id}" ifl:type="EndpointRecevier" name="{name}">
+    <bpmn2:extensionElements>
+        <ifl:property>
+            <key>ifl:type</key>
+            <value>EndpointRecevier</value>
+        </ifl:property>
+    </bpmn2:extensionElements>
+</bpmn2:participant>'''
+
+        shape = f'''<bpmndi:BPMNShape bpmnElement="{id}" id="BPMNShape_{id}">
+    <dc:Bounds height="140.0" width="100.0" x="{position['x']}" y="{position['y']}"/>
+</bpmndi:BPMNShape>'''
+
+        return {"definition": definition, "shape": shape}
+
+    def _create_sftp_message_flow(
+        self,
+        id: str,
+        source_ref: str,
+        target_ref: str,
+        host: str,
+        port: str,
+        path: str,
+        username: str,
+        auth_type: str,
+        operation: str,
+    ) -> Dict[str, str]:
+        """Create an SFTP message flow."""
+        definition = f'''<bpmn2:messageFlow id="{id}" name="SFTP" sourceRef="{source_ref}" targetRef="{target_ref}">
+    <bpmn2:extensionElements>
+        <ifl:property><key>ComponentType</key><value>SFTP</value></ifl:property>
+        <ifl:property><key>Description</key><value>SFTP Connection for file transfer</value></ifl:property>
+        <ifl:property><key>ComponentNS</key><value>sap</value></ifl:property>
+        <ifl:property><key>host</key><value>{host}</value></ifl:property>
+        <ifl:property><key>port</key><value>{port}</value></ifl:property>
+        <ifl:property><key>path</key><value>{path}</value></ifl:property>
+        <ifl:property><key>authentication</key><value>{auth_type}</value></ifl:property>
+        <ifl:property><key>username</key><value>{username}</value></ifl:property>
+        <ifl:property><key>operation</key><value>{operation}</value></ifl:property>
+        <ifl:property><key>TransportProtocolVersion</key><value>1.11.2</value></ifl:property>
+        <ifl:property><key>MessageProtocol</key><value>File</value></ifl:property>
+        <ifl:property><key>direction</key><value>Receiver</value></ifl:property>
+        <ifl:property><key>TransportProtocol</key><value>SFTP</value></ifl:property>
+    </bpmn2:extensionElements>
+</bpmn2:messageFlow>'''
+
+        edge = f'''<bpmndi:BPMNEdge bpmnElement="{id}" id="BPMNEdge_{id}" sourceElement="BPMNShape_{source_ref}" targetElement="BPMNShape_{target_ref}">
+    <di:waypoint x="{self.component_positions.get(source_ref, {'x': 500})['x'] + 50}" xsi:type="dc:Point" y="{self.component_positions.get(source_ref, {'y': 150})['y'] + 30}"/>
+    <di:waypoint x="{self.component_positions.get(target_ref, {'x': 500})['x'] + 50}" xsi:type="dc:Point" y="{self.component_positions.get(target_ref, {'y': 300})['y']}"/>
+</bpmndi:BPMNEdge>'''
+
+        return {"definition": definition, "edge": edge}
+
+    def _create_successfactors_receiver_participant(self, id: str, name: str, position: Dict[str, int]) -> Dict[str, str]:
+        """Create a SuccessFactors receiver participant."""
+        definition = f'''<bpmn2:participant id="{id}" ifl:type="EndpointRecevier" name="{name}">
+    <bpmn2:extensionElements>
+        <ifl:property>
+            <key>ifl:type</key>
+            <value>EndpointRecevier</value>
+        </ifl:property>
+    </bpmn2:extensionElements>
+</bpmn2:participant>'''
+
+        shape = f'''<bpmndi:BPMNShape bpmnElement="{id}" id="BPMNShape_{id}">
+    <dc:Bounds height="140.0" width="100.0" x="{position['x']}" y="{position['y']}"/>
+</bpmndi:BPMNShape>'''
+
+        return {"definition": definition, "shape": shape}
+
+    def _create_successfactors_message_flow(
+        self,
+        id: str,
+        source_ref: str,
+        target_ref: str,
+        url: str,
+        operation: str,
+        auth_method: str,
+    ) -> Dict[str, str]:
+        """Create a SuccessFactors OData message flow."""
+        definition = f'''<bpmn2:messageFlow id="{id}" name="SuccessFactors" sourceRef="{source_ref}" targetRef="{target_ref}">
+    <bpmn2:extensionElements>
+        <ifl:property><key>ComponentType</key><value>SuccessFactors</value></ifl:property>
+        <ifl:property><key>Description</key><value>SuccessFactors OData Connection</value></ifl:property>
+        <ifl:property><key>ComponentNS</key><value>sap</value></ifl:property>
+        <ifl:property><key>address</key><value>{url}</value></ifl:property>
+        <ifl:property><key>operation</key><value>{operation}</value></ifl:property>
+        <ifl:property><key>authenticationMethod</key><value>{auth_method}</value></ifl:property>
+        <ifl:property><key>MessageProtocol</key><value>OData V2</value></ifl:property>
+        <ifl:property><key>direction</key><value>Receiver</value></ifl:property>
+        <ifl:property><key>TransportProtocol</key><value>HTTPS</value></ifl:property>
+    </bpmn2:extensionElements>
+</bpmn2:messageFlow>'''
+
+        edge = f'''<bpmndi:BPMNEdge bpmnElement="{id}" id="BPMNEdge_{id}" sourceElement="BPMNShape_{source_ref}" targetElement="BPMNShape_{target_ref}">
+    <di:waypoint x="{self.component_positions.get(source_ref, {'x': 500})['x'] + 50}" xsi:type="dc:Point" y="{self.component_positions.get(source_ref, {'y': 150})['y'] + 30}"/>
+    <di:waypoint x="{self.component_positions.get(target_ref, {'x': 500})['x'] + 50}" xsi:type="dc:Point" y="{self.component_positions.get(target_ref, {'y': 300})['y']}"/>
+</bpmndi:BPMNEdge>'''
+
+        return {"definition": definition, "edge": edge}
+
+    def _create_subprocess(self, id: str, name: str, position: Dict[str, int]) -> Dict[str, str]:
+        """Create a generic embedded subprocess container."""
+        definition = f'''<bpmn2:subProcess id="{id}" name="{name}">
+    <bpmn2:extensionElements>
+        <ifl:property><key>componentVersion</key><value>1.0</value></ifl:property>
+        <ifl:property><key>activityType</key><value>EmbeddedSubprocess</value></ifl:property>
+        <ifl:property><key>cmdVariantUri</key><value>ctype::FlowstepVariant/cname::Subprocess/version::1.0.0</value></ifl:property>
+    </bpmn2:extensionElements>
+</bpmn2:subProcess>'''
+
+        shape = f'''<bpmndi:BPMNShape bpmnElement="{id}" id="BPMNShape_{id}">
+    <dc:Bounds height="100.0" width="160.0" x="{position['x']}" y="{position['y']}"/>
+</bpmndi:BPMNShape>'''
+
+        return {"definition": definition, "shape": shape}
+
+    def _create_exception_subprocess(self, id: str, name: str, position: Dict[str, int]) -> Dict[str, str]:
+        """Create an exception subprocess container."""
+        definition = f'''<bpmn2:subProcess id="{id}" name="{name}" triggeredByEvent="true">
+    <bpmn2:extensionElements>
+        <ifl:property><key>componentVersion</key><value>1.1</value></ifl:property>
+        <ifl:property><key>activityType</key><value>Exception Subprocess</value></ifl:property>
+        <ifl:property><key>cmdVariantUri</key><value>ctype::FlowstepVariant/cname::ExceptionSubprocess/version::1.1.0</value></ifl:property>
+    </bpmn2:extensionElements>
+</bpmn2:subProcess>'''
+
+        shape = f'''<bpmndi:BPMNShape bpmnElement="{id}" id="BPMNShape_{id}">
+    <dc:Bounds height="120.0" width="200.0" x="{position['x']}" y="{position['y'] + 150}"/>
+</bpmndi:BPMNShape>'''
+
+        return {"definition": definition, "shape": shape}
+
+    def _create_subprocess_with_nested(self, id: str, name: str, nested_components: List, position: Dict[str, int]) -> Dict[str, str]:
+        """Create a subprocess with nested components."""
+        # Process nested components to generate internal XML
+        nested_xml = ""
+        
+        if nested_components:
+            for i, nested_comp in enumerate(nested_components):
+                nested_id = f"{id}_{nested_comp.get('id', f'nested_{i}')}"
+                nested_name = nested_comp.get('name', f'Nested Component {i+1}')
+                nested_type = nested_comp.get('type', 'content_modifier')
+                
+                # Generate nested component XML (simplified)
+                if nested_type == "content_modifier":
+                    nested_xml += f'''
+        <bpmn2:serviceTask id="{nested_id}" name="{nested_name}">
+            <bpmn2:extensionElements>
+                <ifl:property><key>componentVersion</key><value>1.0</value></ifl:property>
+                <ifl:property><key>activityType</key><value>Enricher</value></ifl:property>
+            </bpmn2:extensionElements>
+        </bpmn2:serviceTask>'''
+                elif nested_type == "script":
+                    nested_xml += f'''
+        <bpmn2:scriptTask id="{nested_id}" name="{nested_name}">
+            <bpmn2:extensionElements>
+                <ifl:property><key>componentVersion</key><value>1.0</value></ifl:property>
+                <ifl:property><key>activityType</key><value>ScriptCollection</value></ifl:property>
+            </bpmn2:extensionElements>
+        </bpmn2:scriptTask>'''
+        
+        definition = f'''<bpmn2:subProcess id="{id}" name="{name}">
+    <bpmn2:extensionElements>
+        <ifl:property><key>componentVersion</key><value>1.0</value></ifl:property>
+        <ifl:property><key>activityType</key><value>EmbeddedSubprocess</value></ifl:property>
+        <ifl:property><key>cmdVariantUri</key><value>ctype::FlowstepVariant/cname::Subprocess/version::1.0.0</value></ifl:property>
+    </bpmn2:extensionElements>{nested_xml}
+</bpmn2:subProcess>'''
+
+        shape = f'''<bpmndi:BPMNShape bpmnElement="{id}" id="BPMNShape_{id}">
+    <dc:Bounds height="120.0" width="200.0" x="{position['x']}" y="{position['y']}"/>
+</bpmndi:BPMNShape>'''
+
+        return {"definition": definition, "shape": shape}
+
+    def _create_exception_subprocess_with_nested(self, id: str, name: str, nested_components: List, position: Dict[str, int]) -> Dict[str, str]:
+        """Create an exception subprocess with nested components."""
+        # Process nested components to generate internal XML  
+        nested_xml = ""
+        
+        if nested_components:
+            for i, nested_comp in enumerate(nested_components):
+                nested_id = f"{id}_{nested_comp.get('id', f'nested_{i}')}"
+                nested_name = nested_comp.get('name', f'Error Handler {i+1}')
+                nested_type = nested_comp.get('type', 'content_modifier')
+                
+                # Generate nested component XML for error handling
+                if nested_type == "content_modifier":
+                    nested_xml += f'''
+        <bpmn2:serviceTask id="{nested_id}" name="{nested_name}">
+            <bpmn2:extensionElements>
+                <ifl:property><key>componentVersion</key><value>1.0</value></ifl:property>
+                <ifl:property><key>activityType</key><value>Enricher</value></ifl:property>
+            </bpmn2:extensionElements>
+        </bpmn2:serviceTask>'''
+        
+        definition = f'''<bpmn2:subProcess id="{id}" name="{name}" triggeredByEvent="true">
+    <bpmn2:extensionElements>
+        <ifl:property><key>componentVersion</key><value>1.1</value></ifl:property>
+        <ifl:property><key>activityType</key><value>Exception Subprocess</value></ifl:property>
+        <ifl:property><key>cmdVariantUri</key><value>ctype::FlowstepVariant/cname::ExceptionSubprocess/version::1.1.0</value></ifl:property>
+    </bpmn2:extensionElements>{nested_xml}
+</bpmn2:subProcess>'''
+
+        shape = f'''<bpmndi:BPMNShape bpmnElement="{id}" id="BPMNShape_{id}">
+    <dc:Bounds height="100.0" width="180.0" x="{position['x']}" y="{position['y']}"/>
+</bpmndi:BPMNShape>'''
+
+        return {"definition": definition, "shape": shape}
+
+    def _create_message_mapping(self, id: str, name: str, config: Dict, position: Dict[str, int]) -> Dict[str, str]:
+        """Create an enhanced message mapping component based on real SAP iFlow structure."""
+        mapping_name = config.get("mapping_name", f"{name.replace(' ', '_')}_Mapping")
+        source_schema = config.get("source_schema", "Source.xsd")
+        target_schema = config.get("target_schema", "Target.xsd")
+        source_format = config.get("source_format", "XML")
+        target_format = config.get("target_format", "XML")
+        
+        definition = f'''<bpmn2:callActivity id="{id}" name="{name}">
+    <bpmn2:extensionElements>
+        <ifl:property><key>componentVersion</key><value>1.3</value></ifl:property>
+        <ifl:property><key>activityType</key><value>Mapping</value></ifl:property>
+        <ifl:property><key>cmdVariantUri</key><value>ctype::FlowstepVariant/cname::MessageMapping/version::1.3.1</value></ifl:property>
+        <ifl:property><key>mappinguri</key><value>dir://mapping/{mapping_name}.mmap</value></ifl:property>
+        <ifl:property><key>mappingType</key><value>MessageMapping</value></ifl:property>
+        <ifl:property><key>messageMappingBundleId</key><value>{mapping_name}</value></ifl:property>
+        <ifl:property><key>sourceSchema</key><value>src/main/resources/xsd/{source_schema}</value></ifl:property>
+        <ifl:property><key>targetSchema</key><value>src/main/resources/xsd/{target_schema}</value></ifl:property>
+        <ifl:property><key>customFunctions</key><value>src/main/resources/script</value></ifl:property>
+        <ifl:property><key>sourceFormat</key><value>{source_format}</value></ifl:property>
+        <ifl:property><key>targetFormat</key><value>{target_format}</value></ifl:property>
+    </bpmn2:extensionElements>
+</bpmn2:callActivity>'''
+
+        shape = f'''<bpmndi:BPMNShape bpmnElement="{id}" id="BPMNShape_{id}">
+    <dc:Bounds height="60.0" width="120.0" x="{position['x']}" y="{position['y']}"/>
+</bpmndi:BPMNShape>'''
+
+        return {"definition": definition, "shape": shape}
 
     def _create_content_modifier(self, id: str, name: str, config: Dict[str, Any], position: Dict[str, int]) -> Dict[str, str]:
         """Create a content modifier."""

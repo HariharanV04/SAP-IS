@@ -4,6 +4,7 @@ import sys
 import logging
 import json
 from typing import Optional
+import re
 from dotenv import load_dotenv
 
 # Add parent directory to path for imports
@@ -91,14 +92,14 @@ class DocumentationEnhancer:
         if platform == 'mulesoft':
             prompt = self._create_mulesoft_enhancement_prompt(base_documentation)
         else:
-            prompt = f"""You are a Dell Boomi and SAP Integration Suite specialist. Based on the following technical
+            prompt = f"""You are a Boomi and SAP Integration Suite specialist. Based on the following technical
     documentation, create comprehensive documentation that includes API details, flow logic,
     and detailed SAP Integration Suite visualization. Use SAP Integration Suite components and connections for
     the visualization.
 
     IMPORTANT:
     1. Do NOT make assumptions about adapters or systems not explicitly mentioned in the source documentation.
-    2. Use ONLY the components and connections present in the original Dell Boomi process.
+    2. Use ONLY the components and connections present in the original Boomi process.
     3. When describing the SAP Integration Suite implementation, maintain the same integration pattern.
     4. If a connection type is unclear, mark it as a configuration decision.
     5. PRESERVE ALL TECHNICAL EXPRESSIONS EXACTLY AS WRITTEN, especially:
@@ -165,9 +166,9 @@ class DocumentationEnhancer:
     - Example request/response if available
     - Error handling for this endpoint
 
-    ## Current Dell Boomi Flow Logic
+    ## Current Boomi Flow Logic
     ### Process Flow Overview
-    Provide a high-level overview of the Dell Boomi process including:
+    Provide a high-level overview of the Boomi process including:
     1. What triggers the process (Start Event configuration)
     2. Main processing steps and their purpose in sequence
     3. Data transformations that occur
@@ -526,9 +527,9 @@ class DocumentationEnhancer:
     ## SAP Integration Suite Implementation
     ### Component Mapping
 
-    This section provides a detailed mapping of Dell Boomi components to their SAP Integration Suite equivalents, organized by subprocess for clear implementation guidance.
+    This section provides a detailed mapping of Boomi components to their SAP Integration Suite equivalents, organized by subprocess for clear implementation guidance.
 
-    Map each Dell Boomi component to its SAP Integration Suite equivalent using this comprehensive mapping:
+    Map each Boomi component to its SAP Integration Suite equivalent using this comprehensive mapping:
 
     **Core Boomi Components:**
     - Start Event (shapetype="start") → Start Message Event
@@ -630,7 +631,7 @@ class DocumentationEnhancer:
     5. If you create multiple diagrams, ensure they are logically grouped and clearly labeled
     6. FOLLOW THE EXAMPLE DIAGRAM STRUCTURE PROVIDED BELOW - it shows the correct syntax and formatting
 
-    Create a Mermaid diagram that accurately represents the flows, components, and connections found in the original Dell Boomi process. The diagram should follow this format:
+    Create a Mermaid diagram that accurately represents the flows, components, and connections found in the original Boomi process. The diagram should follow this format:
     **IMPORTANT**: Your model output must be *only* the Mermaid code block (```mermaid …```) with no shell prompts or extra text.
     Use real line breaks in labels (or `<br/>`), not `\n` literals.
 
@@ -786,7 +787,7 @@ class DocumentationEnhancer:
      | **Expansion Control** | Limit `$expand` to required entities only | `$expand=employment_information($select=employee_class,status)` |
 
     Make sure the final document has:
-    1. A descriptive title that reflects the purpose of the Dell Boomi integration
+    1. A descriptive title that reflects the purpose of the Boomi integration
     2. A comprehensive table of contents with hyperlinks to all sections
     3. Clear headings and subheadings for all sections
     4. Properly labeled Mermaid diagrams with descriptive headings that render correctly in HTML
@@ -852,6 +853,13 @@ class DocumentationEnhancer:
             except Exception as llm_e:
                 logger.warning(f"LLM Mermaid fixing also failed: {llm_e}")
 
+        # Normalize markdown tables and improve overall UX (Table of Contents)
+        try:
+            final_content = self._fix_table_formatting(final_content)
+            final_content = self._ensure_table_of_contents(final_content)
+        except Exception as e:
+            logger.warning(f"Post-processing (tables/ToC) failed: {e}")
+
         # Generate JSON components if requested
         if generate_json and output_dir and enhancement_successful:
             try:
@@ -860,6 +868,79 @@ class DocumentationEnhancer:
                 logger.warning(f"Failed to generate JSON components: {e}")
 
         return final_content
+
+    def _fix_table_formatting(self, text: str) -> str:
+        """Convert markdown tables that were wrapped in code fences into real tables.
+
+        Many LLMs emit markdown tables inside triple backticks, which render as code blocks
+        (showing pipes and dashed lines) instead of real tables. This removes the fences for
+        blocks that look like tables, while preserving legitimate code blocks (mermaid, json,
+        xml, groovy, bash, etc.).
+        """
+        if not text or "```" not in text:
+            return text
+
+        # Match fenced code blocks: ```lang\n...\n```
+        fence_pattern = re.compile(r"```([a-zA-Z0-9_-]*)\n([\s\S]*?)\n```", re.MULTILINE)
+
+        def is_table_block(lang: str, body: str) -> bool:
+            # Never touch known code languages
+            protected_langs = {"mermaid", "json", "xml", "yaml", "yml", "groovy", "java", "python", "bash", "sh", "sql", "javascript", "typescript"}
+            if lang in protected_langs:
+                return False
+            # Heuristic: at least two lines start with '|' and there's a header separator row with dashes
+            lines = [ln.rstrip() for ln in body.splitlines() if ln.strip()]
+            pipe_lines = [ln for ln in lines if ln.strip().startswith('|') and ln.strip().endswith('|')]
+            if len(pipe_lines) < 2:
+                return False
+            has_header = any(('---' in ln or ':-' in ln or '-:' in ln) and ln.strip().startswith('|') for ln in pipe_lines)
+            return has_header
+
+        def replacer(match: re.Match) -> str:
+            lang = (match.group(1) or '').strip().lower()
+            body = match.group(2)
+            if is_table_block(lang, body):
+                # Ensure a blank line before and after the table for proper rendering
+                cleaned = body.strip("\n")
+                return f"\n{cleaned}\n"
+            return match.group(0)
+
+        return fence_pattern.sub(replacer, text)
+
+    def _ensure_table_of_contents(self, text: str) -> str:
+        """Insert a simple Markdown Table of Contents after the H1 if not present."""
+        if not text:
+            return text
+        if "## Table of Contents" in text:
+            return text
+
+        lines = text.splitlines()
+        # Find first H1
+        insert_idx = 0
+        for i, ln in enumerate(lines[:50]):  # search near the top
+            if ln.startswith('# '):
+                insert_idx = i + 1
+                break
+
+        # Collect headings for ToC
+        toc_items = []
+        for ln in lines:
+            if ln.startswith('## '):
+                title = ln[3:].strip()
+                anchor = re.sub(r"[^a-z0-9 -]", '', title.lower())
+                anchor = anchor.replace(' ', '-')
+                toc_items.append(f"- [{title}](#{anchor})")
+            elif ln.startswith('### '):
+                title = ln[4:].strip()
+                anchor = re.sub(r"[^a-z0-9 -]", '', title.lower())
+                anchor = anchor.replace(' ', '-')
+                toc_items.append(f"  - [{title}](#{anchor})")
+
+        if not toc_items:
+            return text
+
+        toc_block = ["", "## Table of Contents", "", *toc_items, "", ""]
+        return "\n".join(lines[:insert_idx] + toc_block + lines[insert_idx:])
 
     def enhance_with_openai(self, prompt: str) -> Optional[str]:
         """Enhance documentation using OpenAI.
@@ -878,7 +959,7 @@ class DocumentationEnhancer:
             response = self.openai_client.chat.completions.create(
                 model="gpt-4o",  # Updated to latest GPT model
                 messages=[
-                    {"role": "system", "content": "You are an expert integration specialist helping convert Dell Boomi processes to SAP Integration Suite."},
+                    {"role": "system", "content": "You are an expert integration specialist helping convert Boomi processes to SAP Integration Suite."},
                     {"role": "user", "content": prompt}
                 ],
                 temperature=0.2,
@@ -1063,9 +1144,22 @@ class DocumentationEnhancer:
             from datetime import datetime
 
             # Create a JSON generation prompt
-            json_prompt = f"""Based on the following Dell Boomi documentation, generate a JSON structure that represents the SAP Integration Suite components needed for this integration.
+            json_prompt = f"""Based on the following Boomi documentation, generate a JSON structure that represents the SAP Integration Suite components needed for this integration.
 
-CRITICAL: Respond with ONLY valid JSON in the exact format specified below. Do NOT include any explanations, markdown, or other text.
+CRITICAL ALIGNMENT WITH MERMAID DIAGRAM:
+- Generate JSON that matches the complexity and subprocess structure shown in the Mermaid diagram
+- Include NESTED subprocesses for complex business logic (e.g., "Where Clause Construction", "Employee Data Extraction")
+- Use gateway components for decision routing with multiple branches
+- Model PARALLEL processing flows with proper gateway splits and joins
+- Include exception handling subprocesses for error flows
+
+RESPONSE FORMAT:
+- Respond with ONLY valid JSON in the exact format specified below. No explanations/markdown.
+- Use ONLY these component types (lowercase exactly):
+  content_modifier, content_enricher, json_to_xml, script, request_reply, odata, gateway, sftp, successfactors, subprocess, exception_subprocess, message_mapping
+- Do NOT generate start_event or end_event components (they are added automatically).
+- Do NOT include a "sequence" field; component array order dictates flow.
+- Populate required config keys for each type as specified below.
 
 {enhanced_documentation}
 
@@ -1076,24 +1170,66 @@ Generate JSON in this exact format:
     "endpoints": [
         {{
             "method": "HTTP method (GET, POST, etc.)",
-            "path": "Endpoint path",
+            "path": "Endpoint path (e.g., /api/orders)",
             "purpose": "Purpose of this endpoint",
             "components": [
                 {{
-                    "type": "Component type (start_event, content_modifier, message_mapping, request_reply, end_event, etc.)",
+                    "type": "One of: content_modifier | content_enricher | json_to_xml | script | request_reply | odata | gateway | sftp | successfactors | subprocess | exception_subprocess | message_mapping",
                     "name": "Component name",
                     "id": "Unique component ID",
                     "config": {{
-                        "endpoint_path": "For request_reply components",
-                        "content": "For content_modifier components",
-                        "script": "For groovy_script components"
+                        "content": "For content_modifier (string)",
+                        "body_type": "For content_modifier/content_enricher (expression|constant)",
+                        "header_table": "For content_enricher (optional)",
+                        "script": "For script (Groovy content)",
+                        "script_type": "For script (default: groovy)",
+                        "method": "For request_reply (GET|POST|...)",
+                        "url": "For request_reply (full URL)",
+                        "operation": "For odata or successfactors (e.g., Query(GET))",
+                        "service_url": "For odata (base service URL)",
+                        "entity_set": "For odata (entity set/resource path)",
+                        "host": "For sftp",
+                        "port": "For sftp (default: 22)",
+                        "path": "For sftp (remote directory)",
+                        "username": "For sftp",
+                        "auth_type": "For sftp (Password|Key)",
+                        "operation_sftp": "For sftp operation (PUT|GET)",
+                        "auth_method": "For successfactors (e.g., OAuth)",
+                        "url_sf": "For successfactors (full OData URL)",
+                        "branches": [{"to": "component_id", "condition": "${property.value == 'condition'}"}],
+                        "components": "For subprocess/exception_subprocess: array of nested components in execution order",
+                        "source_format": "For message_mapping (JSON|XML|CSV)",
+                        "target_format": "For message_mapping (JSON|XML|CSV)",
+                        "mapping_logic": "For message_mapping (transformation description)",
+                        "mapping_name": "For message_mapping (name of mapping bundle)",
+                        "source_schema": "For message_mapping (source XSD filename)",
+                        "target_schema": "For message_mapping (target XSD filename)"
                     }}
                 }}
-            ],
-            "sequence": ["component_id_1", "component_id_2", "component_id_3"]
+            ]
         }}
     ]
 }}
+
+STRICT REQUIREMENTS:
+- Use lowercase type names exactly as listed.
+- Include only the config keys relevant to the component type.
+- For subprocess and exception_subprocess, include a "components" array of nested components using the same schema (one nesting level only).
+- Do not include unknown component types or empty components.
+
+COMPLEX FLOW MODELING (match Mermaid diagram complexity):
+- Use "gateway" components with "branches" config for decision routing (Router, Parallel Gateway, Join Gateway)
+- Create subprocess components for reusable business logic with descriptive names
+- Model error handling with exception_subprocess components
+- Use multiple endpoints if the integration has different processing paths
+- For parallel processing, use gateway with multiple branches followed by a join gateway
+- Ensure subprocess components contain their own complete component flows
+
+SUBPROCESS EXAMPLES TO INCLUDE:
+- "Where Clause Construction" subprocess for dynamic query building
+- "Employee Data Extraction" subprocess for SuccessFactors data retrieval
+- "Error Processing" exception_subprocess for error handling flows
+- Gateway splits for parallel processing (Delta vs Full, Send to Vendor decision)
 
 RESPOND WITH ONLY JSON:"""
 
@@ -1231,7 +1367,7 @@ RESPOND WITH ONLY JSON:"""
             response = self.openai_client.chat.completions.create(
                 model="gpt-4o",
                 messages=[
-                    {"role": "system", "content": "You are an expert at converting Dell Boomi processes to SAP Integration Suite JSON configurations. Respond only with valid JSON."},
+                    {"role": "system", "content": "You are an expert at converting Boomi processes to SAP Integration Suite JSON configurations. Respond only with valid JSON."},
                     {"role": "user", "content": prompt}
                 ],
                 temperature=0.1,  # Lower temperature for more consistent JSON
@@ -1288,10 +1424,10 @@ RESPOND WITH ONLY JSON:"""
         if not endpoints:
             return False
 
-        # Check if at least one endpoint has components
+        # Check if at least one endpoint has components (start/end are auto-added by converter)
         for endpoint in endpoints:
             endpoint_components = endpoint.get("components", [])
-            if len(endpoint_components) >= 2:  # At least start and end
+            if len(endpoint_components) >= 1:
                 return True
 
         return False

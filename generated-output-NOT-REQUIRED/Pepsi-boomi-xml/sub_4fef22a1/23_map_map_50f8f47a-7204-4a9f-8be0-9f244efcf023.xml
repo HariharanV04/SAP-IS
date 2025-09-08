@@ -1,0 +1,282 @@
+<?xml version="1.0" ?>
+<bns:Component xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bns="http://api.platform.boomi.com/" folderFullPath="PepsiCo/2.0 Development/2.1 Global Integrations/EC372 - EC to NAVEX (OB)" componentId="50f8f47a-7204-4a9f-8be0-9f244efcf023" version="22" name="Map EC372 - EC to NAVEX (OB)" type="transform.map" createdDate="2018-04-18T06:20:37Z" createdBy="Deep.Singh.Chauhan@accenture.com" modifiedDate="2018-05-31T09:19:41Z" modifiedBy="Deep.Singh.Chauhan@accenture.com" deleted="false" currentVersion="true" folderName="EC372 - EC to NAVEX (OB)" folderId="RjoxOTM3OTEx" branchName="main" branchId="QjoyOTk5NDY">
+  <bns:encryptedValues/>
+  <bns:description/>
+  <bns:object>
+    <Map xmlns="" fromProfile="b3a5d5ef-2ad2-43a4-98dd-646c12e74af9" toProfile="a60a1c5b-c11a-417b-8b78-8be2547cbdd0">
+      <Mappings>
+        <Mapping fromKey="20452" fromKeyPath="*[@key='1']/*[@key='20446']/*[@key='20452']" fromNamePath="CompoundEmployee/person/person_id_external" fromType="profile" toFunction="1" toKey="1" toType="function"/>
+        <Mapping fromFunction="1" fromKey="1" fromType="function" toKey="3" toKeyPath="*[@key='1']/*[@key='2']/*[@key='3']" toNamePath="Record/Elements/GPID" toType="profile"/>
+        <Mapping fromKey="22184" fromKeyPath="*[@key='1']/*[@key='20446']/*[@key='20640']/*[@key='22184']" fromNamePath="CompoundEmployee/person/personal_information/first_name" fromType="profile" toKey="4" toKeyPath="*[@key='1']/*[@key='2']/*[@key='4']" toNamePath="Record/Elements/First Name" toType="profile"/>
+        <Mapping fromKey="22206" fromKeyPath="*[@key='1']/*[@key='20446']/*[@key='20640']/*[@key='22206']" fromNamePath="CompoundEmployee/person/personal_information/last_name" fromType="profile" toKey="5" toKeyPath="*[@key='1']/*[@key='2']/*[@key='5']" toNamePath="Record/Elements/Last Name" toType="profile"/>
+        <Mapping fromKey="24726" fromKeyPath="*[@key='1']/*[@key='20446']/*[@key='20636']/*[@key='21842']/*[@key='24726']" fromNamePath="CompoundEmployee/person/employment_information/job_information/emplStatus" fromType="profile" toFunction="2" toKey="2" toType="function"/>
+        <Mapping fromFunction="2" fromKey="1" fromType="function" toKey="6" toKeyPath="*[@key='1']/*[@key='2']/*[@key='6']" toNamePath="Record/Elements/emplStatus" toType="profile"/>
+        <Mapping fromKey="24720" fromKeyPath="*[@key='1']/*[@key='20446']/*[@key='20636']/*[@key='21842']/*[@key='24720']" fromNamePath="CompoundEmployee/person/employment_information/job_information/employee_class" fromType="profile" toFunction="3" toKey="2" toType="function"/>
+        <Mapping fromFunction="3" fromKey="1" fromType="function" toKey="7" toKeyPath="*[@key='1']/*[@key='2']/*[@key='7']" toNamePath="Record/Elements/employee-class" toType="profile"/>
+        <Mapping fromKey="24808" fromKeyPath="*[@key='1']/*[@key='20446']/*[@key='20636']/*[@key='21842']/*[@key='24808']" fromNamePath="CompoundEmployee/person/employment_information/job_information/pay_grade" fromType="profile" toKey="9" toKeyPath="*[@key='1']/*[@key='2']/*[@key='9']" toNamePath="Record/Elements/pay-grade" toType="profile"/>
+        <Mapping fromKey="24516" fromKeyPath="*[@key='1']/*[@key='20446']/*[@key='20636']/*[@key='21842']/*[@key='24516']" fromNamePath="CompoundEmployee/person/employment_information/job_information/custom_string15" fromType="profile" toKey="10" toKeyPath="*[@key='1']/*[@key='2']/*[@key='10']" toNamePath="Record/Elements/Position Title" toType="profile"/>
+        <Mapping fromKey="24550" fromKeyPath="*[@key='1']/*[@key='20446']/*[@key='20636']/*[@key='21842']/*[@key='24550']" fromNamePath="CompoundEmployee/person/employment_information/job_information/custom_string30" fromType="profile" toKey="17" toKeyPath="*[@key='1']/*[@key='2']/*[@key='17']" toNamePath="Record/Elements/Is Union Employee" toType="profile"/>
+        <Mapping fromKey="24552" fromKeyPath="*[@key='1']/*[@key='20446']/*[@key='20636']/*[@key='21842']/*[@key='24552']" fromNamePath="CompoundEmployee/person/employment_information/job_information/custom_string31" fromType="profile" toKey="18" toKeyPath="*[@key='1']/*[@key='2']/*[@key='18']" toNamePath="Record/Elements/Participating in Union" toType="profile"/>
+        <Mapping fromKey="24788" fromKeyPath="*[@key='1']/*[@key='20446']/*[@key='20636']/*[@key='21842']/*[@key='24788']" fromNamePath="CompoundEmployee/person/employment_information/job_information/location" fromType="profile" toFunction="5" toKey="1" toType="function"/>
+        <Mapping fromKey="24524" fromKeyPath="*[@key='1']/*[@key='20446']/*[@key='20636']/*[@key='21842']/*[@key='24524']" fromNamePath="CompoundEmployee/person/employment_information/job_information/custom_string19" fromType="profile" toFunction="6" toKey="1" toType="function"/>
+        <Mapping fromKey="24514" fromKeyPath="*[@key='1']/*[@key='20446']/*[@key='20636']/*[@key='21842']/*[@key='24514']" fromNamePath="CompoundEmployee/person/employment_information/job_information/custom_string14" fromType="profile" toFunction="7" toKey="1" toType="function"/>
+        <Mapping fromCacheJoinKey="3" fromKey="215" fromKeyPath="*[@key='1']/*[@key='2147483644']/*[@key='1']/*[@key='215']" fromNamePath="CompoundEmployee/WorkLocations [ext_code]/SFOData.FOLocation/name" fromType="profile" toFunction="5" toKey="2" toType="function"/>
+        <Mapping fromFunction="5" fromKey="2" fromType="function" toKey="11" toKeyPath="*[@key='1']/*[@key='2']/*[@key='11']" toNamePath="Record/Elements/location" toType="profile"/>
+        <Mapping fromCacheJoinKey="1" fromKey="123" fromKeyPath="*[@key='1']/*[@key='2147483646']/*[@key='1']/*[@key='123']" fromNamePath="CompoundEmployee/Regions [ext_code]/SFOData.cust_Region/externalName_en_US" fromType="profile" toFunction="7" toKey="2" toType="function"/>
+        <Mapping fromFunction="7" fromKey="2" fromType="function" toKey="14" toKeyPath="*[@key='1']/*[@key='2']/*[@key='14']" toNamePath="Record/Elements/Region" toType="profile"/>
+        <Mapping fromCacheJoinKey="2" fromKey="123" fromKeyPath="*[@key='1']/*[@key='2147483645']/*[@key='1']/*[@key='123']" fromNamePath="CompoundEmployee/Sectors [ext_code]/SFOData.cust_Sector/externalName_en_US" fromType="profile" toFunction="6" toKey="2" toType="function"/>
+        <Mapping fromFunction="6" fromKey="2" fromType="function" toKey="12" toKeyPath="*[@key='1']/*[@key='2']/*[@key='12']" toNamePath="Record/Elements/Sector" toType="profile"/>
+        <Mapping fromKey="21236" fromKeyPath="*[@key='1']/*[@key='20446']/*[@key='20632'][@tagListKey='1']/*[@key='21236'][@tagListKey='1']" fromNamePath="CompoundEmployee/person/email_information[email_type='B']/email_address" fromTagListKey="1" fromType="profile" toFunction="9" toKey="1" toType="function"/>
+        <Mapping fromFunction="9" fromKey="1" fromType="function" toKey="19" toKeyPath="*[@key='1']/*[@key='2']/*[@key='19']" toNamePath="Record/Elements/Email Address" toType="profile"/>
+        <Mapping fromKey="24340" fromKeyPath="*[@key='1']/*[@key='20446']/*[@key='20636']/*[@key='21842']/*[@key='24340']" fromNamePath="CompoundEmployee/person/employment_information/job_information/company_territory_code" fromType="profile" toFunction="12" toKey="1" toType="function"/>
+        <Mapping fromFunction="12" fromKey="1" fromType="function" toKey="13" toKeyPath="*[@key='1']/*[@key='2']/*[@key='13']" toNamePath="Record/Elements/Country" toType="profile"/>
+        <Mapping fromCacheJoinKey="0" fromKey="24794" fromKeyPath="*[@key='1']/*[@key='20446']/*[@key='20636']/*[@key='21842']/*[@key='24794']" fromNamePath="CompoundEmployee/person/employment_information/job_information/manager_id" fromType="profile" toFunction="13" toKey="1" toType="function"/>
+        <Mapping fromFunction="13" fromKey="1" fromType="function" toKey="15" toKeyPath="*[@key='1']/*[@key='2']/*[@key='15']" toNamePath="Record/Elements/manager-id" toType="profile"/>
+        <Mapping fromKey="25012" fromKeyPath="*[@key='1']/*[@key='20446']/*[@key='20636']/*[@key='21844'][@tagListKey='2']/*[@key='25012'][@tagListKey='2']" fromNamePath="CompoundEmployee/person/employment_information/job_relation[relationship_type='hr manager']/user_id" fromTagListKey="2" fromType="profile" toFunction="14" toKey="1" toType="function"/>
+        <Mapping fromFunction="14" fromKey="1" fromType="function" toKey="21" toKeyPath="*[@key='1']/*[@key='2']/*[@key='21']" toNamePath="Record/Elements/User ID" toType="profile"/>
+        <Mapping fromKey="25010" fromKeyPath="*[@key='1']/*[@key='20446']/*[@key='20636']/*[@key='21844'][@tagListKey='2']/*[@key='25010'][@tagListKey='2']" fromNamePath="CompoundEmployee/person/employment_information/job_relation[relationship_type='hr manager']/relationship_type" fromTagListKey="2" fromType="profile" toFunction="15" toKey="2" toType="function"/>
+        <Mapping fromFunction="15" fromKey="1" fromType="function" toKey="20" toKeyPath="*[@key='1']/*[@key='2']/*[@key='20']" toNamePath="Record/Elements/Relationship Type" toType="profile"/>
+        <Mapping fromKey="21794" fromKeyPath="*[@key='1']/*[@key='20446']/*[@key='20636']/*[@key='21794']" fromNamePath="CompoundEmployee/person/employment_information/end_date" fromType="profile" toFunction="17" toKey="1" toType="function"/>
+        <Mapping fromFunction="17" fromKey="2" fromType="function" toKey="23" toKeyPath="*[@key='1']/*[@key='2']/*[@key='23']" toNamePath="Record/Elements/Termination Date" toType="profile"/>
+        <Mapping fromFunction="18" fromKey="1" fromType="function" toKey="16" toKeyPath="*[@key='1']/*[@key='2']/*[@key='16']" toNamePath="Record/Elements/Manager name" toType="profile"/>
+        <Mapping fromKey="25012" fromKeyPath="*[@key='1']/*[@key='20446']/*[@key='20636']/*[@key='21844'][@tagListKey='2']/*[@key='25012'][@tagListKey='2']" fromNamePath="CompoundEmployee/person/employment_information/job_relation[relationship_type='hr manager']/user_id" fromTagListKey="2" fromType="profile" toFunction="19" toKey="1" toType="function"/>
+        <Mapping fromFunction="19" fromKey="1" fromType="function" toKey="22" toKeyPath="*[@key='1']/*[@key='2']/*[@key='22']" toNamePath="Record/Elements/HRA Manager name" toType="profile"/>
+        <Mapping fromKey="24726" fromKeyPath="*[@key='1']/*[@key='20446']/*[@key='20636']/*[@key='21842']/*[@key='24726']" fromNamePath="CompoundEmployee/person/employment_information/job_information/emplStatus" fromType="profile" toFunction="20" toKey="1" toType="function"/>
+        <Mapping fromKey="24734" fromKeyPath="*[@key='1']/*[@key='20446']/*[@key='20636']/*[@key='21842']/*[@key='24734']" fromNamePath="CompoundEmployee/person/employment_information/job_information/event_reason" fromType="profile" toFunction="20" toKey="2" toType="function"/>
+        <Mapping fromFunction="20" fromKey="1" fromType="function" toKey="24" toKeyPath="*[@key='1']/*[@key='2']/*[@key='24']" toNamePath="Record/Elements/Termination Reason" toType="profile"/>
+        <Mapping fromKey="20452" fromKeyPath="*[@key='1']/*[@key='20446']/*[@key='20452']" fromNamePath="CompoundEmployee/person/person_id_external" fromType="profile" toFunction="21" toKey="1" toType="function"/>
+        <Mapping fromKey="21816" fromKeyPath="*[@key='1']/*[@key='20446']/*[@key='20636']/*[@key='21816']" fromNamePath="CompoundEmployee/person/employment_information/originalStartDate" fromType="profile" toFunction="21" toKey="2" toType="function"/>
+        <Mapping fromFunction="21" fromKey="1" fromType="function" toKey="8" toKeyPath="*[@key='1']/*[@key='2']/*[@key='8']" toNamePath="Record/Elements/Original Hire Date" toType="profile"/>
+        <Mapping fromKey="24798" fromKeyPath="*[@key='1']/*[@key='20446']/*[@key='20636']/*[@key='21842']/*[@key='24798']" fromNamePath="CompoundEmployee/person/employment_information/job_information/manager_person_id_external" fromType="profile" toFunction="18" toKey="1" toType="function"/>
+      </Mappings>
+      <Functions optimizeExecutionOrder="true">
+        <FunctionStep cacheEnabled="true" cacheOption="none" category="String" key="1" name="String Split" position="1" sumEnabled="false" type="StringSplit" x="30.0" y="0.0">
+          <Inputs>
+            <Input default="" key="1" name="Original String"/>
+          </Inputs>
+          <Outputs>
+            <Output key="1" name="first_half"/>
+            <Output key="2" name="sec_half"/>
+          </Outputs>
+          <Configuration>
+            <StringSplit delimiter="-"/>
+          </Configuration>
+        </FunctionStep>
+        <FunctionStep cacheEnabled="true" cacheOption="none" category="Lookup" key="2" name="Document Cache Lookup" position="2" sumEnabled="false" type="DocumentCacheLookup" x="30.0" y="124.0">
+          <Inputs>
+            <Input default="" key="2" name="externalCode (PicklistOption/externalCode)"/>
+            <Input default="employee-status" key="3" name="picklistId (PicklistOption/picklistId)"/>
+          </Inputs>
+          <Outputs>
+            <Output key="1" name="en_US (PicklistOption/en_US)"/>
+          </Outputs>
+          <Configuration>
+            <DocumentCacheLookup cacheIndex="3" docCache="9361e99f-268c-45cf-9e2d-f2dbb9dbd7ab">
+              <Input index="2" keyId="5" name="externalCode (PicklistOption/externalCode)"/>
+              <Input index="3" keyId="6" name="picklistId (PicklistOption/picklistId)"/>
+              <Output index="1" key="10" name="en_US (PicklistOption/en_US)"/>
+            </DocumentCacheLookup>
+          </Configuration>
+        </FunctionStep>
+        <FunctionStep cacheEnabled="true" cacheOption="none" category="Lookup" key="3" name="Document Cache Lookup" position="3" sumEnabled="false" type="DocumentCacheLookup" x="30.0" y="246.0">
+          <Inputs>
+            <Input default="" key="2" name="externalCode (PicklistOption/externalCode)"/>
+            <Input default="GlobalEmployeeClass" key="3" name="picklistId (PicklistOption/picklistId)"/>
+          </Inputs>
+          <Outputs>
+            <Output key="1" name="en_US (PicklistOption/en_US)"/>
+          </Outputs>
+          <Configuration>
+            <DocumentCacheLookup cacheIndex="3" docCache="9361e99f-268c-45cf-9e2d-f2dbb9dbd7ab">
+              <Input index="2" keyId="5" name="externalCode (PicklistOption/externalCode)"/>
+              <Input index="3" keyId="6" name="picklistId (PicklistOption/picklistId)"/>
+              <Output index="1" key="10" name="en_US (PicklistOption/en_US)"/>
+            </DocumentCacheLookup>
+          </Configuration>
+        </FunctionStep>
+        <FunctionStep cacheEnabled="true" cacheOption="none" category="String" key="4" name="String Concat" position="4" sumEnabled="false" type="StringConcat" x="30.0" y="368.0">
+          <Inputs>
+            <Input default="" key="1" name="first_name"/>
+            <Input default="" key="2" name="last_name"/>
+          </Inputs>
+          <Outputs>
+            <Output key="2" name="Result"/>
+          </Outputs>
+          <Configuration>
+            <StringConcat delimiter=" "/>
+          </Configuration>
+        </FunctionStep>
+        <FunctionStep cacheEnabled="true" cacheOption="none" category="String" key="5" name="String Concat" position="5" sumEnabled="false" type="StringConcat" x="30.0" y="490.0">
+          <Inputs>
+            <Input default="" key="1" name="code"/>
+            <Input default="" key="2" name="text"/>
+          </Inputs>
+          <Outputs>
+            <Output key="2" name="Result"/>
+          </Outputs>
+          <Configuration>
+            <StringConcat delimiter=" "/>
+          </Configuration>
+        </FunctionStep>
+        <FunctionStep cacheEnabled="true" cacheOption="none" category="String" key="6" name="String Concat" position="6" sumEnabled="false" type="StringConcat" x="30.0" y="612.0">
+          <Inputs>
+            <Input default="" key="1" name="code"/>
+            <Input default="" key="2" name="text"/>
+          </Inputs>
+          <Outputs>
+            <Output key="2" name="Result"/>
+          </Outputs>
+          <Configuration>
+            <StringConcat delimiter=" "/>
+          </Configuration>
+        </FunctionStep>
+        <FunctionStep cacheEnabled="true" cacheOption="none" category="String" key="7" name="String Concat" position="7" sumEnabled="false" type="StringConcat" x="30.0" y="734.0">
+          <Inputs>
+            <Input default="" key="1" name="code"/>
+            <Input default="" key="2" name="text"/>
+          </Inputs>
+          <Outputs>
+            <Output key="2" name="Result"/>
+          </Outputs>
+          <Configuration>
+            <StringConcat delimiter=" "/>
+          </Configuration>
+        </FunctionStep>
+        <FunctionStep category="userdefined" id="09563399-439f-41da-a2b1-dc7d8046f657" key="9" name="email" position="9" type="userdefined" x="30.0" y="856.0">
+          <Inputs>
+            <Input key="1" name="mail"/>
+          </Inputs>
+          <Outputs>
+            <Output key="1" name="mail_id"/>
+          </Outputs>
+          <Configuration/>
+        </FunctionStep>
+        <FunctionStep category="userdefined" id="ffb2d4ac-3a05-47c8-93b2-6a1d8eb8b440" key="12" name="country" position="12" type="userdefined" x="30.0" y="966.0">
+          <Inputs>
+            <Input key="1" name="code"/>
+          </Inputs>
+          <Outputs>
+            <Output key="1" name="country"/>
+          </Outputs>
+          <Configuration/>
+        </FunctionStep>
+        <FunctionStep cacheEnabled="true" cacheOption="none" category="String" key="13" name="String Split" position="13" sumEnabled="false" type="StringSplit" x="30.0" y="1080.0">
+          <Inputs>
+            <Input default="" key="1" name="Original String"/>
+          </Inputs>
+          <Outputs>
+            <Output key="1" name="first_half"/>
+            <Output key="2" name="sec_half"/>
+          </Outputs>
+          <Configuration>
+            <StringSplit delimiter="-"/>
+          </Configuration>
+        </FunctionStep>
+        <FunctionStep cacheEnabled="true" cacheOption="none" category="String" key="14" name="String Split" position="14" sumEnabled="false" type="StringSplit" x="30.0" y="1213.0">
+          <Inputs>
+            <Input default="" key="1" name="Original String"/>
+          </Inputs>
+          <Outputs>
+            <Output key="1" name="first_half"/>
+            <Output key="2" name="sec_half"/>
+          </Outputs>
+          <Configuration>
+            <StringSplit delimiter="-"/>
+          </Configuration>
+        </FunctionStep>
+        <FunctionStep cacheEnabled="true" cacheOption="none" category="Lookup" key="15" name="Document Cache Lookup" position="15" sumEnabled="false" type="DocumentCacheLookup" x="30.0" y="1348.0">
+          <Inputs>
+            <Input default="" key="2" name="externalCode (PicklistOption/externalCode)"/>
+            <Input default="jobRelType" key="3" name="picklistId (PicklistOption/picklistId)"/>
+          </Inputs>
+          <Outputs>
+            <Output key="1" name="en_US (PicklistOption/en_US)"/>
+          </Outputs>
+          <Configuration>
+            <DocumentCacheLookup cacheIndex="3" docCache="9361e99f-268c-45cf-9e2d-f2dbb9dbd7ab">
+              <Input index="2" keyId="5" name="externalCode (PicklistOption/externalCode)"/>
+              <Input index="3" keyId="6" name="picklistId (PicklistOption/picklistId)"/>
+              <Output index="1" key="10" name="en_US (PicklistOption/en_US)"/>
+            </DocumentCacheLookup>
+          </Configuration>
+        </FunctionStep>
+        <FunctionStep cacheEnabled="true" cacheOption="none" category="Date" key="17" name="Date Format" position="17" sumEnabled="false" type="DateFormat" x="30.0" y="1483.0">
+          <Inputs>
+            <Input default="" key="1" name="Date String"/>
+            <Input default="yyyyMMdd HHmmss.SSS" key="2" name="Input Mask"/>
+            <Input default="MM/dd/yyyy" key="3" name="Output Mask"/>
+          </Inputs>
+          <Outputs>
+            <Output key="2" name="Result"/>
+          </Outputs>
+          <Configuration/>
+        </FunctionStep>
+        <FunctionStep category="userdefined" id="3282dda9-894f-47c3-91cb-2696a83ea503" key="18" name="Manager name" position="18" type="userdefined" x="30.0" y="1639.0">
+          <Inputs>
+            <Input key="1" name="ext_id"/>
+          </Inputs>
+          <Outputs>
+            <Output key="1" name="mgr_name"/>
+          </Outputs>
+          <Configuration/>
+        </FunctionStep>
+        <FunctionStep category="userdefined" id="3dd1ea3f-93d2-40ab-abf0-dcf1448c3e42" key="19" name="HR Name" position="19" type="userdefined" x="30.0" y="1747.0">
+          <Inputs>
+            <Input key="1" name="ext_id"/>
+          </Inputs>
+          <Outputs>
+            <Output key="1" name="hr_name"/>
+          </Outputs>
+          <Configuration/>
+        </FunctionStep>
+        <FunctionStep category="userdefined" id="77989dac-5aa9-4e28-affc-bc8f6d66f20a" key="20" name="termination reason" position="20" type="userdefined" x="30.0" y="1848.0">
+          <Inputs>
+            <Input key="1" name="status"/>
+            <Input key="2" name="reason"/>
+          </Inputs>
+          <Outputs>
+            <Output key="1" name="term_reason"/>
+          </Outputs>
+          <Configuration/>
+        </FunctionStep>
+        <FunctionStep category="userdefined" id="6fa7d00a-b129-4f9c-8a0b-954874f1bc2b" key="21" name="Orig Hire date" position="21" type="userdefined" x="30.0" y="1980.0">
+          <Inputs>
+            <Input key="1" name="pers_id"/>
+            <Input key="2" name="orig_hdate"/>
+          </Inputs>
+          <Outputs>
+            <Output key="1" name="orig_hire_date"/>
+          </Outputs>
+          <Configuration/>
+        </FunctionStep>
+      </Functions>
+      <Defaults/>
+      <DocumentCacheJoins>
+        <DocumentCacheJoin cacheIndex="1" docCache="bd1e292d-c1f3-4ff2-8b6b-6637f7c8266c" docCacheJoinId="1">
+          <srcParentKey key="1" tagListKey="0"/>
+          <CacheKeyJoinValues>
+            <CacheKeyJoinValue cacheKeyId="2" cacheKeyName="custom_string14 (CompoundEmployee/person/employment_information/job_information/custom_string14)">
+              <srcLinkKey key="24514" tagListKey="0"/>
+            </CacheKeyJoinValue>
+          </CacheKeyJoinValues>
+        </DocumentCacheJoin>
+        <DocumentCacheJoin cacheIndex="1" docCache="f4db1f2c-90be-4ea4-aabe-d739f86be6a4" docCacheJoinId="2">
+          <srcParentKey key="1" tagListKey="0"/>
+          <CacheKeyJoinValues>
+            <CacheKeyJoinValue cacheKeyId="2" cacheKeyName="custom_string19 (CompoundEmployee/person/employment_information/job_information/custom_string19)">
+              <srcLinkKey key="24524" tagListKey="0"/>
+            </CacheKeyJoinValue>
+          </CacheKeyJoinValues>
+        </DocumentCacheJoin>
+        <DocumentCacheJoin cacheIndex="1" docCache="64297b7b-722e-4e60-8dfd-55826dc4656a" docCacheJoinId="3">
+          <srcParentKey key="1" tagListKey="0"/>
+          <CacheKeyJoinValues>
+            <CacheKeyJoinValue cacheKeyId="2" cacheKeyName="location (CompoundEmployee/person/employment_information/job_information/location)">
+              <srcLinkKey key="24788" tagListKey="0"/>
+            </CacheKeyJoinValue>
+          </CacheKeyJoinValues>
+        </DocumentCacheJoin>
+      </DocumentCacheJoins>
+    </Map>
+  </bns:object>
+</bns:Component>

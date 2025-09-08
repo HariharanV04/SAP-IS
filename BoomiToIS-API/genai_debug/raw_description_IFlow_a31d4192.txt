@@ -1,1 +1,0 @@
-This integration flow extracts employee data from SAP SuccessFactors via OAuth authentication, validates the response structure, transforms the data using a Groovy script with specific field mappings, and securely transfers the result to an SFTP server with configurable host and directory settings. Error handling includes retry logic, logging, and email notifications.

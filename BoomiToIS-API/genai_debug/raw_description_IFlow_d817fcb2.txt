@@ -1,1 +1,0 @@
-This iFlow retrieves contact information from SuccessFactors via OData, validates the response data, transforms it to a canonical format, and transfers it to an SFTP server. It includes error handling for validation failures and missing data, with email notifications for errors. The process logs both successful transfers and error details for monitoring purposes.

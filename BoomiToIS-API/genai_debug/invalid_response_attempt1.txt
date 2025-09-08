@@ -1,6 +1,0 @@
-<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n    <sObjects xmlns=\"urn:enterprise.soap.sforce.com:2006-04-01\">\n        <type>Opportunity</type>\n        <Name>''' + properties.get('OpportunityName') + '''</Name>\n        <Description>''' + properties.get('OpportunityDescription') + '''</Description>\n        <CloseDate>''' + properties.get('OpportunityCloseDate') + '''</CloseDate>\n        <StageName>Prospecting</StageName>\n    </sObjects>'''\n    \n    message.setBody(opportunityXml)\n    return message\n}"
-        }
-      ]
-    }
-  ]
-}

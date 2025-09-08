@@ -1,0 +1,4 @@
+#Store metainfo properties
+#Sat Aug 23 07:13:33 UTC 2025
+description=This iflow reads the Territory Program, Managed Quota and Territory Position data from SAP Territory and Quota and creates Sales Order, Transactions and Transaction Assignments in SAP Incentive Management. 
+SAP-MarkedSAP2SAP=SAP_TO_SAP_INTEGRATION

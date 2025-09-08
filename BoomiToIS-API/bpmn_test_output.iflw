@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn2:definitions xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                   xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                   xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                   xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns:ifl="http:///com.sap.ifl.model/Ifl.xsd"
+                   id="Definitions_1"
+                   targetNamespace="http://bpmn.io/schema/bpmn"
+                   exporter="SAP Integration Suite"
+                   exporterVersion="1.0">
+  <bpmn2:collaboration id="Collaboration_1">
+    <bpmn2:participant id="Process_Participant" name="Integration Process" processRef="Process_1"/>
+  </bpmn2:collaboration>
+  <bpmn2:process id="Process_1" isExecutable="true">
+    <bpmn2:extensionElements>
+      <ifl:property>
+        <key>transactionTimeout</key>
+        <value>30</value>
+      </ifl:property>
+      <ifl:property>
+        <key>transactionalHandling</key>
+        <value>Required for JDBC</value>
+      </ifl:property>
+      <ifl:property>
+        <key>logLevel</key>
+        <value>INFO</value>
+      </ifl:property>
+      <ifl:property>
+        <key>retryCount</key>
+        <value>3</value>
+      </ifl:property>
+    </bpmn2:extensionElements>
+    <bpmn2:startEvent id="StartEvent_2" name="Start">
+      <bpmn2:extensionElements>
+        <ifl:property>
+          <key>componentType</key>
+          <value>StartEvent</value>
+        </ifl:property>
+        <ifl:property>
+          <key>componentVersion</key>
+          <value>1.0</value>
+        </ifl:property>
+      </bpmn2:extensionElements>
+      <bpmn2:messageEventDefinition/>
+    </bpmn2:startEvent>
+    <bpmn2:endEvent id="EndEvent_2" name="End">
+      <bpmn2:extensionElements>
+        <ifl:property>
+          <key>componentType</key>
+          <value>EndEvent</value>
+        </ifl:property>
+        <ifl:property>
+          <key>componentVersion</key>
+          <value>1.0</value>
+        </ifl:property>
+      </bpmn2:extensionElements>
+      <bpmn2:messageEventDefinition/>
+    </bpmn2:endEvent>
+    <!-- Endpoint: Simple Test Endpoint -->
+    <bpmn2:sequenceFlow id="SequenceFlow_InitialStart" sourceRef="StartEvent_2" targetRef="request_reply_1"/>
+    <bpmn2:sequenceFlow id="flow_1" sourceRef="" targetRef=""/>
+    <bpmn2:sequenceFlow id="flow_2" sourceRef="" targetRef=""/>
+    <bpmn2:sequenceFlow id="SequenceFlow_FinalEnd" sourceRef="request_reply_1" targetRef="EndEvent_2"/>
+    <bpmn2:serviceTask id="enricher_1" name="Set Properties">
+      <bpmn2:extensionElements>
+        <ifl:property>
+          <key>componentType</key>
+          <value>ContentEnricher</value>
+        </ifl:property>
+        <ifl:property>
+          <key>componentVersion</key>
+          <value>1.0</value>
+        </ifl:property>
+        <ifl:property>
+          <key>headerName</key>
+          <value>Content-Type</value>
+        </ifl:property>
+        <ifl:property>
+          <key>headerValue</key>
+          <value>application/json</value>
+        </ifl:property>
+      </bpmn2:extensionElements>
+    </bpmn2:serviceTask>
+    <bpmn2:sequenceFlow id="flow_start_to_first" sourceRef="StartEvent_2" targetRef="enricher_1"/>
+    <bpmn2:sequenceFlow id="flow_last_to_end" sourceRef="enricher_1" targetRef="EndEvent_2"/>
+  </bpmn2:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane bpmnElement="Process_1" id="BPMNPlane_1">
+      <bpmndi:BPMNShape bpmnElement="StartEvent_2" id="BPMNShape_StartEvent_2">
+        <dc:Bounds height="32.0" width="32.0" x="100" y="100"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="enricher_1" id="BPMNShape_enricher_1">
+        <dc:Bounds height="80.0" width="100.0" x="300" y="150" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="EndEvent_2" id="BPMNShape_EndEvent_2">
+        <dc:Bounds height="32.0" width="32.0" x="500" y="100"/>
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn2:definitions>

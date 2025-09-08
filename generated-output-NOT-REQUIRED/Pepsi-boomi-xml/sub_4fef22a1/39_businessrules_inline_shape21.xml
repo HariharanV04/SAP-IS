@@ -1,0 +1,25 @@
+<?xml version="1.0" ?>
+<shape xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" image="businessrules_icon" name="shape21" shapetype="businessrules" userlabel="Hard Errors" x="959.0" y="608.0">
+  <configuration>
+    <businessrules profileId="b3a5d5ef-2ad2-43a4-98dd-646c12e74af9" profileName="SuccessFactors CompoundEmployee QUERY Response" profileType="profile.xml">
+      <rule key="1" name="Manager ID check">
+        <input alias="manager_id" elementKey="24794" id="1" name="manager_id (CompoundEmployee/person/employment_information/job_information/manager_id)" taglist="0" xsi:type="BusinessRuleField"/>
+        <input alias="person_id_external" elementKey="20452" id="2" name="person_id_external (CompoundEmployee/person/person_id_external)" taglist="0" xsi:type="BusinessRuleField"/>
+        <condition operator="and" xsi:type="GroupingCondition">
+          <nestedExpression operator="is not empty" xsi:type="SimpleCondition">
+            <leftInput deleted="false" id="1" name="manager_id" xsi:type="FieldConditionInput"/>
+          </nestedExpression>
+        </condition>
+        <errorMessage content="Error|{1}|Manager ID|Required field not populated">
+          <input index="1">
+            <input deleted="false" id="2" name="person_id_external" xsi:type="FieldConditionInput"/>
+          </input>
+        </errorMessage>
+      </rule>
+    </businessrules>
+  </configuration>
+  <dragpoints>
+    <dragpoint identifier="Accepted" name="shape21.dragpoint1" text="Accepted" toShape="unset" x="1137.0" y="598.0"/>
+    <dragpoint identifier="Rejected" name="shape21.dragpoint2" text="Rejected" toShape="unset" x="1137.0" y="638.0"/>
+  </dragpoints>
+</shape>

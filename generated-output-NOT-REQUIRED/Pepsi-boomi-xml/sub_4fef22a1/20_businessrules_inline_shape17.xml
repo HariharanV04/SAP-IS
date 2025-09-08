@@ -1,0 +1,128 @@
+<?xml version="1.0" ?>
+<shape xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" image="businessrules_icon" name="shape17" shapetype="businessrules" userlabel="Scope" x="895.0" y="208.0">
+  <configuration>
+    <businessrules profileId="b3a5d5ef-2ad2-43a4-98dd-646c12e74af9" profileName="SuccessFactors CompoundEmployee QUERY Response" profileType="profile.xml">
+      <rule key="1" name="Emp status">
+        <input alias="emplStatus" elementKey="24726" id="1" name="emplStatus (CompoundEmployee/person/employment_information/job_information/emplStatus)" taglist="0" xsi:type="BusinessRuleField"/>
+        <condition operator="or" xsi:type="GroupingCondition">
+          <nestedExpression operator="=" xsi:type="SimpleCondition">
+            <leftInput deleted="false" id="1" name="emplStatus" xsi:type="FieldConditionInput"/>
+            <rightInput deleted="false" id="0" name="&quot;A&quot;" value="A" xsi:type="StaticConditionInput"/>
+          </nestedExpression>
+          <nestedExpression operator="=" xsi:type="SimpleCondition">
+            <leftInput deleted="false" id="1" name="emplStatus" xsi:type="FieldConditionInput"/>
+            <rightInput deleted="false" id="0" name="&quot;P&quot;" value="P" xsi:type="StaticConditionInput"/>
+          </nestedExpression>
+          <nestedExpression operator="=" xsi:type="SimpleCondition">
+            <leftInput deleted="false" id="1" name="emplStatus" xsi:type="FieldConditionInput"/>
+            <rightInput deleted="false" id="0" name="&quot;U&quot;" value="U" xsi:type="StaticConditionInput"/>
+          </nestedExpression>
+          <nestedExpression operator="=" xsi:type="SimpleCondition">
+            <leftInput deleted="false" id="1" name="emplStatus" xsi:type="FieldConditionInput"/>
+            <rightInput deleted="false" id="0" name="&quot;R&quot;" value="R" xsi:type="StaticConditionInput"/>
+          </nestedExpression>
+          <nestedExpression operator="=" xsi:type="SimpleCondition">
+            <leftInput deleted="false" id="1" name="emplStatus" xsi:type="FieldConditionInput"/>
+            <rightInput deleted="false" id="0" name="&quot;T&quot;" value="T" xsi:type="StaticConditionInput"/>
+          </nestedExpression>
+          <nestedExpression operator="=" xsi:type="SimpleCondition">
+            <leftInput deleted="false" id="1" name="emplStatus" xsi:type="FieldConditionInput"/>
+            <rightInput deleted="false" id="0" name="&quot;S&quot;" value="S" xsi:type="StaticConditionInput"/>
+          </nestedExpression>
+        </condition>
+        <errorMessage/>
+      </rule>
+      <rule key="2" name="Emp class">
+        <input alias="employee_class" elementKey="24720" id="1" name="employee_class (CompoundEmployee/person/employment_information/job_information/employee_class)" taglist="0" xsi:type="BusinessRuleField"/>
+        <condition operator="and" xsi:type="GroupingCondition">
+          <nestedExpression operator="!=" xsi:type="SimpleCondition">
+            <leftInput deleted="false" id="1" name="employee_class" xsi:type="FieldConditionInput"/>
+            <rightInput deleted="false" id="0" name="&quot;E&quot;" value="E" xsi:type="StaticConditionInput"/>
+          </nestedExpression>
+        </condition>
+        <errorMessage/>
+      </rule>
+      <rule key="3" name="Termination date check">
+        <input alias="emplStatus" elementKey="24726" id="1" name="emplStatus (CompoundEmployee/person/employment_information/job_information/emplStatus)" taglist="0" xsi:type="BusinessRuleField"/>
+        <input alias="Termination date" id="2" xsi:type="BusinessRuleFunction">
+          <inputMapping fromElementKey="21794" fromName="end_date (CompoundEmployee/person/employment_information/end_date)" fromTaglist="0" toFunctionInputKey="1"/>
+          <inputMapping fromElementKey="0" fromTaglist="0" toFunctionInputKey="2"/>
+          <inputMapping fromElementKey="0" fromTaglist="0" toFunctionInputKey="3"/>
+          <FunctionStep cacheEnabled="false" category="Date" key="2" name="Date Format" position="-1" type="DateFormat">
+            <Inputs>
+              <Input default="" key="1" name="Date String"/>
+              <Input default="yyyyMMdd HHmmss.SSS" key="2" name="Input Mask"/>
+              <Input default="yyyy-MM-dd" key="3" name="Output Mask"/>
+            </Inputs>
+            <Outputs>
+              <Output key="2" name="Result"/>
+            </Outputs>
+            <Configuration/>
+          </FunctionStep>
+        </input>
+        <input alias="File start date" id="3" xsi:type="BusinessRuleFunction">
+          <FunctionStep cacheEnabled="false" category="ProcessProperty" key="3" name="Get Process Property" position="-1" type="DefinedProcessPropertyGet">
+            <Inputs/>
+            <Outputs>
+              <Output key="1" name="Full File Start Date"/>
+            </Outputs>
+            <Configuration>
+              <DefinedProcessProperty componentId="795e769e-a9c3-442e-bff3-a96b04f9b531" componentName="EC372 - EC to NAVEX (OB)" propertyKey="2d3d973b-7bee-4b79-9512-f52a5021a00e" propertyName="Full File Start Date"/>
+            </Configuration>
+          </FunctionStep>
+        </input>
+        <input alias="termination check" id="5" xsi:type="BusinessRuleFunction">
+          <inputMapping fromElementKey="24726" fromName="emplStatus (CompoundEmployee/person/employment_information/job_information/emplStatus)" fromTaglist="0" toFunctionInputKey="1"/>
+          <inputMapping fromElementKey="21794" fromName="end_date (CompoundEmployee/person/employment_information/end_date)" fromTaglist="0" toFunctionInputKey="2"/>
+          <FunctionStep cacheEnabled="false" category="userdefined" id="fd4ac13b-8068-44ed-adf1-966851d0ddb5" key="5" name="termination check" position="-1" type="userdefined">
+            <Inputs>
+              <Input default="" key="1" name="status"/>
+              <Input default="" key="2" name="tdate"/>
+            </Inputs>
+            <Outputs>
+              <Output key="1" name="result"/>
+            </Outputs>
+            <Configuration/>
+          </FunctionStep>
+        </input>
+        <condition operator="or" xsi:type="GroupingCondition">
+          <nestedExpression operator="=" xsi:type="SimpleCondition">
+            <leftInput deleted="false" id="5" name="termination check" outputId="1" xsi:type="FunctionConditionInput"/>
+            <rightInput deleted="false" id="0" name="&quot;1&quot;" value="1" xsi:type="StaticConditionInput"/>
+          </nestedExpression>
+          <nestedExpression operator="=" xsi:type="SimpleCondition">
+            <leftInput deleted="false" id="1" name="emplStatus" xsi:type="FieldConditionInput"/>
+            <rightInput deleted="false" id="0" name="&quot;A&quot;" value="A" xsi:type="StaticConditionInput"/>
+          </nestedExpression>
+          <nestedExpression operator="=" xsi:type="SimpleCondition">
+            <leftInput deleted="false" id="1" name="emplStatus" xsi:type="FieldConditionInput"/>
+            <rightInput deleted="false" id="0" name="&quot;P&quot;" value="P" xsi:type="StaticConditionInput"/>
+          </nestedExpression>
+          <nestedExpression operator="=" xsi:type="SimpleCondition">
+            <leftInput deleted="false" id="1" name="emplStatus" xsi:type="FieldConditionInput"/>
+            <rightInput deleted="false" id="0" name="&quot;U&quot;" value="U" xsi:type="StaticConditionInput"/>
+          </nestedExpression>
+          <nestedExpression operator="=" xsi:type="SimpleCondition">
+            <leftInput deleted="false" id="1" name="emplStatus" xsi:type="FieldConditionInput"/>
+            <rightInput deleted="false" id="0" name="&quot;S&quot;" value="S" xsi:type="StaticConditionInput"/>
+          </nestedExpression>
+        </condition>
+        <errorMessage/>
+      </rule>
+      <rule key="4" name="Primary assignment chk">
+        <input alias="custom_string11" elementKey="21596" id="1" name="custom_string11 (CompoundEmployee/person/employment_information/custom_string11)" taglist="0" xsi:type="BusinessRuleField"/>
+        <condition operator="and" xsi:type="GroupingCondition">
+          <nestedExpression operator="!=" xsi:type="SimpleCondition">
+            <leftInput deleted="false" id="1" name="custom_string11" xsi:type="FieldConditionInput"/>
+            <rightInput deleted="false" id="0" name="&quot;Yes&quot;" value="Yes" xsi:type="StaticConditionInput"/>
+          </nestedExpression>
+        </condition>
+        <errorMessage/>
+      </rule>
+    </businessrules>
+  </configuration>
+  <dragpoints>
+    <dragpoint identifier="Accepted" name="shape17.dragpoint1" text="Accepted" toShape="shape19" x="1119.0" y="168.0"/>
+    <dragpoint identifier="Rejected" name="shape17.dragpoint2" text="Rejected" toShape="shape41" x="1024.0" y="360.0"/>
+  </dragpoints>
+</shape>

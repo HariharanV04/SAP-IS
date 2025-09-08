@@ -1,0 +1,5 @@
+#Store metainfo properties
+#Thu Aug 21 14:47:35 UTC 2025
+description=Employee Data Sync with NAVEX Full Load
+source=SAPSuccessFactorsEmployeeCentral
+target=SAPConcur

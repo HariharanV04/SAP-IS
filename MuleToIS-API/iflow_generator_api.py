@@ -17,14 +17,17 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 # Import the generator
+import_successful = False
 try:
     # Try to import from the current directory first
     from enhanced_genai_iflow_generator import EnhancedGenAIIFlowGenerator
     logger.info("Successfully imported EnhancedGenAIIFlowGenerator from local directory")
+    import_successful = True
 except ImportError as e:
     logger.warning(f"Could not import from local directory: {str(e)}")
 
-    # If that fails, try to import from the MuleToIflowGenAI Approach directory
+# Only try fallback import if the first import failed
+if not import_successful:
     try:
         # Add MuleToIFlow GenAI Approach directory to path
         MULE_TO_IFLOW_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "MuleToIflowGenAI Approach")
@@ -216,7 +219,7 @@ def generate_iflow_from_markdown(markdown_content, api_key, output_dir=None, ifl
     Returns:
         dict: Dictionary with paths to generated files and other information
     """
-    generator_api = IFlowGeneratorAPI(api_key=api_key, model=model, provider=provider)
+    generator_api = IFlowGeneratorAPI(api_key=api_key, model=model, provider=provider, use_converter=True)
     return generator_api.generate_from_markdown(markdown_content, output_dir, iflow_name, job_id)
 
 # Test function

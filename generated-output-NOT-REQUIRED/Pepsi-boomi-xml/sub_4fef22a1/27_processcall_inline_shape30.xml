@@ -1,0 +1,14 @@
+<?xml version="1.0" ?>
+<shape image="processcall_icon" name="shape30" shapetype="processcall" userlabel="" x="1919.0" y="112.0">
+  <configuration>
+    <processcall abort="true" processId="c0c38c00-77bb-426d-8483-2c151e6699e8" wait="true">
+      <parameters/>
+      <returnpaths>
+        <returnpaths childShapeName="shape2" returnLabel=""/>
+      </returnpaths>
+    </processcall>
+  </configuration>
+  <dragpoints>
+    <dragpoint identifier="shape2" name="shape30.dragpoint1" toShape="shape31" x="2096.0" y="120.0"/>
+  </dragpoints>
+</shape>

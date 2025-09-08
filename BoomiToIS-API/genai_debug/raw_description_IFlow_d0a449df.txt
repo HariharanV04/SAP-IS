@@ -1,1 +1,0 @@
-This integration flow processes Stripe subscription data to create Salesforce Opportunities. It retrieves customer and product details from Stripe, transforms the data using Groovy scripts to calculate description and close date fields, and then creates a new Opportunity in Salesforce. Error handling includes email notifications for any failures.

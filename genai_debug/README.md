@@ -1,10 +1,10 @@
 # iFlow Generation Details
 
-## TestFlow_EndEventFix
-- **Generation Approach**: template-based
-- **Timestamp**: 2025-06-23T22:42:50.101439
+## IFlow_LIP_Only
+- **Generation Approach**: genai-enhanced
+- **Timestamp**: 2025-08-23T23:02:12.126497
 - **Model**: N/A
-- **Reason**: Default approach
+- **Reason**: Using GenAI for descriptions and enhancements
 
 ## Implementation Notes
 - OData components are implemented with proper EndpointReceiver participants

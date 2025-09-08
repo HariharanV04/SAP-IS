@@ -1,1 +1,0 @@
-This iFlow receives Stripe subscription webhook notifications, processes the JSON payload by extracting key subscription details, transforms the data into Salesforce-compatible XML format, and creates a corresponding Opportunity record in Salesforce CRM, enabling automated opportunity tracking based on subscription events.

@@ -1,0 +1,44 @@
+<?xml version="1.0" ?>
+<shape image="documentproperties_icon" name="shape22" shapetype="documentproperties" userlabel="Set Error Record Count Property" x="1583.0" y="240.0">
+  <configuration>
+    <documentproperties>
+      <documentproperty defaultValue="" isTradingPartner="false" name="Dynamic Process Property - RPT_ERR_PRCSS_NAME" persist="false" propertyId="process.RPT_ERR_PRCSS_NAME">
+        <sourcevalues>
+          <parametervalue key="3" valueType="static">
+            <staticparameter staticproperty="Sub: Extract Data"/>
+          </parametervalue>
+        </sourcevalues>
+      </documentproperty>
+      <documentproperty defaultValue="" isTradingPartner="false" name="Dynamic Process Property - RPT_ERR_CPNT_TYPE" persist="false" propertyId="process.RPT_ERR_CPNT_TYPE">
+        <sourcevalues>
+          <parametervalue key="2" valueType="static">
+            <staticparameter staticproperty="BRULE"/>
+          </parametervalue>
+        </sourcevalues>
+      </documentproperty>
+      <documentproperty defaultValue="" isTradingPartner="false" name="Dynamic Process Property - RPT_ERR_FILE_NAME" persist="false" propertyId="process.RPT_ERR_FILE_NAME">
+        <sourcevalues>
+          <parametervalue key="4" valueType="static">
+            <staticparameter staticproperty="SFEC.NAVEX.GBL.EC372."/>
+          </parametervalue>
+          <parametervalue key="5" valueType="date">
+            <dateparameter dateparametertype="current" datetimemask="yyyyMMdd"/>
+          </parametervalue>
+          <parametervalue key="6" valueType="static">
+            <staticparameter staticproperty=".csv"/>
+          </parametervalue>
+        </sourcevalues>
+      </documentproperty>
+      <documentproperty defaultValue="" isTradingPartner="false" name="Dynamic Process Property - RPT_ERR_REC_TYPE" persist="false" propertyId="process.RPT_ERR_REC_TYPE">
+        <sourcevalues>
+          <parametervalue key="7" valueType="static">
+            <staticparameter staticproperty="Demographic Data File"/>
+          </parametervalue>
+        </sourcevalues>
+      </documentproperty>
+    </documentproperties>
+  </configuration>
+  <dragpoints>
+    <dragpoint name="shape22.dragpoint1" toShape="shape23" x="1840.0" y="248.0"/>
+  </dragpoints>
+</shape>

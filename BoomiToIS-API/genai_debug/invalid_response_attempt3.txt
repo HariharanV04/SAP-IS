@@ -1,6 +1,0 @@
-<?xml version=\\\"1.0\\\" encoding=\\\"UTF-8\\\"?>\\n    <sObjects xmlns=\\\"urn:enterprise.soap.sforce.com\\\">\\n        <type>Opportunity</type>\\n        <Name>Stripe Subscription - ''' + subscription.plan.nickname + '''</Name>\\n        <Description>Monthly subscription for ''' + subscription.plan.nickname + ''' - Customer: ''' + customerId + '''</Description>\\n        <Amount>''' + planAmount + '''</Amount>\\n        <CloseDate>''' + closeDate.format('yyyy-MM-dd') + '''</CloseDate>\\n        <StageName>Closed Won</StageName>\\n        <Probability>100</Probability>\\n        <LeadSource>Stripe Webhook</LeadSource>\\n        <External_ID__c>''' + subscriptionId + '''</External_ID__c>\\n    </sObjects>'''\\n    \\n    message.setBody(opportunityXml)\\n    message.setHeader('Content-Type', 'application/xml')\\n    \\n    return message\\n}"
-                }
-            ]
-        }
-    ]
-}

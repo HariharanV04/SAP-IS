@@ -1,1 +1,0 @@
-This iFlow retrieves product details from an OData service based on a product identifier. It validates the product ID against a list of allowed identifiers using a Groovy script, queries the Products entity with specific filters and field selections, and formats the response appropriately. Error handling is implemented for invalid product identifiers.

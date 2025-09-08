@@ -1,6 +1,0 @@
-<?xml version=\\\"1.0\\\" encoding=\\\"UTF-8\\\"?>\\n    <soapenv:Envelope xmlns:soapenv=\\\"http://schemas.xmlsoap.org/soap/envelope/\\\" xmlns:urn=\\\"urn:enterprise.soap.sforce.com\\\">\\n        <soapenv:Header/>\\n        <soapenv:Body>\\n            <urn:create>\\n                <urn:sObjects xsi:type=\\\"urn:Opportunity\\\" xmlns:xsi=\\\"http://www.w3.org/2001/XMLSchema-instance\\\">\\n                    <urn:Name>''' + planName + ''' - ''' + customerId + '''</urn:Name>\\n                    <urn:Description>Monthly subscription for ''' + planName + ''' - Billing: ''' + billingInterval + '''</urn:Description>\\n                    <urn:Amount>''' + planAmount + '''</urn:Amount>\\n                    <urn:CloseDate>''' + closeDate.format('yyyy-MM-dd') + '''</urn:CloseDate>\\n                    <urn:StageName>Closed Won</urn:StageName>\\n                    <urn:Probability>100</urn:Probability>\\n                    <urn:LeadSource>Stripe Webhook</urn:LeadSource>\\n                </urn:sObjects>\\n            </urn:create>\\n        </soapenv:Body>\\n    </soapenv:Envelope>'''\\n    \\n    message.setBody(opportunityXml)\\n    message.setHeader('Content-Type', 'text/xml')\\n    message.setHeader('SOAPAction', 'create')\\n    \\n    return message\\n}"
-                }
-            ]
-        }
-    ]
-}

@@ -1,1 +1,0 @@
-This iFlow provides a simple default endpoint that returns a response when the root path ("/") is accessed via GET request. The implementation appears to be minimal, with no specific processing components, transformations, or complex sequence flows defined. This may serve as a basic health check or placeholder endpoint for the integration service.

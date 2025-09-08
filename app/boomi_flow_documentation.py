@@ -1215,7 +1215,7 @@ class BoomiFlowDocumentationGenerator:
                         to_path = mapping.get('to_name_path', 'Unknown')
                         mapping_type = mapping.get('to_type', 'Unknown')
                         doc_lines.append(f"- **{from_path}** → **{to_path}** ({mapping_type})")
-                    doc_lines.append("")
+                doc_lines.append("")
         
         # Connectors (unchanged)
         if processing_results['connectors']:

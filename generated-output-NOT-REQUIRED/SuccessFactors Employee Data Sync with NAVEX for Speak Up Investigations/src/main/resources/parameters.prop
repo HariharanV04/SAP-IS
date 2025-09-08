@@ -1,0 +1,36 @@
+#Thu Aug 21 14:46:37 UTC 2025
+Concur\ Entity\ Code=p0603572xnsz
+PGP\ Encryption=false
+PGP_Armored=true
+SFTP_Timeout=10000
+Scheduler=<row><cell>dateType</cell><cell></cell></row><row><cell>timeType</cell><cell></cell></row><row><cell>dayValue</cell><cell></cell></row><row><cell>monthValue</cell><cell></cell></row><row><cell>yearValue</cell><cell></cell></row><row><cell>onWeekly</cell><cell></cell></row><row><cell>onMonthly</cell><cell></cell></row><row><cell>OnEveryMinute</cell><cell></cell></row><row><cell>fromInterval</cell><cell></cell></row><row><cell>toInterval</cell><cell></cell></row><row><cell>timeZone</cell><cell>( UTC 0\:00 ) Greenwich Mean Time(Etc/GMT)</cell></row><row><cell>secondValue</cell><cell>0</cell></row><row><cell>minutesValue</cell><cell></cell></row><row><cell>hourValue</cell><cell></cell></row><row><cell>triggerType</cell><cell>simple</cell></row><row><cell>noOfSchedules</cell><cell>1</cell></row><row><cell>schedule1</cell><cell>fireNow\=true</cell></row>
+SFTP_Authentication=user_password
+SFTP_Proxy=none
+SFTP_Directory=/outgoing/CONCUR
+PGP_Signature=NoSignature
+SF_Address=https\://pepsico.successfactors.com
+Relevant\ Company\ Codes=&apos;GCA&apos;,&apos;GBJ&apos;,&apos;GBB&apos;,&apos;GDK&apos;,&apos;GMA&apos;,&apos;GLL&apos;,&apos;GOE&apos;,&apos;PDJ&apos;,&apos;GBW&apos;,&apos;GB&apos;,&apos;GPI&apos;,&apos;GPL&apos;,&apos;GCI&apos;,&apos;GCB&apos;,&apos;GMU&apos;,&apos;GPU&apos;,&apos;YCC&apos;,&apos;PPU&apos;
+Logging\ Enabled=true
+SFTP_Username=
+SF_Authentication=OAuth2SAMLBearer
+SFTP_ReconectDelay=1000
+PGP_Alg=AES
+SF_Retry=1
+SFTP_Address=sftp012.successfactors.eu
+Generate\ File\ 350=true
+PGP_SecretKey=128
+PGP_Int=true
+SF_Timeout=1
+PGP_User=ConcurSolutions (Integrations)
+Simulation\ Mode=false
+Relevant\ Countries\ for\ File\ 350=&apos;USA&apos;,&apos;CAN&apos;
+Generate\ File\ 305=true
+Generate\ File\ 320=true
+SFTP_PK=
+PGP_Compression=ZLIB
+SFTP_MaxReconnects=3
+SFTP_ExistingFile=Override
+SFTP_Disconnect=0
+SF_Credentials=GrundfosSFECtest
+SFTP_Credentials=SF_SFTP
+FTSD=

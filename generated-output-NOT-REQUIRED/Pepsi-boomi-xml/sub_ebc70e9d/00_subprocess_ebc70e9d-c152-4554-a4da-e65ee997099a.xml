@@ -1,0 +1,343 @@
+<?xml version="1.0" ?>
+<bns:Component xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bns="http://api.platform.boomi.com/" folderFullPath="PepsiCo/1.1 Common Components/New Error Handling" componentId="ebc70e9d-c152-4554-a4da-e65ee997099a" version="6" name="Sub: Initialize Error Report Properties" type="process" createdDate="2014-10-20T10:59:37Z" createdBy="ahungund@successfactors.com" modifiedDate="2018-04-24T06:56:38Z" modifiedBy="sunitha.bai.nenavath@accenture.com" deleted="false" currentVersion="true" folderName="New Error Handling" folderId="Rjo1MzI3NjM" branchName="main" branchId="QjoyOTk5NDY">
+  <bns:encryptedValues/>
+  <bns:description/>
+  <bns:object>
+    <process xmlns="" allowSimultaneous="false" enableUserLog="false" processLogOnErrorOnly="false" purgeDataImmediately="false" updateRunDates="false" workload="general">
+      <shapes>
+        <shape image="start" name="shape1" shapetype="start" userlabel="" x="32.0" y="304.0">
+          <configuration>
+            <passthroughaction/>
+          </configuration>
+          <dragpoints>
+            <dragpoint name="shape1.dragpoint1" toShape="shape6" x="176.0" y="313.0">
+              <linesegment length="0" name="shape1.dragpoint1.lineseg1" orient="horizontal" x="66.0" y="319.0"/>
+              <linesegment length="0" name="shape1.dragpoint1.lineseg2" orient="vertical" x="66.0" y="319.0"/>
+              <linesegment length="63" name="shape1.dragpoint1.lineseg3" orient="horizontal" x="66.0" y="319.0"/>
+              <linesegment length="0" name="shape1.dragpoint1.lineseg4" orient="vertical" x="129.0" y="319.0"/>
+              <linesegment length="47" name="shape1.dragpoint1.lineseg5" orient="horizontal" x="129.0" y="319.0"/>
+            </dragpoint>
+          </dragpoints>
+        </shape>
+        <shape image="documentproperties_icon" name="shape3" shapetype="documentproperties" userlabel="Initialize Business Rule Related Error Properties" x="432.0" y="144.0">
+          <configuration>
+            <documentproperties>
+              <documentproperty defaultValue="" isTradingPartner="false" name="Dynamic Process Property - RPT_INT_ALL_BRULE_ERR_CNT" persist="false" propertyId="process.RPT_INT_ALL_BRULE_ERR_CNT">
+                <sourcevalues>
+                  <parametervalue key="6" valueType="static">
+                    <staticparameter staticproperty="0"/>
+                  </parametervalue>
+                </sourcevalues>
+              </documentproperty>
+              <documentproperty defaultValue="" isTradingPartner="false" name="Dynamic Process Property - RPT_INT_ALL_BRULE_WRN_CNT" persist="false" propertyId="process.RPT_INT_ALL_BRULE_WRN_CNT">
+                <sourcevalues>
+                  <parametervalue key="7" valueType="static">
+                    <staticparameter staticproperty="0"/>
+                  </parametervalue>
+                </sourcevalues>
+              </documentproperty>
+              <documentproperty defaultValue="" isTradingPartner="false" name="Dynamic Process Property - RPT_INT_ALL_BRULE_SKP_CNT" persist="false" propertyId="process.RPT_INT_ALL_BRULE_SKP_CNT">
+                <sourcevalues>
+                  <parametervalue key="8" valueType="static">
+                    <staticparameter staticproperty="0"/>
+                  </parametervalue>
+                </sourcevalues>
+              </documentproperty>
+            </documentproperties>
+          </configuration>
+          <dragpoints>
+            <dragpoint name="shape3.dragpoint1" toShape="shape7" x="784.0" y="313.0">
+              <linesegment length="0" name="shape3.dragpoint1.lineseg1" orient="horizontal" x="466.0" y="159.0"/>
+              <linesegment length="0" name="shape3.dragpoint1.lineseg2" orient="vertical" x="466.0" y="159.0"/>
+              <linesegment length="167" name="shape3.dragpoint1.lineseg3" orient="horizontal" x="466.0" y="159.0"/>
+              <linesegment length="160" name="shape3.dragpoint1.lineseg4" orient="vertical" x="633.0" y="159.0"/>
+              <linesegment length="151" name="shape3.dragpoint1.lineseg5" orient="horizontal" x="633.0" y="319.0"/>
+            </dragpoint>
+          </dragpoints>
+        </shape>
+        <shape image="documentproperties_icon" name="shape4" shapetype="documentproperties" userlabel="Initialize Cleanse Related Error Properties" x="432.0" y="224.0">
+          <configuration>
+            <documentproperties>
+              <documentproperty defaultValue="" isTradingPartner="false" name="Dynamic Process Property - RPT_INT_ALL_CLNS_ERR_CNT" persist="false" propertyId="process.RPT_INT_ALL_CLNS_ERR_CNT">
+                <sourcevalues>
+                  <parametervalue key="2" valueType="static">
+                    <staticparameter staticproperty="0"/>
+                  </parametervalue>
+                </sourcevalues>
+              </documentproperty>
+              <documentproperty defaultValue="" isTradingPartner="false" name="Dynamic Process Property - RPT_INT_ALL_CLNS_WRN_CNT" persist="false" propertyId="process.RPT_INT_ALL_CLNS_WRN_CNT">
+                <sourcevalues>
+                  <parametervalue key="3" valueType="static">
+                    <staticparameter staticproperty="0"/>
+                  </parametervalue>
+                </sourcevalues>
+              </documentproperty>
+              <documentproperty defaultValue="" isTradingPartner="false" name="Dynamic Process Property - RPT_INT_ALL_CLNS_SKP_CNT" persist="false" propertyId="process.RPT_INT_ALL_CLNS_SKP_CNT">
+                <sourcevalues>
+                  <parametervalue key="4" valueType="static">
+                    <staticparameter staticproperty="0"/>
+                  </parametervalue>
+                </sourcevalues>
+              </documentproperty>
+            </documentproperties>
+          </configuration>
+          <dragpoints>
+            <dragpoint name="shape4.dragpoint1" toShape="shape7" x="784.0" y="313.0">
+              <linesegment length="0" name="shape4.dragpoint1.lineseg1" orient="horizontal" x="466.0" y="239.0"/>
+              <linesegment length="0" name="shape4.dragpoint1.lineseg2" orient="vertical" x="466.0" y="239.0"/>
+              <linesegment length="167" name="shape4.dragpoint1.lineseg3" orient="horizontal" x="466.0" y="239.0"/>
+              <linesegment length="80" name="shape4.dragpoint1.lineseg4" orient="vertical" x="633.0" y="239.0"/>
+              <linesegment length="151" name="shape4.dragpoint1.lineseg5" orient="horizontal" x="633.0" y="319.0"/>
+            </dragpoint>
+          </dragpoints>
+        </shape>
+        <shape image="documentproperties_icon" name="shape5" shapetype="documentproperties" userlabel="Initialize Decision Related Error Properties" x="432.0" y="304.0">
+          <configuration>
+            <documentproperties>
+              <documentproperty defaultValue="" isTradingPartner="false" name="Dynamic Process Property - RPT_INT_ALL_DCN_ERR_CNT" persist="false" propertyId="process.RPT_INT_ALL_DCN_ERR_CNT">
+                <sourcevalues>
+                  <parametervalue key="2" valueType="static">
+                    <staticparameter staticproperty="0"/>
+                  </parametervalue>
+                </sourcevalues>
+              </documentproperty>
+              <documentproperty defaultValue="" isTradingPartner="false" name="Dynamic Process Property - RPT_INT_ALL_DCN_WRN_CNT" persist="false" propertyId="process.RPT_INT_ALL_DCN_WRN_CNT">
+                <sourcevalues>
+                  <parametervalue key="3" valueType="static">
+                    <staticparameter staticproperty="0"/>
+                  </parametervalue>
+                </sourcevalues>
+              </documentproperty>
+              <documentproperty defaultValue="" isTradingPartner="false" name="Dynamic Process Property - RPT_INT_ALL_DCN_SKP_CNT" persist="false" propertyId="process.RPT_INT_ALL_DCN_SKP_CNT">
+                <sourcevalues>
+                  <parametervalue key="4" valueType="static">
+                    <staticparameter staticproperty="0"/>
+                  </parametervalue>
+                </sourcevalues>
+              </documentproperty>
+            </documentproperties>
+          </configuration>
+          <dragpoints>
+            <dragpoint name="shape5.dragpoint1" toShape="shape7" x="784.0" y="313.0">
+              <linesegment length="0" name="shape5.dragpoint1.lineseg1" orient="horizontal" x="466.0" y="319.0"/>
+              <linesegment length="0" name="shape5.dragpoint1.lineseg2" orient="vertical" x="466.0" y="319.0"/>
+              <linesegment length="167" name="shape5.dragpoint1.lineseg3" orient="horizontal" x="466.0" y="319.0"/>
+              <linesegment length="0" name="shape5.dragpoint1.lineseg4" orient="vertical" x="633.0" y="319.0"/>
+              <linesegment length="151" name="shape5.dragpoint1.lineseg5" orient="horizontal" x="633.0" y="319.0"/>
+            </dragpoint>
+          </dragpoints>
+        </shape>
+        <shape image="branch_icon" name="shape6" shapetype="branch" userlabel="" x="192.0" y="304.0">
+          <configuration>
+            <branch numBranches="7"/>
+          </configuration>
+          <dragpoints>
+            <dragpoint identifier="1" name="shape6.dragpoint1" text="1" toShape="shape11" x="416.0" y="89.0">
+              <linesegment length="0" name="shape6.dragpoint1.lineseg1" orient="horizontal" x="226.0" y="319.0"/>
+              <linesegment length="0" name="shape6.dragpoint1.lineseg2" orient="vertical" x="226.0" y="319.0"/>
+              <linesegment length="103" name="shape6.dragpoint1.lineseg3" orient="horizontal" x="226.0" y="319.0"/>
+              <linesegment length="224" name="shape6.dragpoint1.lineseg4" orient="vertical" x="329.0" y="95.0"/>
+              <linesegment label="1" length="87" name="shape6.dragpoint1.lineseg5" orient="horizontal" x="329.0" y="95.0"/>
+            </dragpoint>
+            <dragpoint identifier="2" name="shape6.dragpoint2" text="2" toShape="shape3" x="416.0" y="153.0">
+              <linesegment length="0" name="shape6.dragpoint2.lineseg1" orient="horizontal" x="226.0" y="319.0"/>
+              <linesegment length="0" name="shape6.dragpoint2.lineseg2" orient="vertical" x="226.0" y="319.0"/>
+              <linesegment length="103" name="shape6.dragpoint2.lineseg3" orient="horizontal" x="226.0" y="319.0"/>
+              <linesegment length="160" name="shape6.dragpoint2.lineseg4" orient="vertical" x="329.0" y="159.0"/>
+              <linesegment label="2" length="87" name="shape6.dragpoint2.lineseg5" orient="horizontal" x="329.0" y="159.0"/>
+            </dragpoint>
+            <dragpoint identifier="3" name="shape6.dragpoint3" text="3" toShape="shape4" x="416.0" y="233.0">
+              <linesegment length="0" name="shape6.dragpoint3.lineseg1" orient="horizontal" x="226.0" y="319.0"/>
+              <linesegment length="0" name="shape6.dragpoint3.lineseg2" orient="vertical" x="226.0" y="319.0"/>
+              <linesegment length="103" name="shape6.dragpoint3.lineseg3" orient="horizontal" x="226.0" y="319.0"/>
+              <linesegment length="80" name="shape6.dragpoint3.lineseg4" orient="vertical" x="329.0" y="239.0"/>
+              <linesegment label="3" length="87" name="shape6.dragpoint3.lineseg5" orient="horizontal" x="329.0" y="239.0"/>
+            </dragpoint>
+            <dragpoint identifier="4" name="shape6.dragpoint4" text="4" toShape="shape5" x="416.0" y="313.0">
+              <linesegment length="0" name="shape6.dragpoint4.lineseg1" orient="horizontal" x="226.0" y="319.0"/>
+              <linesegment length="0" name="shape6.dragpoint4.lineseg2" orient="vertical" x="226.0" y="319.0"/>
+              <linesegment length="103" name="shape6.dragpoint4.lineseg3" orient="horizontal" x="226.0" y="319.0"/>
+              <linesegment length="0" name="shape6.dragpoint4.lineseg4" orient="vertical" x="329.0" y="319.0"/>
+              <linesegment label="4" length="87" name="shape6.dragpoint4.lineseg5" orient="horizontal" x="329.0" y="319.0"/>
+            </dragpoint>
+            <dragpoint identifier="5" name="shape6.dragpoint5" text="5" toShape="shape10" x="416.0" y="393.0">
+              <linesegment length="0" name="shape6.dragpoint5.lineseg1" orient="horizontal" x="226.0" y="319.0"/>
+              <linesegment length="0" name="shape6.dragpoint5.lineseg2" orient="vertical" x="226.0" y="319.0"/>
+              <linesegment length="103" name="shape6.dragpoint5.lineseg3" orient="horizontal" x="226.0" y="319.0"/>
+              <linesegment length="80" name="shape6.dragpoint5.lineseg4" orient="vertical" x="329.0" y="319.0"/>
+              <linesegment label="5" length="87" name="shape6.dragpoint5.lineseg5" orient="horizontal" x="329.0" y="399.0"/>
+            </dragpoint>
+            <dragpoint identifier="6" name="shape6.dragpoint6" text="6" toShape="shape8" x="416.0" y="473.0">
+              <linesegment length="0" name="shape6.dragpoint6.lineseg1" orient="horizontal" x="226.0" y="319.0"/>
+              <linesegment length="0" name="shape6.dragpoint6.lineseg2" orient="vertical" x="226.0" y="319.0"/>
+              <linesegment length="103" name="shape6.dragpoint6.lineseg3" orient="horizontal" x="226.0" y="319.0"/>
+              <linesegment length="160" name="shape6.dragpoint6.lineseg4" orient="vertical" x="329.0" y="319.0"/>
+              <linesegment label="6" length="87" name="shape6.dragpoint6.lineseg5" orient="horizontal" x="329.0" y="479.0"/>
+            </dragpoint>
+            <dragpoint identifier="7" name="shape6.dragpoint7" text="7" toShape="shape9" x="416.0" y="553.0">
+              <linesegment length="0" name="shape6.dragpoint7.lineseg1" orient="horizontal" x="226.0" y="319.0"/>
+              <linesegment length="0" name="shape6.dragpoint7.lineseg2" orient="vertical" x="226.0" y="319.0"/>
+              <linesegment length="103" name="shape6.dragpoint7.lineseg3" orient="horizontal" x="226.0" y="319.0"/>
+              <linesegment length="240" name="shape6.dragpoint7.lineseg4" orient="vertical" x="329.0" y="319.0"/>
+              <linesegment label="7" length="87" name="shape6.dragpoint7.lineseg5" orient="horizontal" x="329.0" y="559.0"/>
+            </dragpoint>
+          </dragpoints>
+        </shape>
+        <shape image="stop_icon" name="shape7" shapetype="stop" userlabel="" x="800.0" y="304.0">
+          <configuration>
+            <stop continue="true"/>
+          </configuration>
+          <dragpoints/>
+        </shape>
+        <shape image="documentproperties_icon" name="shape8" shapetype="documentproperties" userlabel="Initialize Route Related Error Properties" x="432.0" y="464.0">
+          <configuration>
+            <documentproperties>
+              <documentproperty defaultValue="" isTradingPartner="false" name="Dynamic Process Property - RPT_INT_ALL_ROUTE_ERR_CNT" persist="false" propertyId="process.RPT_INT_ALL_ROUTE_ERR_CNT">
+                <sourcevalues>
+                  <parametervalue key="1" valueType="static">
+                    <staticparameter staticproperty="0"/>
+                  </parametervalue>
+                </sourcevalues>
+              </documentproperty>
+              <documentproperty defaultValue="" isTradingPartner="false" name="Dynamic Process Property - RPT_INT_ALL_ROUTE_WRN_CNT" persist="false" propertyId="process.RPT_INT_ALL_ROUTE_WRN_CNT">
+                <sourcevalues>
+                  <parametervalue key="2" valueType="static">
+                    <staticparameter staticproperty="0"/>
+                  </parametervalue>
+                </sourcevalues>
+              </documentproperty>
+              <documentproperty defaultValue="" isTradingPartner="false" name="Dynamic Process Property - RPT_INT_ALL_ROUTE_SKP_CNT" persist="false" propertyId="process.RPT_INT_ALL_ROUTE_SKP_CNT">
+                <sourcevalues/>
+              </documentproperty>
+            </documentproperties>
+          </configuration>
+          <dragpoints>
+            <dragpoint name="shape8.dragpoint1" toShape="shape7" x="784.0" y="313.0">
+              <linesegment length="0" name="shape8.dragpoint1.lineseg1" orient="horizontal" x="466.0" y="479.0"/>
+              <linesegment length="0" name="shape8.dragpoint1.lineseg2" orient="vertical" x="466.0" y="479.0"/>
+              <linesegment length="167" name="shape8.dragpoint1.lineseg3" orient="horizontal" x="466.0" y="479.0"/>
+              <linesegment length="160" name="shape8.dragpoint1.lineseg4" orient="vertical" x="633.0" y="319.0"/>
+              <linesegment length="151" name="shape8.dragpoint1.lineseg5" orient="horizontal" x="633.0" y="319.0"/>
+            </dragpoint>
+          </dragpoints>
+        </shape>
+        <shape image="documentproperties_icon" name="shape9" shapetype="documentproperties" userlabel="Initialize TryCatch Related Error Properties" x="432.0" y="544.0">
+          <configuration>
+            <documentproperties>
+              <documentproperty defaultValue="" isTradingPartner="false" name="Dynamic Process Property - RPT_INT_ALL_TRYCATCH_ERR_CNT" persist="false" propertyId="process.RPT_INT_ALL_TRYCATCH_ERR_CNT">
+                <sourcevalues>
+                  <parametervalue key="1" valueType="static">
+                    <staticparameter staticproperty="0"/>
+                  </parametervalue>
+                </sourcevalues>
+              </documentproperty>
+              <documentproperty defaultValue="" isTradingPartner="false" name="Dynamic Process Property - RPT_INT_ALL_TRYCATCH_WRN_CNT" persist="false" propertyId="process.RPT_INT_ALL_TRYCATCH_WRN_CNT">
+                <sourcevalues>
+                  <parametervalue key="2" valueType="static">
+                    <staticparameter staticproperty="0"/>
+                  </parametervalue>
+                </sourcevalues>
+              </documentproperty>
+              <documentproperty defaultValue="" isTradingPartner="false" name="Dynamic Process Property - RPT_INT_ALL_TRYCATCH_SKP_CNT" persist="false" propertyId="process.RPT_INT_ALL_TRYCATCH_SKP_CNT">
+                <sourcevalues>
+                  <parametervalue key="3" valueType="static">
+                    <staticparameter staticproperty="0"/>
+                  </parametervalue>
+                </sourcevalues>
+              </documentproperty>
+            </documentproperties>
+          </configuration>
+          <dragpoints>
+            <dragpoint name="shape9.dragpoint1" toShape="shape7" x="784.0" y="313.0">
+              <linesegment length="0" name="shape9.dragpoint1.lineseg1" orient="horizontal" x="466.0" y="559.0"/>
+              <linesegment length="0" name="shape9.dragpoint1.lineseg2" orient="vertical" x="466.0" y="559.0"/>
+              <linesegment length="167" name="shape9.dragpoint1.lineseg3" orient="horizontal" x="466.0" y="559.0"/>
+              <linesegment length="240" name="shape9.dragpoint1.lineseg4" orient="vertical" x="633.0" y="319.0"/>
+              <linesegment length="151" name="shape9.dragpoint1.lineseg5" orient="horizontal" x="633.0" y="319.0"/>
+            </dragpoint>
+          </dragpoints>
+        </shape>
+        <shape image="documentproperties_icon" name="shape10" shapetype="documentproperties" userlabel="Initialize Return Related Error Properties" x="432.0" y="384.0">
+          <configuration>
+            <documentproperties>
+              <documentproperty defaultValue="" isTradingPartner="false" name="Dynamic Process Property - RPT_INT_ALL_RETURN_ERR_CNT" persist="false" propertyId="process.RPT_INT_ALL_RETURN_ERR_CNT">
+                <sourcevalues>
+                  <parametervalue key="1" valueType="static">
+                    <staticparameter staticproperty="0"/>
+                  </parametervalue>
+                </sourcevalues>
+              </documentproperty>
+              <documentproperty defaultValue="" isTradingPartner="false" name="Dynamic Process Property - RPT_INT_ALL_RETURN_WRN_CNT" persist="false" propertyId="process.RPT_INT_ALL_RETURN_WRN_CNT">
+                <sourcevalues>
+                  <parametervalue key="2" valueType="static">
+                    <staticparameter staticproperty="0"/>
+                  </parametervalue>
+                </sourcevalues>
+              </documentproperty>
+              <documentproperty defaultValue="" isTradingPartner="false" name="Dynamic Process Property - RPT_INT_ALL_RETURN_SKP_CNT" persist="false" propertyId="process.RPT_INT_ALL_RETURN_SKP_CNT">
+                <sourcevalues>
+                  <parametervalue key="3" valueType="static">
+                    <staticparameter staticproperty="0"/>
+                  </parametervalue>
+                </sourcevalues>
+              </documentproperty>
+            </documentproperties>
+          </configuration>
+          <dragpoints>
+            <dragpoint name="shape10.dragpoint1" toShape="shape7" x="784.0" y="313.0">
+              <linesegment length="0" name="shape10.dragpoint1.lineseg1" orient="horizontal" x="466.0" y="399.0"/>
+              <linesegment length="0" name="shape10.dragpoint1.lineseg2" orient="vertical" x="466.0" y="399.0"/>
+              <linesegment length="167" name="shape10.dragpoint1.lineseg3" orient="horizontal" x="466.0" y="399.0"/>
+              <linesegment length="80" name="shape10.dragpoint1.lineseg4" orient="vertical" x="633.0" y="319.0"/>
+              <linesegment length="151" name="shape10.dragpoint1.lineseg5" orient="horizontal" x="633.0" y="319.0"/>
+            </dragpoint>
+          </dragpoints>
+        </shape>
+        <shape image="documentproperties_icon" name="shape11" shapetype="documentproperties" userlabel="Initialize General Error Propeties" x="432.0" y="80.0">
+          <configuration>
+            <documentproperties>
+              <documentproperty defaultValue="" isTradingPartner="false" name="Dynamic Process Property - RPT_INT_ALL_ERR_CNT" persist="false" propertyId="process.RPT_INT_ALL_ERR_CNT">
+                <sourcevalues>
+                  <parametervalue key="7" valueType="static">
+                    <staticparameter staticproperty="0"/>
+                  </parametervalue>
+                </sourcevalues>
+              </documentproperty>
+              <documentproperty defaultValue="" isTradingPartner="false" name="Dynamic Process Property - RPT_INT_INTERFACE_START_TIME" persist="false" propertyId="process.RPT_INT_INTERFACE_START_TIME">
+                <sourcevalues>
+                  <parametervalue key="8" valueType="date">
+                    <dateparameter dateparametertype="current" datetimemask="yyyyMMdd HHmmss.SSS"/>
+                  </parametervalue>
+                </sourcevalues>
+              </documentproperty>
+              <documentproperty defaultValue="" isTradingPartner="false" name="Dynamic Process Property - RPT_INT_ALL_WRN_CNT" persist="false" propertyId="process.RPT_INT_ALL_WRN_CNT">
+                <sourcevalues>
+                  <parametervalue key="9" valueType="static">
+                    <staticparameter staticproperty="0"/>
+                  </parametervalue>
+                </sourcevalues>
+              </documentproperty>
+              <documentproperty defaultValue="" isTradingPartner="false" name="Dynamic Process Property - RPT_INT_ALL_SKP_CNT" persist="false" propertyId="process.RPT_INT_ALL_SKP_CNT">
+                <sourcevalues>
+                  <parametervalue key="10" valueType="static">
+                    <staticparameter staticproperty="0"/>
+                  </parametervalue>
+                </sourcevalues>
+              </documentproperty>
+            </documentproperties>
+          </configuration>
+          <dragpoints>
+            <dragpoint name="shape11.dragpoint1" toShape="shape7" x="784.0" y="313.0">
+              <linesegment length="0" name="shape11.dragpoint1.lineseg1" orient="horizontal" x="466.0" y="95.0"/>
+              <linesegment length="0" name="shape11.dragpoint1.lineseg2" orient="vertical" x="466.0" y="95.0"/>
+              <linesegment length="167" name="shape11.dragpoint1.lineseg3" orient="horizontal" x="466.0" y="95.0"/>
+              <linesegment length="224" name="shape11.dragpoint1.lineseg4" orient="vertical" x="633.0" y="95.0"/>
+              <linesegment length="151" name="shape11.dragpoint1.lineseg5" orient="horizontal" x="633.0" y="319.0"/>
+            </dragpoint>
+          </dragpoints>
+        </shape>
+      </shapes>
+    </process>
+  </bns:object>
+  <bns:processOverrides/>
+</bns:Component>

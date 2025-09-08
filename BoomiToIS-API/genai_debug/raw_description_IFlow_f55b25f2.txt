@@ -1,1 +1,0 @@
-This iFlow retrieves product details via a GET endpoint (/products) by validating a product identifier, checking if it exists, and then fetching complete product information through an OData service. It includes error handling for invalid product IDs and transforms the response into a structured JSON format with comprehensive product attributes.

@@ -1,6 +1,0 @@
-<?xml version=\\\"1.0\\\" encoding=\\\"UTF-8\\\"?>\\n<sObjects xmlns=\\\"urn:enterprise.soap.sforce.com:2006-04-01\\\">\\n    <type>Opportunity</type>\\n    <Name>''' + opportunity.Name + '''</Name>\\n    <Description>''' + opportunity.Description + '''</Description>\\n    <CloseDate>''' + opportunity.CloseDate + '''</CloseDate>\\n    <StageName>''' + opportunity.StageName + '''</StageName>\\n    <LeadSource>''' + opportunity.LeadSource + '''</LeadSource>\\n</sObjects>'''\\n    \\n    message.setBody(xml)\\n    return message\\n}"
-        }
-      ]
-    }
-  ]
-}

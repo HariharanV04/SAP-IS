@@ -52,7 +52,7 @@ export const uploadDocumentation = async (file, platform = 'mulesoft', signal) =
             headers: {
                 "Content-Type": "multipart/form-data"
             },
-            timeout: 120000 // 2 minutes timeout for document processing with LLM
+            timeout: 1200000 // 20 minutes timeout for document processing with LLM
         }
 
         if (signal) {
@@ -97,7 +97,7 @@ export const generateIflowFromDocs = async (jobId, signal) => {
         console.log("Generating iFlow from uploaded documentation for job:", jobId, "using provider:", selectedProvider)
 
         const config = {
-            timeout: 120000 // 2 minutes timeout for iFlow generation
+            timeout: 1200000 // 20 minutes timeout for iFlow generation
         }
 
         if (signal) {
@@ -157,11 +157,21 @@ export const generateDocs = async (formData, signal) => {
 
 
 
-// Update getJobStatus to use axios
-export const getJobStatus = async (jobId, jobInfo = null) => {
+// Update getJobStatus to use platform-specific API
+export const getJobStatus = async (jobId, jobInfo = null, platform = 'boomi') => {
     try {
-        const response = await api.get(`/jobs/${jobId}`)
-        return response.data
+        // For iFlow generation jobs, use the platform-specific API
+        if (jobInfo && jobInfo.source_type === 'iflow_generation') {
+            const apiInstance = getIflowApiInstance(platform);
+            console.log(`🔍 getJobStatus using platform API: ${apiInstance.defaults.baseURL}`);
+            const response = await apiInstance.get(`/jobs/${jobId}`);
+            return response.data;
+        }
+        
+        // For documentation jobs, use the main app API
+        console.log(`🔍 getJobStatus using main app API: ${api.defaults.baseURL}`);
+        const response = await api.get(`/jobs/${jobId}`);
+        return response.data;
     } catch (error) {
         console.error("Error getting job status:", error)
         throw error
@@ -194,9 +204,11 @@ export const deleteJob = async jobId => {
     }
 }
 
-// Update getDocumentation to use axios with responseType blob
+// Update getDocumentation to use main app API (port 5000) for document retrieval
 export const getDocumentation = async (jobId, fileType) => {
     try {
+        console.log(`🔍 getDocumentation using main app API: ${api.defaults.baseURL}`);
+        
         const response = await api.get(`/docs/${jobId}/${fileType}`, {
             responseType: "blob"
         })
@@ -304,7 +316,7 @@ const GEMMA3_API_PROTOCOL = import.meta.env.VITE_GEMMA3_API_PROTOCOL || 'http';
 const BOOMI_API_URL = import.meta.env.VITE_BOOMI_API_URL || 'http://localhost:5003/api';
 const BOOMI_API_HOST = import.meta.env.VITE_BOOMI_API_HOST || 'localhost:5003';
 const BOOMI_API_PROTOCOL = import.meta.env.VITE_BOOMI_API_PROTOCOL || 'http';
-const MAX_POLL_COUNT = parseInt(import.meta.env.VITE_MAX_POLL_COUNT || '60');
+const MAX_POLL_COUNT = parseInt(import.meta.env.VITE_MAX_POLL_COUNT || '1000');
 const POLL_INTERVAL_MS = parseInt(import.meta.env.VITE_POLL_INTERVAL_MS || '2000');
 const MAX_FAILED_ATTEMPTS = parseInt(import.meta.env.VITE_MAX_FAILED_ATTEMPTS || '3');
 
@@ -324,7 +336,7 @@ const getSelectedLLMProvider = () => {
 };
 
 // Function to get the appropriate API instance based on platform and LLM provider
-const getIflowApiInstance = (platform = 'mulesoft') => {
+const getIflowApiInstance = (platform = 'boomi') => {
   const provider = getSelectedLLMProvider();
 
   // If Gemma-3 is selected, always use Gemma-3 API regardless of platform
@@ -445,7 +457,7 @@ async function tryMarkdownApproach(jobId, platform) {
         markdown: markdownContent,
         iflow_name: `IFlow_${jobId.substring(0, 8)}`
     }, {
-        timeout: 30000 // 30 second timeout
+        timeout: 1200000 // 20 minutes timeout
     });
 
     console.log("iFlow generation response:", response.data);
@@ -453,7 +465,7 @@ async function tryMarkdownApproach(jobId, platform) {
 }
 
 // Provider-aware markdown approach
-async function tryMarkdownApproachWithProvider(jobId, provider, platform = 'mulesoft') {
+async function tryMarkdownApproachWithProvider(jobId, provider, platform = 'boomi') {
     console.log(`Fetching markdown content for job: ${jobId} using ${provider} for platform: ${platform}`);
     const markdownBlob = await getDocumentation(jobId, 'markdown');
     const markdownContent = await markdownBlob.text();
@@ -461,13 +473,9 @@ async function tryMarkdownApproachWithProvider(jobId, provider, platform = 'mule
 
     const apiInstance = getIflowApiInstance(platform);
 
-    // Configure timeout based on provider and platform
-    let timeout = 30000; // Default 30 seconds
-    if (provider === 'gemma3') {
-        timeout = 300000; // 5 minutes for Gemma3
-    } else if (platform === 'boomi') {
-        timeout = 120000; // 2 minutes for Boomi (more complex processing)
-    }
+    // Configure timeout based on provider and platform - increased to 20 minutes
+    let timeout = 1200000; // 20 minutes for all operations
+    console.log(`Using timeout: ${timeout}ms (${timeout/60000} minutes) for ${provider} on ${platform}`);
 
     // Send the markdown content to the appropriate API
     const response = await apiInstance.post(`/generate-iflow`, {
@@ -484,7 +492,7 @@ async function tryMarkdownApproachWithProvider(jobId, provider, platform = 'mule
 }
 
 // Generate iFlow from markdown
-export const generateIflow = async (jobId, platform = 'mulesoft') => {
+export const generateIflow = async (jobId, platform = 'boomi') => {
     try {
         const selectedProvider = getSelectedLLMProvider();
         console.log(`Generating iFlow for job: ${jobId} using ${selectedProvider} for platform: ${platform}`);
@@ -492,6 +500,10 @@ export const generateIflow = async (jobId, platform = 'mulesoft') => {
 
         // Get the appropriate API instance based on platform
         const apiInstance = getIflowApiInstance(platform);
+        console.log(`🔍 API Instance selected: ${apiInstance.defaults.baseURL}`);
+        console.log(`🔍 Platform: ${platform}, Provider: ${selectedProvider}`);
+        console.log(`🔍 Document retrieval: Main app (${api.defaults.baseURL})`);
+        console.log(`🔍 iFlow generation: ${apiInstance.defaults.baseURL}`);
 
         // Use a consistent approach for both development and production
         // First try the markdown approach, then fall back to direct approach if needed
@@ -513,33 +525,56 @@ export const generateIflow = async (jobId, platform = 'mulesoft') => {
         } catch (markdownError) {
             console.error("Markdown approach failed:", markdownError);
 
+            // Better error discrimination - determine if retry is actually needed
+            let shouldRetry = false;
+            let errorMessage = "Markdown approach failed";
+
             if (markdownError.response) {
-                console.error("Response status:", markdownError.response.status);
-                console.error("Response data:", markdownError.response.data);
+                const status = markdownError.response.status;
+                const data = markdownError.response.data;
+                
+                console.error("Response status:", status);
+                console.error("Response data:", data);
+
+                // Don't retry on client errors (4xx) - these indicate user/request issues
+                if (status >= 400 && status < 500) {
+                    errorMessage = `Client error (${status}): ${data?.error || data?.message || 'Bad request'}`;
+                    shouldRetry = false;
+                    console.log(`Client error detected (${status}) - not retrying with fallback approach`);
+                }
+                // Only retry on server errors (5xx) or network issues
+                else if (status >= 500) {
+                    errorMessage = `Server error (${status}): ${data?.error || data?.message || 'Internal server error'}`;
+                    shouldRetry = true;
+                    console.log(`Server error detected (${status}) - retrying with fallback approach`);
+                }
+                // Other status codes (like 3xx redirects) - don't retry
+                else {
+                    errorMessage = `Unexpected response (${status}): ${data?.error || data?.message || 'Unexpected response'}`;
+                    shouldRetry = false;
+                    console.log(`Unexpected response (${status}) - not retrying with fallback approach`);
+                }
             } else if (markdownError.request) {
-                console.error("No response received from server");
+                errorMessage = "No response received from server";
+                shouldRetry = true;
+                console.log("Network error detected - retrying with fallback approach");
             } else {
-                console.error("Error message:", markdownError.message);
+                errorMessage = markdownError.message;
+                shouldRetry = false;
+                console.log("Other error detected - not retrying with fallback approach");
             }
 
-            // If markdown approach fails, try the direct approach
-            console.log("Trying direct iFlow generation with job ID...");
+            // Only retry if the error indicates it's actually needed
+            if (!shouldRetry) {
+                console.log("Not retrying - error indicates fallback approach won't help");
+                throw new Error(errorMessage);
+            }
 
-            // Get the appropriate API instance based on platform
-            const apiInstance = getIflowApiInstance(platform);
-            const fullUrl = `${apiInstance.defaults.baseURL}/generate-iflow/${jobId}`;
-            console.log(`Calling iFlow API directly with job ID: ${jobId} using platform: ${platform}`);
-            console.log(`Full URL: ${fullUrl}`);
-
-            // Log the baseURL to verify it's correct
-            console.log(`iFlow API baseURL: ${apiInstance.defaults.baseURL}`);
-
-            const directResponse = await apiInstance.post(`/generate-iflow/${jobId}`, {}, {
-                timeout: 30000 // 30 second timeout
-            });
-
-            console.log("Direct iFlow generation response:", directResponse.data);
-            return directResponse.data;
+            // 🚫 CRITICAL FIX: Remove fallback to direct approach
+            // This was causing template-based generation to run in the backend
+            console.log("🚫 Fallback to direct approach BLOCKED - this would trigger template-based generation");
+            console.log("🚫 The converter should handle all iFlow generation without fallbacks");
+            throw new Error("iFlow generation failed. The converter should handle all generation without fallbacks.");
         }
     } catch (error) {
         console.error("Error generating iFlow:", error);
@@ -581,7 +616,7 @@ export const getIflowGenerationStatus = async (jobId, platform = 'mulesoft') => 
 
         // Add a timeout to the request to prevent hanging
         const response = await apiInstance.get(`/jobs/${jobId}`, {
-            timeout: 30000 // 30 second timeout for iFlow generation
+            timeout: 1200000 // 20 minutes timeout for iFlow generation
         });
 
         console.log(`${selectedProvider} iFlow generation status response:`, response.data);

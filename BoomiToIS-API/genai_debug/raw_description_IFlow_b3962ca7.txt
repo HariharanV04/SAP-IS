@@ -1,1 +1,0 @@
-This iFlow provides a simple HTTP GET endpoint that serves as a default landing page. It accepts incoming GET requests to the root path ("/") and returns a basic response without any data transformations or external system integrations. The iFlow can be used as a health check endpoint or as a starting point for more complex integration scenarios.
