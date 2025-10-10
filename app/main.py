@@ -57,7 +57,8 @@ def process_markdown_for_iflow(markdown_file_path, output_dir=None, github_token
 
         # Step 2: Search SAP Integration Recipes from GitHub repository
         logger.info("Step 2: Searching SAP Integration Recipes via GitHub API...")
-        searcher = SAPDiscoverySearcher(github_token=github_token)
+        # Use None for github_token to access public repository without authentication
+        searcher = SAPDiscoverySearcher(github_token=None)
         search_results = searcher.execute_search_strategy(search_terms)
         logger.info(f"Found {search_results['total_count']} potential matches")
 

@@ -450,14 +450,8 @@ class SAPDiscoverySearcher:
         """
         # Check if GitHub token is available
         if not self.github_token:
-            print("WARNING: No GitHub token provided. Using fallback mode with limited functionality.")
-            # Return a minimal result set with a warning
-            return {
-                'total_count': 0,
-                'results': [],
-                'sources': {},
-                'warning': 'No GitHub token provided. Please add a GITHUB_TOKEN to your environment variables.'
-            }
+            print("INFO:Accessing SAP Integration Suite Knowledge Hub...")
+            # Continue execution - public repository doesn't require token
 
         if content_types is None:
             content_types = ["IntegrationFlow", "IntegrationPattern", "Adapter"]

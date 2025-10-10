@@ -219,7 +219,7 @@ def generate_iflow_from_markdown(markdown_content, api_key, output_dir=None, ifl
     Returns:
         dict: Dictionary with paths to generated files and other information
     """
-    generator_api = IFlowGeneratorAPI(api_key=api_key, model=model, provider=provider, use_converter=True)
+    generator_api = IFlowGeneratorAPI(api_key=api_key, model=model, provider=provider)
     return generator_api.generate_from_markdown(markdown_content, output_dir, iflow_name, job_id)
 
 # Test function

@@ -61,7 +61,15 @@ def enable_cors(app):
             # Make sure we still set the credentials header
             response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With, Accept, Origin'
             response.headers['Access-Control-Allow-Methods'] = 'GET, PUT, POST, DELETE, OPTIONS'
-            response.headers['Access-Control-Allow-Credentials'] = 'true'
+            
+            # Only set credentials to true if origin is not wildcard
+            origin_header = response.headers.get('Access-Control-Allow-Origin')
+            if origin_header != '*' and origin_header is not None:
+                response.headers['Access-Control-Allow-Credentials'] = 'true'
+            else:
+                # Remove credentials header if origin is wildcard
+                response.headers.pop('Access-Control-Allow-Credentials', None)
+                
             response.headers['Access-Control-Max-Age'] = '3600'  # Cache preflight response for 1 hour
             response.headers['Access-Control-Expose-Headers'] = 'Content-Disposition, Content-Length, Content-Type'
             return response
@@ -105,15 +113,28 @@ def enable_cors(app):
         # Always set these headers
         response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With, Accept, Origin'
         response.headers['Access-Control-Allow-Methods'] = 'GET, PUT, POST, DELETE, OPTIONS'
-        response.headers['Access-Control-Allow-Credentials'] = 'true'
+        
+        # Only set credentials to true if origin is not wildcard
+        origin_header = response.headers.get('Access-Control-Allow-Origin')
+        print(f"DEBUG: Checking origin header: '{origin_header}'")
+        if origin_header != '*' and origin_header is not None:
+            response.headers['Access-Control-Allow-Credentials'] = 'true'
+            print(f"DEBUG: Set credentials to 'true' for origin: '{origin_header}'")
+        else:
+            # Remove credentials header if origin is wildcard
+            response.headers.pop('Access-Control-Allow-Credentials', None)
+            print(f"DEBUG: Removed credentials header for wildcard origin")
+            
         response.headers['Access-Control-Max-Age'] = '3600'  # Cache preflight response for 1 hour
 
         # Add Content-Disposition to the exposed headers for file downloads
         response.headers['Access-Control-Expose-Headers'] = 'Content-Disposition, Content-Length, Content-Type'
 
         print(f"DEBUG: Final CORS headers:")
-        print(f"  Access-Control-Allow-Origin: {response.headers.get('Access-Control-Allow-Origin')}")
-        print(f"  Access-Control-Allow-Credentials: {response.headers.get('Access-Control-Allow-Credentials')}")
+        print(f"  Access-Control-Allow-Origin: '{response.headers.get('Access-Control-Allow-Origin')}'")
+        print(f"  Access-Control-Allow-Credentials: '{response.headers.get('Access-Control-Allow-Credentials')}'")
+        print(f"  Request Origin: '{origin}'")
+        print(f"  Request Method: '{request.method}'")
 
         return response
 

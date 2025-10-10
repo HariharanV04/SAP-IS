@@ -1,0 +1,32 @@
+{
+  "98baabad-6072-4092-bf9d-db90a1983782": {
+    "id": "98baabad-6072-4092-bf9d-db90a1983782",
+    "status": "failed",
+    "created": "e005a9f2-93be-11f0-b7ed-9c2dcd6ffd24",
+    "message": "Error generating iFlow: IFlowGeneratorAPI.__init__() got an unexpected keyword argument 'use_converter'"
+  },
+  "a16082f3-d67f-4b47-8414-a7b26ddce52c": {
+    "id": "a16082f3-d67f-4b47-8414-a7b26ddce52c",
+    "status": "completed",
+    "created": "a9d702d8-93c0-11f0-8132-9c2dcd6ffd24",
+    "message": "iFlow generation completed successfully!",
+    "files": {
+      "zip": "results\\a16082f3-d67f-4b47-8414-a7b26ddce52c\\IFlow_e91d9518.zip",
+      "debug": {
+        "final_iflow_IFlow_e91d9518.xml": "genai_debug\\final_iflow_IFlow_e91d9518.xml",
+        "raw_analysis_response.txt": "genai_debug\\raw_analysis_response.txt",
+        "raw_analysis_response_attempt1.txt": "genai_debug\\raw_analysis_response_attempt1.txt"
+      }
+    },
+    "iflow_name": "Integration_e91d9518",
+    "deployment_status": "completed",
+    "deployment_message": "iFlow deployed successfully",
+    "deployment_details": {
+      "status": "success",
+      "message": "iFlow deployed successfully",
+      "iflow_id": "Integration_e91d9518",
+      "package_id": "ConversionPackages",
+      "iflow_name": "Integration_e91d9518"
+    }
+  }
+}

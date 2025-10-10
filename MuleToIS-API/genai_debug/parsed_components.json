@@ -1,43 +1,229 @@
 {
-  "api_name": "Test MuleSoft API",
-  "base_url": "http://localhost:8081",
+  "api_name": "Benefits Verification Healthcare API",
+  "base_url": "https://{host}:8082/api/",
   "endpoints": [
     {
       "method": "GET",
-      "path": "/api/test",
-      "purpose": "Test endpoint for MuleSoft API with HTTP listener",
+      "path": "/Patient",
+      "purpose": "Retrieve patient list from Cerner EHR system",
       "components": [
         {
           "type": "enricher",
-          "name": "Prepare_Request",
-          "id": "enricher_prepare_1",
+          "name": "Set_Variables",
+          "id": "set_variables_1",
           "config": {
-            "content": "Set headers and prepare request for test endpoint"
+            "content": "Set common variables for patient lookup"
           }
         },
         {
           "type": "request_reply",
-          "name": "Call_Test_Endpoint",
-          "id": "request_reply_1",
+          "name": "Cerner_Patient_Request",
+          "id": "cerner_request_1",
           "config": {
-            "endpoint_path": "/api/test"
+            "endpoint_path": "/Patient"
           }
         },
         {
           "type": "enricher",
-          "name": "Format_Response",
-          "id": "enricher_response_1",
+          "name": "Format_Patient_Response",
+          "id": "format_response_1",
           "config": {
-            "content": "Format and process the response from test endpoint"
+            "content": "Format FHIR Bundle response"
           }
         }
       ],
       "sequence": [
-        "enricher_prepare_1",
-        "request_reply_1",
-        "enricher_response_1"
+        "set_variables_1",
+        "cerner_request_1",
+        "format_response_1"
       ],
       "transformations": []
+    },
+    {
+      "method": "GET",
+      "path": "/Patient/{id}",
+      "purpose": "Get specific patient by ID from Cerner EHR system",
+      "components": [
+        {
+          "type": "enricher",
+          "name": "Set_Patient_ID",
+          "id": "set_patient_id_1",
+          "config": {
+            "content": "Set patient ID from path parameter"
+          }
+        },
+        {
+          "type": "request_reply",
+          "name": "Cerner_Patient_By_ID",
+          "id": "cerner_patient_by_id_1",
+          "config": {
+            "endpoint_path": "/Patient/{id}"
+          }
+        },
+        {
+          "type": "enricher",
+          "name": "Format_Single_Patient",
+          "id": "format_single_patient_1",
+          "config": {
+            "content": "Format single FHIR Patient resource"
+          }
+        }
+      ],
+      "sequence": [
+        "set_patient_id_1",
+        "cerner_patient_by_id_1",
+        "format_single_patient_1"
+      ],
+      "transformations": []
+    },
+    {
+      "method": "POST",
+      "path": "/$syncPatient",
+      "purpose": "Synchronize patient data from Cerner to Salesforce Health Cloud",
+      "components": [
+        {
+          "type": "enricher",
+          "name": "Extract_Patient_ID",
+          "id": "extract_patient_id_1",
+          "config": {
+            "content": "Extract patient ID from sync request"
+          }
+        },
+        {
+          "type": "request_reply",
+          "name": "Get_Cerner_Patient",
+          "id": "get_cerner_patient_1",
+          "config": {
+            "endpoint_path": "/Patient/{id}"
+          }
+        },
+        {
+          "type": "groovy_script",
+          "name": "Transform_Patient_Data",
+          "id": "transform_patient_1",
+          "config": {
+            "script": "TransformPatientForHealthCloud.groovy"
+          }
+        },
+        {
+          "type": "request_reply",
+          "name": "Sync_To_Health_Cloud",
+          "id": "sync_health_cloud_1",
+          "config": {
+            "endpoint_path": "/Patient"
+          }
+        },
+        {
+          "type": "enricher",
+          "name": "Format_Sync_Response",
+          "id": "format_sync_response_1",
+          "config": {
+            "content": "Format patient sync completion response"
+          }
+        }
+      ],
+      "sequence": [
+        "extract_patient_id_1",
+        "get_cerner_patient_1",
+        "transform_patient_1",
+        "sync_health_cloud_1",
+        "format_sync_response_1"
+      ],
+      "transformations": [
+        {
+          "name": "TransformPatientForHealthCloud.groovy",
+          "type": "groovy",
+          "script": "import com.sap.gateway.ip.core.customdev.util.Message\nimport groovy.json.JsonSlurper\nimport groovy.json.JsonBuilder\n\ndef Message processData(Message message) {\n    def body = message.getBody(String)\n    def jsonSlurper = new JsonSlurper()\n    def patient = jsonSlurper.parseText(body)\n    \n    // Remove Cerner-specific ID fields\n    if (patient.id) {\n        patient.remove('id')\n    }\n    \n    // Add custom identifier system\n    if (!patient.identifier) {\n        patient.identifier = []\n    }\n    \n    patient.identifier.add([\n        system: 'urn:custom:sourcesystem:fhirid',\n        value: message.getProperty('patientId')\n    ])\n    \n    def transformedJson = new JsonBuilder(patient).toString()\n    message.setBody(transformedJson)\n    \n    return message\n}"
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/verifyBenefits",
+      "purpose": "Orchestrate multi-system benefits verification process",
+      "components": [
+        {
+          "type": "enricher",
+          "name": "Extract_Benefits_Request",
+          "id": "extract_benefits_1",
+          "config": {
+            "content": "Extract patient ID and coverage details from request"
+          }
+        },
+        {
+          "type": "request_reply",
+          "name": "Cerner_Coverage_Lookup",
+          "id": "cerner_coverage_1",
+          "config": {
+            "endpoint_path": "/Coverage"
+          }
+        },
+        {
+          "type": "request_reply",
+          "name": "Availity_Benefits_Verification",
+          "id": "availity_request_1",
+          "config": {
+            "endpoint_path": "/eligibility"
+          }
+        },
+        {
+          "type": "request_reply",
+          "name": "Salesforce_Org_Lookup",
+          "id": "sf_org_lookup_1",
+          "config": {
+            "endpoint_path": "/Organization"
+          }
+        },
+        {
+          "type": "request_reply",
+          "name": "Salesforce_Patient_Lookup",
+          "id": "sf_patient_lookup_1",
+          "config": {
+            "endpoint_path": "/Patient"
+          }
+        },
+        {
+          "type": "groovy_script",
+          "name": "Transform_Coverage_Response",
+          "id": "transform_coverage_1",
+          "config": {
+            "script": "TransformCoverageEligibilityResponse.groovy"
+          }
+        },
+        {
+          "type": "request_reply",
+          "name": "Sync_Coverage_To_Health_Cloud",
+          "id": "sync_coverage_1",
+          "config": {
+            "endpoint_path": "/CoverageEligibilityResponse"
+          }
+        },
+        {
+          "type": "enricher",
+          "name": "Format_Benefits_Response",
+          "id": "format_benefits_response_1",
+          "config": {
+            "content": "Format final CoverageEligibilityResponse"
+          }
+        }
+      ],
+      "sequence": [
+        "extract_benefits_1",
+        "cerner_coverage_1",
+        "availity_request_1",
+        "sf_org_lookup_1",
+        "sf_patient_lookup_1",
+        "transform_coverage_1",
+        "sync_coverage_1",
+        "format_benefits_response_1"
+      ],
+      "transformations": [
+        {
+          "name": "TransformCoverageEligibilityResponse.groovy",
+          "type": "groovy",
+          "script": "import com.sap.gateway.ip.core.customdev.util.Message\nimport groovy.json.JsonSlurper\nimport groovy.json.JsonBuilder\nimport java.time.LocalDateTime\nimport java.time.format.DateTimeFormatter\n\ndef Message processData(Message message) {\n    def body = message.getBody(String)\n    def jsonSlurper = new JsonSlurper()\n    def availityResponse = jsonSlurper.parseText(body)\n    \n    // Get stored properties from previous calls\n    def patientRef = message.getProperty('patientReference')\n    def insurerRef = message.getProperty('insurerReference')\n    \n    // Create FHIR CoverageEligibilityResponse\n    def eligibilityResponse = [\n        resourceType: 'CoverageEligibilityResponse',\n        id: UUID.randomUUID().toString(),\n        status: 'active',\n        purpose: ['benefits-verification'],\n        patient: [\n            reference: patientRef\n        ],\n        created: LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),\n        insurer: [\n            reference: insurerRef\n        ],\n        outcome: availityResponse.outcome ?: 'complete'\n    ]\n    \n    // Add insurance details if available\n    if (availityResponse.insurance) {\n        eligibilityResponse.insurance = availityResponse.insurance\n    }\n    \n    def responseJson = new JsonBuilder(eligibilityResponse).toString()\n    message.setBody(responseJson)\n    \n    return message\n}"
+        }
+      ]
     }
   ]
 }

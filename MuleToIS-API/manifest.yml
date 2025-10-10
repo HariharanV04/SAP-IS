@@ -13,7 +13,12 @@ applications:
   env:
     FLASK_ENV: production
     FLASK_DEBUG: false
-    ANTHROPIC_API_KEY: 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
+    ANTHROPIC_API_KEY: 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
+    OPENAI_API_KEY: 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
+    GEMINI_API_KEY: AIzaSyCWzDH1FvGxnnPe3IoVp5SlsaXDzl23rN8
+    GITHUB_TOKEN_ITR: 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
+    HF_TOKEN: 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
+    RUNPOD_API_KEY: rpa_PC6SLEQEY1SD4PSJXZLV5RBFTKTJIIWRT461NHCB1ekzyh
     MAIN_API_URL: https://it-resonance-main-api.cfapps.eu10-005.hana.ondemand.com
     MAIN_API_HOST: it-resonance-main-api.cfapps.eu10-005.hana.ondemand.com
     MAIN_API_PROTOCOL: https
