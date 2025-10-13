@@ -1,7 +1,0 @@
-<?xml version="1.0" ?>
-<shape image="returndocuments_icon" name="shape34" shapetype="returndocuments" userlabel="Demographic Data" x="2751.0" y="112.0">
-  <configuration>
-    <returndocuments label="Demographic Data"/>
-  </configuration>
-  <dragpoints/>
-</shape>

@@ -1,7 +1,0 @@
-<?xml version="1.0" ?>
-<shape image="stop_icon" name="shape20" shapetype="stop" userlabel="" x="1600.0" y="288.0">
-  <configuration>
-    <stop continue="true"/>
-  </configuration>
-  <dragpoints/>
-</shape>

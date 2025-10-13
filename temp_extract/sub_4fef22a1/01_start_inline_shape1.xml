@@ -1,9 +1,0 @@
-<?xml version="1.0" ?>
-<shape image="start" name="shape1" shapetype="start" userlabel="Start" x="64.0" y="240.0">
-  <configuration>
-    <passthroughaction/>
-  </configuration>
-  <dragpoints>
-    <dragpoint name="shape1.dragpoint1" toShape="shape3" x="160.0" y="248.0"/>
-  </dragpoints>
-</shape>
