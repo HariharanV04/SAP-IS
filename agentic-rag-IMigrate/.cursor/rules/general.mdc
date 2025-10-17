@@ -1,0 +1,6 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+i only want one config.py file. combine it so it can have all the necessary details to run agent.py file.

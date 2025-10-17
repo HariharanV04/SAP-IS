@@ -1,0 +1,110 @@
+{
+  "query": "Create a complete SAP iFlow integration package named 'BoomiFlow_fecd618d' with the following requirements from the documentation:\n\n# Stripe Subscription to Salesforce Opportunity Integration\n\n## Table of Contents\n\n1. [API Overview](#api-overview)\n2. [Endpoints](#endpoints)\n3. [Current Boomi Flow Logic](#current-boomi-flow-logic)\n   - [Process Flow Overview](#process-flow-overview)\n   - [Step-by-Step Flow Description](#step-by-step-flow-description)\n4. [Boomi Transformations Explained](#boomi-transformations-explained)\n5. [SAP Integration Suite Implementation](#sap-integration-suite-implementation)\n   - [Component Mapping](#component-mapping)\n   - [Integration Flow Visualization](#integration-flow-visualization)\n   - [Configuration Details](#configuration-details)\n6. [Environment Configuration](#environment-configuration)\n7. [API Reference](#api-reference)\n\n## API Overview\n\nThis integration provides automated creation of Salesforce Opportunities from Stripe subscription events. The integration listens for Stripe webhook notifications when subscription events occur and automatically creates corresponding Opportunity records in Salesforce with appropriate field mappings and data enrichment.\n\n**Business Purpose:** Streamline the sales-to-billing process by automatically creating sales opportunities in Salesforce when customers subscribe to services through Stripe, ensuring data consistency between the payment platform and CRM system.\n\n**Base Integration Pattern:** Event-driven webhook listener with real-time data transformation and CRM synchronization\n\n**Authentication:** \n- Stripe: Webhook signature verification\n- Salesforce: OAuth 2.0 or session-based authentication\n\n**Data Flow Direction:** Stripe → Boomi → Salesforce (unidirectional)\n\n**Response Format:** JSON webhook payload from Stripe transformed to XML for Salesforce API\n\n## Endpoints\n\n### Stripe Webhook Listener Endpoint\n\n**HTTP Method:** POST  \n**Purpose:** Receive Stripe subscription webhook notifications  \n**Endpoint Pattern:** `/webhook/stripe/subscription`  \n\n**Request Headers:**\n- `Content-Type: application/json`\n- `Stripe-Signature:\n\nGenerate a production-ready iFlow with proper:\n1. Start and End events\n2. Required adapters and connectors\n3. Content modifiers and processing steps\n4. Proper sequence flows\n5. Error handling\n6. SAP Integration Suite compliance\n",
+  "timestamp": "20251016_165931",
+  "intent_classification": "complete_iflow_creation",
+  "user_goal": "Create SAP iFlow components",
+  "query_interpretation": "Heuristic analysis of: Create a complete SAP iFlow integration package named 'BoomiFlow_fecd618d' with the following requirements from the documentation:\n\n# Stripe Subscription to Salesforce Opportunity Integration\n\n## Table of Contents\n\n1. [API Overview](#api-overview)\n2. [Endpoints](#endpoints)\n3. [Current Boomi Flow Logic](#current-boomi-flow-logic)\n   - [Process Flow Overview](#process-flow-overview)\n   - [Step-by-Step Flow Description](#step-by-step-flow-description)\n4. [Boomi Transformations Explained](#boomi-transformations-explained)\n5. [SAP Integration Suite Implementation](#sap-integration-suite-implementation)\n   - [Component Mapping](#component-mapping)\n   - [Integration Flow Visualization](#integration-flow-visualization)\n   - [Configuration Details](#configuration-details)\n6. [Environment Configuration](#environment-configuration)\n7. [API Reference](#api-reference)\n\n## API Overview\n\nThis integration provides automated creation of Salesforce Opportunities from Stripe subscription events. The integration listens for Stripe webhook notifications when subscription events occur and automatically creates corresponding Opportunity records in Salesforce with appropriate field mappings and data enrichment.\n\n**Business Purpose:** Streamline the sales-to-billing process by automatically creating sales opportunities in Salesforce when customers subscribe to services through Stripe, ensuring data consistency between the payment platform and CRM system.\n\n**Base Integration Pattern:** Event-driven webhook listener with real-time data transformation and CRM synchronization\n\n**Authentication:** \n- Stripe: Webhook signature verification\n- Salesforce: OAuth 2.0 or session-based authentication\n\n**Data Flow Direction:** Stripe → Boomi → Salesforce (unidirectional)\n\n**Response Format:** JSON webhook payload from Stripe transformed to XML for Salesforce API\n\n## Endpoints\n\n### Stripe Webhook Listener Endpoint\n\n**HTTP Method:** POST  \n**Purpose:** Receive Stripe subscription webhook notifications  \n**Endpoint Pattern:** `/webhook/stripe/subscription`  \n\n**Request Headers:**\n- `Content-Type: application/json`\n- `Stripe-Signature:\n\nGenerate a production-ready iFlow with proper:\n1. Start and End events\n2. Required adapters and connectors\n3. Content modifiers and processing steps\n4. Proper sequence flows\n5. Error handling\n6. SAP Integration Suite compliance\n",
+  "total_components": 3,
+  "generation_order": [
+    "StartEvent",
+    "ContentModifier",
+    "EndEvent"
+  ],
+  "integration_approach": "Sequential flow",
+  "execution_steps": [
+    "1. Understand user intent",
+    "2. Identify all required components",
+    "3. Create strategic plan",
+    "4. Execute RAG searches for each component",
+    "5. Generate component XML using authoritative SAP standards",
+    "6. Create iFlow package with proper connections",
+    "7. Export final package"
+  ],
+  "components": [
+    {
+      "type": "ContentModifier",
+      "name": "Content Modifier 1",
+      "quantity": 1,
+      "explicitly_mentioned": true,
+      "requirements": "User-requested ContentModifier",
+      "source": "explicit",
+      "priority": "high"
+    },
+    {
+      "type": "StartEvent",
+      "name": "Start",
+      "quantity": 1,
+      "reason": "Required for iFlow initiation",
+      "source": "implicit",
+      "priority": "medium"
+    },
+    {
+      "type": "EndEvent",
+      "name": "End",
+      "quantity": 1,
+      "reason": "Required for iFlow completion",
+      "source": "implicit",
+      "priority": "medium"
+    }
+  ],
+  "rag_strategy": {
+    "ContentModifier": {
+      "search_queries": [
+        "contentmodifier",
+        "contentmodifier",
+        "content enricher XML",
+        "content enricher",
+        "enricher",
+        "callActivity enricher",
+        "content modifier XML",
+        "callActivity XML",
+        "enricher XML"
+      ],
+      "search_limit": 5,
+      "chunk_types": [
+        "xml",
+        "groovy",
+        "component"
+      ],
+      "priority": "high"
+    },
+    "StartEvent": {
+      "search_queries": [
+        "startevent",
+        "startevent",
+        "start event XML",
+        "start event",
+        "startEvent",
+        "message start event",
+        "bpmn2:startEvent",
+        "startEvent XML"
+      ],
+      "search_limit": 5,
+      "chunk_types": [
+        "xml",
+        "groovy",
+        "component"
+      ],
+      "priority": "medium"
+    },
+    "EndEvent": {
+      "search_queries": [
+        "endevent",
+        "endevent",
+        "end event XML",
+        "end event",
+        "endEvent",
+        "message end event",
+        "bpmn2:endEvent",
+        "endEvent XML"
+      ],
+      "search_limit": 5,
+      "chunk_types": [
+        "xml",
+        "groovy",
+        "component"
+      ],
+      "priority": "medium"
+    }
+  }
+}

@@ -1,0 +1,30 @@
+# Supabase Text Agent Requirements
+
+# Core dependencies
+langchain>=0.1.0
+langchain-openai>=0.1.0
+langchain-community>=0.1.0
+
+# Neo4j for Knowledge Graph (AuraDB compatible)
+neo4j>=5.14.0
+
+# Supabase
+supabase>=2.0.0
+
+# Data processing
+pandas>=1.5.0
+numpy>=1.24.0
+
+# Environment and configuration
+python-dotenv>=1.0.0
+
+# Async support
+asyncio-mqtt>=0.13.0
+
+# Optional: For enhanced text processing
+nltk>=3.8.0
+spacy>=3.6.0
+
+# Optional: For better file handling
+python-magic>=0.4.27
+chardet>=5.0.0

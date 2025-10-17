@@ -1,0 +1,4 @@
+#Store metainfo properties
+#Sat Oct 04 16:24:30 UTC 2025
+description=Intelligent iFlow generated from\: Heuristic analysis of\: Generate an iFlow with StartEvent, Router, and two Groovy Scripts, routing based on priority in the payload.
+source=Manual

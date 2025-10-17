@@ -1,0 +1,137 @@
+{
+  "query": "Create a complete SAP iFlow integration package named 'IFlow_9d15dede' with the following requirements from the documentation:\n\n# Stripe Subscription to Salesforce Opportunity Integration\r\n\r\n## Table of Contents\r\n\r\n1. [API Overview](#api-overview)\r\n2. [Endpoints](#endpoints)\r\n3. [Current Boomi Flow Logic](#current-boomi-flow-logic)\r\n   - [Process Flow Overview](#process-flow-overview)\r\n   - [Step-by-Step Flow Description](#step-by-step-flow-description)\r\n4. [Boomi Transformations Explained](#boomi-transformations-explained)\r\n5. [SAP Integration Suite Implementation](#sap-integration-suite-implementation)\r\n   - [Component Mapping](#component-mapping)\r\n   - [Integration Flow Visualization](#integration-flow-visualization)\r\n   - [Configuration Details](#configuration-details)\r\n6. [Environment Configuration](#environment-configuration)\r\n7. [API Reference](#api-reference)\r\n\r\n## API Overview\r\n\r\nThis integration creates Salesforce Opportunities automatically when Stripe subscription events occur. The API serves as a webhook receiver for Stripe subscription completed events and transforms them into Salesforce Opportunity records.\r\n\r\n**Key Features:**\r\n- Real-time webhook processing from Stripe\r\n- Dynamic property calculation for opportunity data enrichment\r\n- Automatic Salesforce opportunity creation\r\n- JSON to XML transformation for Salesforce compatibility\r\n\r\n**Authentication:** \r\n- Stripe webhook signature validation\r\n- Salesforce OAuth 2.0 authentication\r\n\r\n**General Response Format:** \r\n- Input: Stripe webhook JSON payload\r\n- Output: Salesforce Opportunity creation response\r\n\r\n## Endpoints\r\n\r\n### Stripe Webhook Receiver\r\n- **HTTP Method:** POST\r\n- **Purpose:** Receives Stripe subscription completed webhook events\r\n- **Request Body:** Stripe subscription JSON payload with customer and subscription details\r\n- **Response Format:** HTTP status codes indicating processing success/failure\r\n- **Authentication:** Stripe webhook signature validation\r\n\r\n### Salesforce Opportunity Creation\r\n- **HTTP Method:** POST\r\n- **Purpose:** Creates new Opportunity records in Salesforce\r\n- **Request Body:** Salesforc\n\nGenerate a production-ready iFlow with proper:\n1. Start and End events\n2. Required adapters and connectors\n3. Content modifiers and processing steps\n4. Proper sequence flows\n5. Error handling\n6. SAP Integration Suite compliance\n",
+  "timestamp": "20251016_175516",
+  "intent_classification": "complete_iflow_creation",
+  "user_goal": "Create SAP iFlow components",
+  "query_interpretation": "Heuristic analysis of: Create a complete SAP iFlow integration package named 'IFlow_9d15dede' with the following requirements from the documentation:\n\n# Stripe Subscription to Salesforce Opportunity Integration\r\n\r\n## Table of Contents\r\n\r\n1. [API Overview](#api-overview)\r\n2. [Endpoints](#endpoints)\r\n3. [Current Boomi Flow Logic](#current-boomi-flow-logic)\r\n   - [Process Flow Overview](#process-flow-overview)\r\n   - [Step-by-Step Flow Description](#step-by-step-flow-description)\r\n4. [Boomi Transformations Explained](#boomi-transformations-explained)\r\n5. [SAP Integration Suite Implementation](#sap-integration-suite-implementation)\r\n   - [Component Mapping](#component-mapping)\r\n   - [Integration Flow Visualization](#integration-flow-visualization)\r\n   - [Configuration Details](#configuration-details)\r\n6. [Environment Configuration](#environment-configuration)\r\n7. [API Reference](#api-reference)\r\n\r\n## API Overview\r\n\r\nThis integration creates Salesforce Opportunities automatically when Stripe subscription events occur. The API serves as a webhook receiver for Stripe subscription completed events and transforms them into Salesforce Opportunity records.\r\n\r\n**Key Features:**\r\n- Real-time webhook processing from Stripe\r\n- Dynamic property calculation for opportunity data enrichment\r\n- Automatic Salesforce opportunity creation\r\n- JSON to XML transformation for Salesforce compatibility\r\n\r\n**Authentication:** \r\n- Stripe webhook signature validation\r\n- Salesforce OAuth 2.0 authentication\r\n\r\n**General Response Format:** \r\n- Input: Stripe webhook JSON payload\r\n- Output: Salesforce Opportunity creation response\r\n\r\n## Endpoints\r\n\r\n### Stripe Webhook Receiver\r\n- **HTTP Method:** POST\r\n- **Purpose:** Receives Stripe subscription completed webhook events\r\n- **Request Body:** Stripe subscription JSON payload with customer and subscription details\r\n- **Response Format:** HTTP status codes indicating processing success/failure\r\n- **Authentication:** Stripe webhook signature validation\r\n\r\n### Salesforce Opportunity Creation\r\n- **HTTP Method:** POST\r\n- **Purpose:** Creates new Opportunity records in Salesforce\r\n- **Request Body:** Salesforc\n\nGenerate a production-ready iFlow with proper:\n1. Start and End events\n2. Required adapters and connectors\n3. Content modifiers and processing steps\n4. Proper sequence flows\n5. Error handling\n6. SAP Integration Suite compliance\n",
+  "total_components": 4,
+  "generation_order": [
+    "StartEvent",
+    "EndpointReceiver",
+    "ContentModifier",
+    "EndEvent"
+  ],
+  "integration_approach": "Sequential flow",
+  "execution_steps": [
+    "1. Understand user intent",
+    "2. Identify all required components",
+    "3. Create strategic plan",
+    "4. Execute RAG searches for each component",
+    "5. Generate component XML using authoritative SAP standards",
+    "6. Create iFlow package with proper connections",
+    "7. Export final package"
+  ],
+  "components": [
+    {
+      "type": "EndpointReceiver",
+      "name": "Webhook 1",
+      "quantity": 1,
+      "explicitly_mentioned": true,
+      "requirements": "User-requested EndpointReceiver",
+      "source": "explicit",
+      "priority": "high"
+    },
+    {
+      "type": "ContentModifier",
+      "name": "Content Modifier 1",
+      "quantity": 1,
+      "explicitly_mentioned": true,
+      "requirements": "User-requested ContentModifier",
+      "source": "explicit",
+      "priority": "high"
+    },
+    {
+      "type": "StartEvent",
+      "name": "Start",
+      "quantity": 1,
+      "reason": "Required for iFlow initiation",
+      "source": "implicit",
+      "priority": "medium"
+    },
+    {
+      "type": "EndEvent",
+      "name": "End",
+      "quantity": 1,
+      "reason": "Required for iFlow completion",
+      "source": "implicit",
+      "priority": "medium"
+    }
+  ],
+  "rag_strategy": {
+    "EndpointReceiver": {
+      "search_queries": [
+        "endpointreceiver",
+        "endpointreceiver",
+        "endpoint receiver XML",
+        "http receiver XML",
+        "participant receiver XML",
+        "receiver XML"
+      ],
+      "search_limit": 5,
+      "chunk_types": [
+        "xml",
+        "groovy",
+        "component"
+      ],
+      "priority": "high"
+    },
+    "ContentModifier": {
+      "search_queries": [
+        "contentmodifier",
+        "contentmodifier",
+        "content enricher XML",
+        "content enricher",
+        "enricher",
+        "callActivity enricher",
+        "content modifier XML",
+        "callActivity XML",
+        "enricher XML"
+      ],
+      "search_limit": 5,
+      "chunk_types": [
+        "xml",
+        "groovy",
+        "component"
+      ],
+      "priority": "high"
+    },
+    "StartEvent": {
+      "search_queries": [
+        "startevent",
+        "startevent",
+        "start event XML",
+        "start event",
+        "startEvent",
+        "message start event",
+        "bpmn2:startEvent",
+        "startEvent XML"
+      ],
+      "search_limit": 5,
+      "chunk_types": [
+        "xml",
+        "groovy",
+        "component"
+      ],
+      "priority": "medium"
+    },
+    "EndEvent": {
+      "search_queries": [
+        "endevent",
+        "endevent",
+        "end event XML",
+        "end event",
+        "endEvent",
+        "message end event",
+        "bpmn2:endEvent",
+        "endEvent XML"
+      ],
+      "search_limit": 5,
+      "chunk_types": [
+        "xml",
+        "groovy",
+        "component"
+      ],
+      "priority": "medium"
+    }
+  }
+}

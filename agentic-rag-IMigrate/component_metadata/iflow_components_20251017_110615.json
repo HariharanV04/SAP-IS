@@ -1,0 +1,79 @@
+{
+  "query": "Create a complete SAP iFlow integration package named 'BoomiFlow_673b4de9' with the following requirements from the documentation:\n\n# Stripe Subscription to Salesforce Opportunity Integration\n\n## Table of Contents\n\n- [API Overview](#api-overview)\n- [Endpoints](#endpoints)\n- [Current Boomi Flow Logic](#current-boomi-flow-logic)\n  - [Process Flow Overview](#process-flow-overview)\n  - [Step-by-Step Flow Description](#step-by-step-flow-description)\n- [Boomi Transformations Explained](#boomi-transformations-explained)\n- [SAP Integration Suite Implementation](#sap-integration-suite-implementation)\n  - [Component Mapping](#component-mapping)\n  - [Integration Flow Visualization](#integration-flow-visualization)\n  - [Configuration Details](#configuration-details)\n- [Environment Configuration](#environment-configuration)\n- [API Reference](#api-reference)\n\n## API Overview\n\nThis integration creates Salesforce Opportunities from Stripe subscription events, providing automated lead-to-opportunity conversion for subscription-based business models. The integration processes Stripe webhook events and transforms subscription data into Salesforce Opportunity records.\n\n- **Base URL Pattern**: Webhook receiver endpoint for Stripe subscription events\n- **Authentication**: Webhook signature validation for Stripe events\n- **Processing Pattern**: Event-driven integration with real-time opportunity creation\n- **General Response Format**: Salesforce API responses for opportunity creation\n\n## Endpoints\n\n### Stripe Webhook Endpoint\n- **HTTP Method**: POST (webhook receiver)\n- **Purpose**: Receives Stripe subscription completion events\n- **Request Parameters**: \n  - Headers: Stripe webhook signature for validation\n  - Body: Stripe subscription event payload in JSON format\n- **Request Body Structure**: \n  - Stripe subscription object with customer details, product information, and subscription metadata\n- **Response Format**: HTTP 200 acknowledgment for successful processing\n- **Error Handling**: Exception handling for malformed webhook data\n\n### Salesforce Opportunity Creation\n- **HTTP Method**: POST (via Salesforce API)\n- **\n\nGenerate a production-ready iFlow with proper:\n1. Start and End events\n2. Required adapters and connectors\n3. Content modifiers and processing steps\n4. Proper sequence flows\n5. Error handling\n6. SAP Integration Suite compliance\n",
+  "timestamp": "20251017_110615",
+  "total_components": 4,
+  "components": [
+    {
+      "component_id": 1,
+      "component_type": "EndpointReceiver",
+      "component_name": "Webhook 1",
+      "xml_element": "participant",
+      "keyword_matched": "EndpointReceiver",
+      "instance_number": 1,
+      "total_instances": 1,
+      "rag_queries": [],
+      "description": "EndpointReceiver component named 'Webhook 1'",
+      "source": "explicit",
+      "priority": "high",
+      "properties": {
+        "activityType": "participant",
+        "cmdVariantUri": "Unknown",
+        "componentVersion": "1.1"
+      }
+    },
+    {
+      "component_id": 2,
+      "component_type": "ContentModifier",
+      "component_name": "Content Modifier 1",
+      "xml_element": "callActivity",
+      "keyword_matched": "ContentModifier",
+      "instance_number": 1,
+      "total_instances": 1,
+      "rag_queries": [],
+      "description": "ContentModifier component named 'Content Modifier 1'",
+      "source": "explicit",
+      "priority": "high",
+      "properties": {
+        "activityType": "Enricher",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::Enricher/version::1.6.1",
+        "componentVersion": "1.6"
+      }
+    },
+    {
+      "component_id": 3,
+      "component_type": "StartEvent",
+      "component_name": "Start",
+      "xml_element": "startEvent",
+      "keyword_matched": "StartEvent",
+      "instance_number": 1,
+      "total_instances": 1,
+      "rag_queries": [],
+      "description": "StartEvent component named 'Start'",
+      "source": "implicit",
+      "priority": "medium",
+      "properties": {
+        "activityType": "startEvent",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::MessageStartEvent",
+        "componentVersion": "1.1"
+      }
+    },
+    {
+      "component_id": 4,
+      "component_type": "EndEvent",
+      "component_name": "End",
+      "xml_element": "endEvent",
+      "keyword_matched": "EndEvent",
+      "instance_number": 1,
+      "total_instances": 1,
+      "rag_queries": [],
+      "description": "EndEvent component named 'End'",
+      "source": "implicit",
+      "priority": "medium",
+      "properties": {
+        "activityType": "endEvent",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::MessageEndEvent/version::1.1.0",
+        "componentVersion": "1.1"
+      }
+    }
+  ]
+}

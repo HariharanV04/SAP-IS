@@ -1,0 +1,137 @@
+{
+  "query": "Create a complete SAP iFlow integration package named 'BoomiFlow_673b4de9' with the following requirements from the documentation:\n\n# Stripe Subscription to Salesforce Opportunity Integration\n\n## Table of Contents\n\n- [API Overview](#api-overview)\n- [Endpoints](#endpoints)\n- [Current Boomi Flow Logic](#current-boomi-flow-logic)\n  - [Process Flow Overview](#process-flow-overview)\n  - [Step-by-Step Flow Description](#step-by-step-flow-description)\n- [Boomi Transformations Explained](#boomi-transformations-explained)\n- [SAP Integration Suite Implementation](#sap-integration-suite-implementation)\n  - [Component Mapping](#component-mapping)\n  - [Integration Flow Visualization](#integration-flow-visualization)\n  - [Configuration Details](#configuration-details)\n- [Environment Configuration](#environment-configuration)\n- [API Reference](#api-reference)\n\n## API Overview\n\nThis integration creates Salesforce Opportunities from Stripe subscription events, providing automated lead-to-opportunity conversion for subscription-based business models. The integration processes Stripe webhook events and transforms subscription data into Salesforce Opportunity records.\n\n- **Base URL Pattern**: Webhook receiver endpoint for Stripe subscription events\n- **Authentication**: Webhook signature validation for Stripe events\n- **Processing Pattern**: Event-driven integration with real-time opportunity creation\n- **General Response Format**: Salesforce API responses for opportunity creation\n\n## Endpoints\n\n### Stripe Webhook Endpoint\n- **HTTP Method**: POST (webhook receiver)\n- **Purpose**: Receives Stripe subscription completion events\n- **Request Parameters**: \n  - Headers: Stripe webhook signature for validation\n  - Body: Stripe subscription event payload in JSON format\n- **Request Body Structure**: \n  - Stripe subscription object with customer details, product information, and subscription metadata\n- **Response Format**: HTTP 200 acknowledgment for successful processing\n- **Error Handling**: Exception handling for malformed webhook data\n\n### Salesforce Opportunity Creation\n- **HTTP Method**: POST (via Salesforce API)\n- **\n\nGenerate a production-ready iFlow with proper:\n1. Start and End events\n2. Required adapters and connectors\n3. Content modifiers and processing steps\n4. Proper sequence flows\n5. Error handling\n6. SAP Integration Suite compliance\n",
+  "timestamp": "20251017_110615",
+  "intent_classification": "complete_iflow_creation",
+  "user_goal": "Create SAP iFlow components",
+  "query_interpretation": "Heuristic analysis of: Create a complete SAP iFlow integration package named 'BoomiFlow_673b4de9' with the following requirements from the documentation:\n\n# Stripe Subscription to Salesforce Opportunity Integration\n\n## Table of Contents\n\n- [API Overview](#api-overview)\n- [Endpoints](#endpoints)\n- [Current Boomi Flow Logic](#current-boomi-flow-logic)\n  - [Process Flow Overview](#process-flow-overview)\n  - [Step-by-Step Flow Description](#step-by-step-flow-description)\n- [Boomi Transformations Explained](#boomi-transformations-explained)\n- [SAP Integration Suite Implementation](#sap-integration-suite-implementation)\n  - [Component Mapping](#component-mapping)\n  - [Integration Flow Visualization](#integration-flow-visualization)\n  - [Configuration Details](#configuration-details)\n- [Environment Configuration](#environment-configuration)\n- [API Reference](#api-reference)\n\n## API Overview\n\nThis integration creates Salesforce Opportunities from Stripe subscription events, providing automated lead-to-opportunity conversion for subscription-based business models. The integration processes Stripe webhook events and transforms subscription data into Salesforce Opportunity records.\n\n- **Base URL Pattern**: Webhook receiver endpoint for Stripe subscription events\n- **Authentication**: Webhook signature validation for Stripe events\n- **Processing Pattern**: Event-driven integration with real-time opportunity creation\n- **General Response Format**: Salesforce API responses for opportunity creation\n\n## Endpoints\n\n### Stripe Webhook Endpoint\n- **HTTP Method**: POST (webhook receiver)\n- **Purpose**: Receives Stripe subscription completion events\n- **Request Parameters**: \n  - Headers: Stripe webhook signature for validation\n  - Body: Stripe subscription event payload in JSON format\n- **Request Body Structure**: \n  - Stripe subscription object with customer details, product information, and subscription metadata\n- **Response Format**: HTTP 200 acknowledgment for successful processing\n- **Error Handling**: Exception handling for malformed webhook data\n\n### Salesforce Opportunity Creation\n- **HTTP Method**: POST (via Salesforce API)\n- **\n\nGenerate a production-ready iFlow with proper:\n1. Start and End events\n2. Required adapters and connectors\n3. Content modifiers and processing steps\n4. Proper sequence flows\n5. Error handling\n6. SAP Integration Suite compliance\n",
+  "total_components": 4,
+  "generation_order": [
+    "StartEvent",
+    "EndpointReceiver",
+    "ContentModifier",
+    "EndEvent"
+  ],
+  "integration_approach": "Sequential flow",
+  "execution_steps": [
+    "1. Understand user intent",
+    "2. Identify all required components",
+    "3. Create strategic plan",
+    "4. Execute RAG searches for each component",
+    "5. Generate component XML using authoritative SAP standards",
+    "6. Create iFlow package with proper connections",
+    "7. Export final package"
+  ],
+  "components": [
+    {
+      "type": "EndpointReceiver",
+      "name": "Webhook 1",
+      "quantity": 1,
+      "explicitly_mentioned": true,
+      "requirements": "User-requested EndpointReceiver",
+      "source": "explicit",
+      "priority": "high"
+    },
+    {
+      "type": "ContentModifier",
+      "name": "Content Modifier 1",
+      "quantity": 1,
+      "explicitly_mentioned": true,
+      "requirements": "User-requested ContentModifier",
+      "source": "explicit",
+      "priority": "high"
+    },
+    {
+      "type": "StartEvent",
+      "name": "Start",
+      "quantity": 1,
+      "reason": "Required for iFlow initiation",
+      "source": "implicit",
+      "priority": "medium"
+    },
+    {
+      "type": "EndEvent",
+      "name": "End",
+      "quantity": 1,
+      "reason": "Required for iFlow completion",
+      "source": "implicit",
+      "priority": "medium"
+    }
+  ],
+  "rag_strategy": {
+    "EndpointReceiver": {
+      "search_queries": [
+        "endpointreceiver",
+        "endpointreceiver",
+        "endpoint receiver XML",
+        "http receiver XML",
+        "participant receiver XML",
+        "receiver XML"
+      ],
+      "search_limit": 5,
+      "chunk_types": [
+        "xml",
+        "groovy",
+        "component"
+      ],
+      "priority": "high"
+    },
+    "ContentModifier": {
+      "search_queries": [
+        "contentmodifier",
+        "contentmodifier",
+        "content enricher XML",
+        "content enricher",
+        "enricher",
+        "callActivity enricher",
+        "content modifier XML",
+        "callActivity XML",
+        "enricher XML"
+      ],
+      "search_limit": 5,
+      "chunk_types": [
+        "xml",
+        "groovy",
+        "component"
+      ],
+      "priority": "high"
+    },
+    "StartEvent": {
+      "search_queries": [
+        "startevent",
+        "startevent",
+        "start event XML",
+        "start event",
+        "startEvent",
+        "message start event",
+        "bpmn2:startEvent",
+        "startEvent XML"
+      ],
+      "search_limit": 5,
+      "chunk_types": [
+        "xml",
+        "groovy",
+        "component"
+      ],
+      "priority": "medium"
+    },
+    "EndEvent": {
+      "search_queries": [
+        "endevent",
+        "endevent",
+        "end event XML",
+        "end event",
+        "endEvent",
+        "message end event",
+        "bpmn2:endEvent",
+        "endEvent XML"
+      ],
+      "search_limit": 5,
+      "chunk_types": [
+        "xml",
+        "groovy",
+        "component"
+      ],
+      "priority": "medium"
+    }
+  }
+}

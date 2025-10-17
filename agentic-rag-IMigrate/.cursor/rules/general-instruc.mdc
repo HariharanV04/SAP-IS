@@ -1,0 +1,8 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+make sure you delete all the test files after verification of output.
+
+also ensure that you dont make any changes or modifications in the package generation method since the agent seems to be generating SAP Integration Suite importable iflows.

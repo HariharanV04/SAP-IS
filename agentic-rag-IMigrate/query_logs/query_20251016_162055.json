@@ -1,0 +1,12 @@
+{
+  "timestamp": "20251016_162055",
+  "job_id": "test-123",
+  "iflow_name": "TestCustomerFlow",
+  "original_markdown": "\n# Customer API Integration\n\n## Overview\nThis integration flow handles customer data synchronization from external systems.\n\n## Requirements\n- HTTP Sender to receive customer data\n- Content Modifier to transform data format\n- Groovy Script for validation logic\n- HTTP Receiver to send to target system\n\n## Data Flow\n1. Receive customer JSON via HTTP\n2. Extract and validate customer ID\n3. Transform data structure\n4. Send to target API\n",
+  "markdown_length": 436,
+  "constructed_query": "Create a complete SAP iFlow integration package named 'TestCustomerFlow' with the following requirements from the documentation:\n\n\n# Customer API Integration\n\n## Overview\nThis integration flow handles customer data synchronization from external systems.\n\n## Requirements\n- HTTP Sender to receive customer data\n- Content Modifier to transform data format\n- Groovy Script for validation logic\n- HTTP Receiver to send to target system\n\n## Data Flow\n1. Receive customer JSON via HTTP\n2. Extract and validate customer ID\n3. Transform data structure\n4. Send to target API\n\n\nGenerate a production-ready iFlow with proper:\n1. Start and End events\n2. Required adapters and connectors\n3. Content modifiers and processing steps\n4. Proper sequence flows\n5. Error handling\n6. SAP Integration Suite compliance\n",
+  "query_length": 796,
+  "markdown_truncated_at": 2000,
+  "api_endpoint": "/api/generate-iflow-from-markdown",
+  "request_time": "2025-10-16T16:20:55.044335"
+}
