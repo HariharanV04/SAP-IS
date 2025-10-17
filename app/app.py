@@ -90,6 +90,30 @@ except ImportError as e:
 
 
 
+# Import Supabase job tracker
+
+try:
+
+    sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
+    from utils.supabase_job_tracker import get_job_tracker
+
+    job_tracker = get_job_tracker()
+
+    SUPABASE_TRACKING_ENABLED = True
+
+    print("✅ Supabase job tracking enabled")
+
+except Exception as e:
+
+    print(f"⚠️ Supabase job tracking not available: {e}")
+
+    SUPABASE_TRACKING_ENABLED = False
+
+    job_tracker = None
+
+
+
 # Set up NLTK data
 
 try:
@@ -2184,6 +2208,48 @@ def upload_documentation():
 
 
 
+        # Create Supabase job record
+
+        if SUPABASE_TRACKING_ENABLED and job_tracker:
+
+            try:
+
+                file.seek(0)  # Get file size
+
+                file_size = len(file.read())
+
+                file.seek(0)  # Reset
+
+
+
+                job_tracker.create_job(
+
+                    job_id=job_id,
+
+                    platform=platform,
+
+                    source_file_name=file.filename,
+
+                    source_file_size=file_size,
+
+                    user_id='anonymous',  # TODO: Get actual user ID from auth
+
+                    llm_provider=llm_provider,
+
+                    metadata={'upload_time': datetime.now().isoformat()}
+
+                )
+
+                print(f"✅ Created Supabase job record: {job_id}")
+
+            except Exception as e:
+
+                print(f"⚠️ Failed to create Supabase job record: {e}")
+
+                logging.error(f"Supabase job creation failed: {e}")
+
+
+
         # Validate platform
 
         if platform not in ['mulesoft', 'boomi']:
@@ -2240,6 +2306,30 @@ def upload_documentation():
 
 
 
+        # Update Supabase status: Processing
+
+        if SUPABASE_TRACKING_ENABLED and job_tracker:
+
+            try:
+
+                job_tracker.update_job_status(
+
+                    job_id=job_id,
+
+                    status='processing',
+
+                    progress=10,
+
+                    current_step='parsing_document'
+
+                )
+
+            except Exception as e:
+
+                print(f"⚠️ Failed to update Supabase status: {e}")
+
+
+
         # Process the document
 
         processed_doc = document_processor.process_document(file_path, filename)
@@ -2247,6 +2337,32 @@ def upload_documentation():
 
 
         if not processed_doc['success']:
+
+            # Update Supabase status: Failed
+
+            if SUPABASE_TRACKING_ENABLED and job_tracker:
+
+                try:
+
+                    job_tracker.update_job_status(
+
+                        job_id=job_id,
+
+                        status='failed',
+
+                        progress=0,
+
+                        current_step='document_parsing',
+
+                        error_message=f"Failed to process document: {processed_doc.get('error', 'Unknown error')}"
+
+                    )
+
+                except Exception as e:
+
+                    print(f"⚠️ Failed to update Supabase status: {e}")
+
+
 
             return jsonify({
 
@@ -2257,6 +2373,30 @@ def upload_documentation():
                 'supported_formats': processed_doc.get('supported_formats', [])
 
             }), 400
+
+
+
+        # Update Supabase status: Generating documentation
+
+        if SUPABASE_TRACKING_ENABLED and job_tracker:
+
+            try:
+
+                job_tracker.update_job_status(
+
+                    job_id=job_id,
+
+                    status='analyzing',
+
+                    progress=30,
+
+                    current_step='generating_documentation'
+
+                )
+
+            except Exception as e:
+
+                print(f"⚠️ Failed to update Supabase status: {e}")
 
 
 
@@ -2300,21 +2440,51 @@ def upload_documentation():
 
         doc_md_path = os.path.join(job_result_dir, 'uploaded_documentation.md')
 
+        documentation_markdown = f"# Uploaded Documentation\n\n"
+
+        documentation_markdown += f"**Source File:** {filename}\n"
+
+        documentation_markdown += f"**Content Type:** {processed_doc['content_type']}\n"
+
+        documentation_markdown += f"**Word Count:** {processed_doc.get('word_count', 0)}\n"
+
+        documentation_markdown += f"**Character Count:** {processed_doc.get('char_count', 0)}\n\n"
+
+        documentation_markdown += "## Content\n\n"
+
+        documentation_markdown += processed_doc['content']
+
+
+
         with open(doc_md_path, 'w', encoding='utf-8') as f:
 
-            f.write(f"# Uploaded Documentation\n\n")
+            f.write(documentation_markdown)
 
-            f.write(f"**Source File:** {filename}\n")
 
-            f.write(f"**Content Type:** {processed_doc['content_type']}\n")
 
-            f.write(f"**Word Count:** {processed_doc.get('word_count', 0)}\n")
+        # Update Supabase with generated documentation
 
-            f.write(f"**Character Count:** {processed_doc.get('char_count', 0)}\n\n")
+        if SUPABASE_TRACKING_ENABLED and job_tracker:
 
-            f.write("## Content\n\n")
+            try:
 
-            f.write(processed_doc['content'])
+                job_tracker.update_job_documentation(
+
+                    job_id=job_id,
+
+                    documentation_text=documentation_markdown,
+
+                    documentation_html=None  # Could generate HTML version if needed
+
+                )
+
+                print(f"✅ Updated Supabase with documentation for job: {job_id}")
+
+            except Exception as e:
+
+                print(f"⚠️ Failed to update Supabase documentation: {e}")
+
+                logging.error(f"Supabase documentation update failed: {e}")
 
 
 
@@ -3670,27 +3840,253 @@ def download_iflow(job_id):
 
 def list_jobs():
 
-    # Return a list of all jobs (limited info)
+    """Get list of all jobs with optional limit"""
 
-    job_list = []
+    try:
 
-    for job_id, job_data in jobs.items():
+        # Get limit from query params
 
-        job_list.append({
-
-            'id': job_id,
-
-            'status': job_data['status'],
-
-            'created': job_data['created'],
-
-            'last_updated': job_data['last_updated']
-
-        })
+        limit = request.args.get('limit', 20, type=int)
 
 
 
-    return jsonify(job_list), 200
+        # If Supabase tracking is enabled, fetch from there
+
+        if SUPABASE_TRACKING_ENABLED and job_tracker:
+
+            try:
+
+                jobs_list = job_tracker.get_recent_jobs(limit=limit)
+
+                return jsonify({
+
+                    'success': True,
+
+                    'jobs': jobs_list,
+
+                    'source': 'supabase'
+
+                }), 200
+
+            except Exception as e:
+
+                print(f"⚠️ Failed to fetch jobs from Supabase: {e}")
+
+                # Fall through to file-based storage
+
+
+
+        # Fall back to file-based storage
+
+        job_list = []
+
+        for job_id, job_data in jobs.items():
+
+            job_list.append({
+
+                'id': job_id,
+
+                'status': job_data['status'],
+
+                'created': job_data.get('created', ''),
+
+                'last_updated': job_data.get('last_updated', '')
+
+            })
+
+
+
+        # Sort by creation time (newest first)
+
+        job_list = sorted(job_list, key=lambda x: x.get('created', ''), reverse=True)[:limit]
+
+
+
+        return jsonify({
+
+            'success': True,
+
+            'jobs': job_list,
+
+            'source': 'file_storage'
+
+        }), 200
+
+
+
+    except Exception as e:
+
+        return jsonify({
+
+            'success': False,
+
+            'error': str(e)
+
+        }), 500
+
+
+
+@app.route('/api/jobs/<job_id>', methods=['GET'])
+
+def get_job_details(job_id):
+
+    """Get detailed information about a specific job"""
+
+    try:
+
+        # If Supabase tracking is enabled, fetch from there
+
+        if SUPABASE_TRACKING_ENABLED and job_tracker:
+
+            try:
+
+                job_summary = job_tracker.get_job_summary(job_id)
+
+
+
+                if not job_summary or not job_summary.get('job'):
+
+                    return jsonify({
+
+                        'success': False,
+
+                        'error': 'Job not found'
+
+                    }), 404
+
+
+
+                return jsonify({
+
+                    'success': True,
+
+                    'job': job_summary['job'],
+
+                    'components': job_summary['components'],
+
+                    'retrievals': job_summary['retrievals'],
+
+                    'error_logs': job_summary['error_logs'],
+
+                    'statistics': job_summary['statistics'],
+
+                    'source': 'supabase'
+
+                }), 200
+
+
+
+            except Exception as e:
+
+                print(f"⚠️ Failed to fetch job from Supabase: {e}")
+
+                # Fall through to file-based storage
+
+
+
+        # Fall back to file-based storage
+
+        if job_id not in jobs:
+
+            return jsonify({
+
+                'success': False,
+
+                'error': 'Job not found'
+
+            }), 404
+
+
+
+        job_data = jobs[job_id]
+
+        return jsonify({
+
+            'success': True,
+
+            'job': job_data,
+
+            'source': 'file_storage'
+
+        }), 200
+
+
+
+    except Exception as e:
+
+        return jsonify({
+
+            'success': False,
+
+            'error': str(e)
+
+        }), 500
+
+
+
+@app.route('/api/jobs/<job_id>/logs', methods=['GET'])
+
+def get_job_logs(job_id):
+
+    """Get generation logs for a specific job"""
+
+    try:
+
+        # Get log level filter from query params
+
+        log_level = request.args.get('level', None)
+
+
+
+        # If Supabase tracking is enabled, fetch from there
+
+        if SUPABASE_TRACKING_ENABLED and job_tracker:
+
+            try:
+
+                logs = job_tracker.get_job_logs(job_id, log_level=log_level)
+
+
+
+                return jsonify({
+
+                    'success': True,
+
+                    'logs': logs,
+
+                    'source': 'supabase'
+
+                }), 200
+
+
+
+            except Exception as e:
+
+                print(f"⚠️ Failed to fetch logs from Supabase: {e}")
+
+
+
+        # No file-based storage for logs
+
+        return jsonify({
+
+            'success': False,
+
+            'error': 'Log storage not available'
+
+        }), 404
+
+
+
+    except Exception as e:
+
+        return jsonify({
+
+            'success': False,
+
+            'error': str(e)
+
+        }), 500
 
 
 
