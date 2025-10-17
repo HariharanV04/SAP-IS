@@ -92,6 +92,17 @@ SAP_BTP_CLIENT_SECRET = os.getenv('SAP_BTP_CLIENT_SECRET')
 SAP_BTP_OAUTH_URL = os.getenv('SAP_BTP_OAUTH_URL')
 SAP_BTP_DEFAULT_PACKAGE = os.getenv('SAP_BTP_DEFAULT_PACKAGE')
 
+# RAG API Integration configuration
+USE_RAG_GENERATION = os.getenv('USE_RAG_GENERATION', 'true').lower() == 'true'
+RAG_API_URL = os.getenv('RAG_API_URL', 'http://localhost:5010')
+RAG_API_TIMEOUT = int(os.getenv('RAG_API_TIMEOUT', '300'))  # 5 minutes default
+
+# Log RAG configuration
+logger.info(f"RAG Generation Enabled: {USE_RAG_GENERATION}")
+if USE_RAG_GENERATION:
+    logger.info(f"RAG API URL: {RAG_API_URL}")
+    logger.info(f"RAG API Timeout: {RAG_API_TIMEOUT} seconds")
+
 # Create the Flask application
 app = Flask(__name__)
 
@@ -344,14 +355,93 @@ def process_iflow_generation(job_id, markdown_content, iflow_name=None):
         if iflow_name is None:
             iflow_name = f"GeneratedIFlow_{job_id[:8]}"
 
-        result = generate_iflow_from_markdown(
-            markdown_content=markdown_content,
-            api_key=ANTHROPIC_API_KEY,
-            output_dir=job_result_dir,
-            iflow_name=iflow_name,
-            job_id=job_id,
-            use_converter=False  # Use template-based approach for proper SAP Integration Suite XML
-        )
+        # Check if RAG generation is enabled
+        if USE_RAG_GENERATION:
+            logger.info(f"🤖 Using RAG API for iFlow generation: {RAG_API_URL}")
+
+            try:
+                import requests
+
+                # Update job status
+                jobs[job_id].update({
+                    'status': 'processing',
+                    'message': 'Generating iFlow using RAG AI system...'
+                })
+                save_jobs(jobs)
+
+                # Call RAG API
+                rag_response = requests.post(
+                    f"{RAG_API_URL}/api/generate-iflow-from-markdown",
+                    json={
+                        'markdown_content': markdown_content,
+                        'iflow_name': iflow_name,
+                        'job_id': job_id,
+                        'output_dir': job_result_dir
+                    },
+                    timeout=RAG_API_TIMEOUT
+                )
+
+                if rag_response.status_code == 200:
+                    result = rag_response.json()
+                    logger.info(f"✅ RAG API generated iFlow successfully")
+                    logger.info(f"   Generation method: {result.get('generation_method', 'RAG Agent')}")
+                    logger.info(f"   Components: {len(result.get('components', []))}")
+                else:
+                    logger.error(f"❌ RAG API error: {rag_response.status_code} - {rag_response.text}")
+                    logger.warning("⚠️ Falling back to template-based generation")
+
+                    # Fallback to template-based generation
+                    result = generate_iflow_from_markdown(
+                        markdown_content=markdown_content,
+                        api_key=ANTHROPIC_API_KEY,
+                        output_dir=job_result_dir,
+                        iflow_name=iflow_name,
+                        job_id=job_id,
+                        use_converter=False
+                    )
+                    result['generation_method'] = 'Template-based (RAG fallback)'
+
+            except requests.exceptions.Timeout:
+                logger.error(f"❌ RAG API timeout after {RAG_API_TIMEOUT} seconds")
+                logger.warning("⚠️ Falling back to template-based generation")
+
+                # Fallback to template-based generation
+                result = generate_iflow_from_markdown(
+                    markdown_content=markdown_content,
+                    api_key=ANTHROPIC_API_KEY,
+                    output_dir=job_result_dir,
+                    iflow_name=iflow_name,
+                    job_id=job_id,
+                    use_converter=False
+                )
+                result['generation_method'] = 'Template-based (RAG timeout fallback)'
+
+            except Exception as e:
+                logger.error(f"❌ Error calling RAG API: {str(e)}")
+                logger.warning("⚠️ Falling back to template-based generation")
+
+                # Fallback to template-based generation
+                result = generate_iflow_from_markdown(
+                    markdown_content=markdown_content,
+                    api_key=ANTHROPIC_API_KEY,
+                    output_dir=job_result_dir,
+                    iflow_name=iflow_name,
+                    job_id=job_id,
+                    use_converter=False
+                )
+                result['generation_method'] = 'Template-based (RAG error fallback)'
+        else:
+            # Use original template-based generation
+            logger.info("📝 Using template-based iFlow generation (RAG disabled)")
+            result = generate_iflow_from_markdown(
+                markdown_content=markdown_content,
+                api_key=ANTHROPIC_API_KEY,
+                output_dir=job_result_dir,
+                iflow_name=iflow_name,
+                job_id=job_id,
+                use_converter=False  # Use template-based approach for proper SAP Integration Suite XML
+            )
+            result['generation_method'] = 'Template-based'
 
         if result["status"] == "success":
             # Update job with file paths

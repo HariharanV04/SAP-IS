@@ -126,6 +126,17 @@ ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY')
 if not ANTHROPIC_API_KEY:
     logger.warning("No Anthropic API key found in .env file. API will not work without it.")
 
+# RAG API Integration configuration
+USE_RAG_GENERATION = os.getenv('USE_RAG_GENERATION', 'true').lower() == 'true'
+RAG_API_URL = os.getenv('RAG_API_URL', 'http://localhost:5010')
+RAG_API_TIMEOUT = int(os.getenv('RAG_API_TIMEOUT', '300'))  # 5 minutes default
+
+# Log RAG configuration
+logger.info(f"RAG Generation Enabled: {USE_RAG_GENERATION}")
+if USE_RAG_GENERATION:
+    logger.info(f"RAG API URL: {RAG_API_URL}")
+    logger.info(f"RAG API Timeout: {RAG_API_TIMEOUT} seconds")
+
 # Configure Flask app
 app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
 app.config['RESULTS_FOLDER'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'results')
@@ -355,6 +366,10 @@ def process_iflow_generation(job_id, markdown_content, iflow_name=None):
     """
     Process the markdown content to generate an iFlow in a background thread
 
+    Integration Strategy:
+    1. Try RAG API if enabled (USE_RAG_GENERATION=true)
+    2. Fallback to template-based generation if RAG fails or disabled
+
     Args:
         job_id: Job ID to identify the job
         markdown_content: Markdown content to process
@@ -365,11 +380,104 @@ def process_iflow_generation(job_id, markdown_content, iflow_name=None):
         job_result_dir = os.path.join(app.config['RESULTS_FOLDER'], job_id)
         os.makedirs(job_result_dir, exist_ok=True)
 
-        # Update job status
-        update_job_protected(job_id, {
-            'status': 'processing',
-            'message': 'Initializing iFlow generator...'
-        })
+        # Generate iFlow name if not provided
+        if iflow_name is None:
+            iflow_name = f"GeneratedIFlow_{job_id[:8]}"
+
+        # Check if RAG generation is enabled
+        if USE_RAG_GENERATION:
+            logger.info(f"🤖 Using RAG API for iFlow generation: {RAG_API_URL}")
+
+            try:
+                import requests
+
+                # Update job status
+                update_job_protected(job_id, {
+                    'status': 'processing',
+                    'message': 'Generating iFlow using RAG AI system...'
+                })
+
+                # Call RAG API
+                logger.info(f"📡 Sending request to RAG API: {RAG_API_URL}/api/generate-iflow-from-markdown")
+                logger.info(f"   iFlow Name: {iflow_name}")
+                logger.info(f"   Markdown Length: {len(markdown_content)} chars")
+
+                rag_response = requests.post(
+                    f"{RAG_API_URL}/api/generate-iflow-from-markdown",
+                    json={
+                        'markdown_content': markdown_content,
+                        'iflow_name': iflow_name,
+                        'job_id': job_id,
+                        'output_dir': job_result_dir
+                    },
+                    timeout=RAG_API_TIMEOUT
+                )
+
+                # Check RAG API response
+                if rag_response.status_code == 200:
+                    rag_result = rag_response.json()
+
+                    if rag_result.get('status') == 'success':
+                        logger.info(f"✅ RAG API generated iFlow successfully")
+                        logger.info(f"   Generation method: {rag_result.get('generation_method', 'RAG Agent')}")
+                        logger.info(f"   Components: {len(rag_result.get('components', []))}")
+
+                        # Get package path from RAG response
+                        package_path = rag_result.get('files', {}).get('zip', '')
+
+                        if package_path:
+                            # Convert to relative path
+                            relative_zip_path = os.path.relpath(package_path, os.path.dirname(os.path.abspath(__file__)))
+
+                            # Update job with success status
+                            update_job_protected(job_id, {
+                                'status': 'completed',
+                                'message': 'iFlow generation completed successfully using RAG AI!',
+                                'files': {
+                                    'zip': relative_zip_path,
+                                    'debug': rag_result.get('files', {}).get('debug', {})
+                                },
+                                'iflow_name': iflow_name,
+                                'components': rag_result.get('components', []),
+                                'generation_method': 'RAG Agent (Dynamic)',
+                                'metadata_path': rag_result.get('metadata_path', '')
+                            })
+
+                            logger.info(f"📦 iFlow package saved: {relative_zip_path}")
+                            return  # Success - exit function
+                        else:
+                            logger.warning("⚠️ RAG API response missing package path")
+                            raise ValueError("RAG API returned success but no package path")
+                    else:
+                        logger.warning(f"⚠️ RAG API returned non-success status: {rag_result.get('message')}")
+                        raise ValueError(f"RAG API error: {rag_result.get('message')}")
+                else:
+                    logger.warning(f"⚠️ RAG API HTTP error: {rag_response.status_code}")
+                    logger.warning(f"   Response: {rag_response.text[:500]}")
+                    raise ValueError(f"RAG API returned status {rag_response.status_code}")
+
+            except requests.exceptions.Timeout:
+                logger.error(f"❌ RAG API timeout after {RAG_API_TIMEOUT} seconds")
+                logger.info(f"⤵️ Falling back to template-based generation")
+                # Continue to fallback below
+
+            except requests.exceptions.RequestException as req_err:
+                logger.error(f"❌ RAG API request failed: {str(req_err)}")
+                logger.info(f"⤵️ Falling back to template-based generation")
+                # Continue to fallback below
+
+            except Exception as rag_err:
+                logger.error(f"❌ RAG API error: {str(rag_err)}")
+                logger.info(f"⤵️ Falling back to template-based generation")
+                # Continue to fallback below
+        else:
+            logger.info(f"📝 RAG generation disabled - using template-based generation")
+
+        # ═════════════════════════════════════════════════════════════════
+        # FALLBACK: Template-based generation (original logic)
+        # ═════════════════════════════════════════════════════════════════
+
+        logger.info(f"🔧 Starting template-based iFlow generation")
 
         # Update job status
         update_job_protected(job_id, {
@@ -377,10 +485,7 @@ def process_iflow_generation(job_id, markdown_content, iflow_name=None):
             'message': 'Analyzing markdown and generating iFlow...'
         })
 
-        # Generate the iFlow
-        if iflow_name is None:
-            iflow_name = f"GeneratedIFlow_{job_id[:8]}"
-
+        # Generate the iFlow using original template-based method
         result = generate_iflow_from_markdown(
             markdown_content=markdown_content,
             api_key=ANTHROPIC_API_KEY,
@@ -407,16 +512,20 @@ def process_iflow_generation(job_id, markdown_content, iflow_name=None):
                     'zip': relative_zip_path,
                     'debug': debug_files
                 },
-                'iflow_name': iflow_name
+                'iflow_name': iflow_name,
+                'generation_method': 'Template-based (Fallback)'
             })
+
+            logger.info(f"✅ Template-based generation completed successfully")
         else:
             update_job_protected(job_id, {
                 'status': 'failed',
                 'message': result["message"]
             })
+            logger.error(f"❌ Template-based generation failed: {result['message']}")
 
     except Exception as e:
-        logger.error(f"Error generating iFlow: {str(e)}")
+        logger.error(f"❌ Error generating iFlow: {str(e)}")
         update_job_protected(job_id, {
             'status': 'failed',
             'message': f'Error generating iFlow: {str(e)}'
