@@ -304,18 +304,24 @@ ALTER TABLE iflow_components ENABLE ROW LEVEL SECURITY;
 ALTER TABLE rag_retrievals ENABLE ROW LEVEL SECURITY;
 ALTER TABLE iflow_generation_logs ENABLE ROW LEVEL SECURITY;
 
--- Policy: Allow all operations for authenticated users (adjust as needed)
-CREATE POLICY "Allow all for authenticated users" ON iflow_jobs
-    FOR ALL USING (auth.role() = 'authenticated' OR auth.role() = 'service_role');
+-- Drop existing policies if they exist
+DROP POLICY IF EXISTS "Allow all for authenticated users" ON iflow_jobs;
+DROP POLICY IF EXISTS "Allow all for authenticated users" ON iflow_components;
+DROP POLICY IF EXISTS "Allow all for authenticated users" ON rag_retrievals;
+DROP POLICY IF EXISTS "Allow all for authenticated users" ON iflow_generation_logs;
 
-CREATE POLICY "Allow all for authenticated users" ON iflow_components
-    FOR ALL USING (auth.role() = 'authenticated' OR auth.role() = 'service_role');
+-- Policy: Allow all operations for service role (backend access)
+CREATE POLICY "Allow all for service role" ON iflow_jobs
+    FOR ALL USING (true);
 
-CREATE POLICY "Allow all for authenticated users" ON rag_retrievals
-    FOR ALL USING (auth.role() = 'authenticated' OR auth.role() = 'service_role');
+CREATE POLICY "Allow all for service role" ON iflow_components
+    FOR ALL USING (true);
 
-CREATE POLICY "Allow all for authenticated users" ON iflow_generation_logs
-    FOR ALL USING (auth.role() = 'authenticated' OR auth.role() = 'service_role');
+CREATE POLICY "Allow all for service role" ON rag_retrievals
+    FOR ALL USING (true);
+
+CREATE POLICY "Allow all for service role" ON iflow_generation_logs
+    FOR ALL USING (true);
 
 -- Policy: Allow anonymous read access (for public demo)
 -- UNCOMMENT IF YOU WANT PUBLIC READ ACCESS
