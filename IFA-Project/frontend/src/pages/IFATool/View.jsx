@@ -16,60 +16,56 @@ const MAX_POLL_COUNT = parseInt(import.meta.env.VITE_MAX_POLL_COUNT || '30')
 const POLL_INTERVAL_MS = parseInt(import.meta.env.VITE_POLL_INTERVAL_MS || '5000')
 const INITIAL_POLL_INTERVAL_MS = 2000 // Start with a faster polling interval
 
-// Mock jobs history data for professional UI
-const mockJobsHistory = [
-  {
-    id: "job-001",
-    name: "Customer Order Processing",
-    platform: "mulesoft",
-    type: "source_code",
-    status: "completed",
-    created: "2025-01-11T10:30:00Z",
-    duration: "2m 45s",
-    files: 3
-  },
-  {
-    id: "job-002",
-    name: "Payment Gateway Integration",
-    platform: "boomi",
-    type: "documentation",
-    status: "completed",
-    created: "2025-01-11T11:15:00Z",
-    duration: "1m 20s",
-    files: 1
-  },
-  {
-    id: "job-003",
-    name: "Inventory Management Flow",
-    platform: "mulesoft",
-    type: "source_code",
-    status: "failed",
-    created: "2025-01-11T09:45:00Z",
-    duration: "45s",
-    files: 2
-  },
-  {
-    id: "job-004",
-    name: "User Authentication Service",
-    platform: "boomi",
-    type: "documentation",
-    status: "completed",
-    created: "2025-01-10T16:20:00Z",
-    duration: "3m 12s",
-    files: 1
-  }
-]
+// No more mock data - we'll fetch real jobs from Supabase
 
 // Jobs History Panel Component
 const JobsHistoryPanel = () => {
+  const [jobs, setJobs] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  // Fetch jobs from API
+  useEffect(() => {
+    const fetchJobs = async () => {
+      try {
+        setLoading(true)
+        const response = await fetch('/api/jobs?limit=20')
+        const data = await response.json()
+
+        if (data.success) {
+          setJobs(data.jobs || [])
+          setError(null)
+        } else {
+          setError('Failed to load jobs')
+        }
+      } catch (err) {
+        console.error('Error fetching jobs:', err)
+        setError('Unable to connect to server')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchJobs()
+
+    // Refresh jobs every 30 seconds
+    const interval = setInterval(fetchJobs, 30000)
+
+    return () => clearInterval(interval)
+  }, [])
+
   const getStatusIcon = (status) => {
     switch (status) {
       case 'completed':
         return <CheckCircle className="w-4 h-4 text-green-500" />
       case 'processing':
+      case 'analyzing':
+      case 'generating':
         return <Clock className="w-4 h-4 text-blue-500 animate-spin" />
       case 'failed':
         return <XCircle className="w-4 h-4 text-red-500" />
+      case 'documentation_ready':
+        return <FileText className="w-4 h-4 text-purple-500" />
       default:
         return <AlertCircle className="w-4 h-4 text-gray-400" />
     }
@@ -80,9 +76,13 @@ const JobsHistoryPanel = () => {
       case 'completed':
         return 'bg-green-100 text-green-800'
       case 'processing':
+      case 'analyzing':
+      case 'generating':
         return 'bg-blue-100 text-blue-800'
       case 'failed':
         return 'bg-red-100 text-red-800'
+      case 'documentation_ready':
+        return 'bg-purple-100 text-purple-800'
       default:
         return 'bg-gray-100 text-gray-800'
     }
@@ -98,6 +98,13 @@ const JobsHistoryPanel = () => {
     return date.toLocaleDateString()
   }
 
+  const formatDuration = (durationSeconds) => {
+    if (!durationSeconds) return 'N/A'
+    const minutes = Math.floor(durationSeconds / 60)
+    const seconds = durationSeconds % 60
+    return minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`
+  }
+
   return (
     <Card className="h-fit">
       <CardBody className="p-6">
@@ -106,55 +113,82 @@ const JobsHistoryPanel = () => {
             <Activity className="w-5 h-5 text-gray-600" />
             <h3 className="text-lg font-semibold text-gray-900">Recent Jobs</h3>
           </div>
-          <span className="text-sm text-gray-500">{mockJobsHistory.length} jobs</span>
+          <span className="text-sm text-gray-500">
+            {loading ? '...' : `${jobs.length} jobs`}
+          </span>
         </div>
 
-        <div className="space-y-4">
-          {mockJobsHistory.map((job) => (
-            <div
-              key={job.id}
-              className="group p-4 rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all duration-200 cursor-pointer"
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-2">
-                    {getStatusIcon(job.status)}
-                    <h4 className="text-sm font-medium text-gray-900 truncate">
-                      {job.name}
-                    </h4>
+        {loading ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+            <span className="ml-3 text-sm text-gray-600">Loading jobs...</span>
+          </div>
+        ) : error ? (
+          <div className="flex items-center justify-center py-8 text-red-600">
+            <XCircle className="w-5 h-5 mr-2" />
+            <span className="text-sm">{error}</span>
+          </div>
+        ) : jobs.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-8 text-gray-500">
+            <AlertCircle className="w-8 h-8 mb-2" />
+            <span className="text-sm">No jobs yet</span>
+            <span className="text-xs mt-1">Upload documentation to get started</span>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {jobs.map((job) => (
+              <div
+                key={job.job_id}
+                className="group p-4 rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all duration-200 cursor-pointer"
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-2">
+                      {getStatusIcon(job.status)}
+                      <h4 className="text-sm font-medium text-gray-900 truncate">
+                        {job.iflow_name || job.source_file_name || 'Untitled Job'}
+                      </h4>
+                    </div>
+
+                    <div className="flex items-center gap-4 text-xs text-gray-500 mb-2">
+                      <div className="flex items-center gap-1">
+                        <Calendar className="w-3 h-3" />
+                        {formatDate(job.created_at)}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        {formatDuration(job.duration_seconds)}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(job.status)}`}>
+                        {job.status}
+                      </span>
+                      <span className="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-700">
+                        {job.platform || 'unknown'}
+                      </span>
+                      {job.total_components > 0 && (
+                        <span className="text-xs text-gray-500">
+                          {job.total_components} component{job.total_components !== 1 ? 's' : ''}
+                        </span>
+                      )}
+                      {job.progress !== undefined && job.status !== 'completed' && job.status !== 'failed' && (
+                        <span className="text-xs text-blue-600 font-medium">
+                          {job.progress}%
+                        </span>
+                      )}
+                    </div>
                   </div>
 
-                  <div className="flex items-center gap-4 text-xs text-gray-500 mb-2">
-                    <div className="flex items-center gap-1">
-                      <Calendar className="w-3 h-3" />
-                      {formatDate(job.created)}
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
-                      {job.duration}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(job.status)}`}>
-                      {job.status}
-                    </span>
-                    <span className="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-700">
-                      {job.platform}
-                    </span>
-                    <span className="text-xs text-gray-500">
-                      {job.files} file{job.files !== 1 ? 's' : ''}
-                    </span>
-                  </div>
+                  <button className="opacity-0 group-hover:opacity-100 p-1 hover:bg-gray-100 rounded transition-opacity">
+                    <MoreVertical className="w-4 h-4 text-gray-400" />
+                  </button>
                 </div>
-
-                <button className="opacity-0 group-hover:opacity-100 p-1 hover:bg-gray-100 rounded transition-opacity">
-                  <MoreVertical className="w-4 h-4 text-gray-400" />
-                </button>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
         <div className="mt-6 pt-4 border-t border-gray-200">
           <button className="w-full text-sm text-blue-600 hover:text-blue-700 font-medium">
