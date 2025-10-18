@@ -32,7 +32,8 @@ import {
   directDeployIflowToSap,
   unifiedDeployIflowToSap,
   updateDeploymentStatus,
-  deleteJob
+  deleteJob,
+  isPollingActive
 } from "@services/api"
 
 import { toast } from "react-hot-toast"
@@ -385,6 +386,37 @@ const JobResult = ({ jobInfo, onNewJob, onJobUpdate }) => {
         return;
       }
 
+      // Check database before starting polling to prevent duplicate/unnecessary polling
+      console.log(`🔍 Checking database polling status before starting poll for job ${result.job_id}...`);
+      try {
+        const prePollingCheck = await isPollingActive(result.job_id);
+        console.log(`Pre-polling database check:`, prePollingCheck);
+
+        if (prePollingCheck.success && !prePollingCheck.is_polling_active) {
+          console.log(`⚠️ Database indicates job ${result.job_id} is not active for polling (status: ${prePollingCheck.status})`);
+
+          // Job already complete, update UI accordingly
+          if (prePollingCheck.status === 'completed') {
+            setIflowGenerationStatus("completed");
+            setIflowGenerationMessage("iFlow generation completed");
+            setIsGeneratingIflow(false);
+            setIsIflowGenerated(true);
+            toast.success("iFlow generation already completed!");
+          } else if (prePollingCheck.status === 'failed') {
+            setIflowGenerationStatus("failed");
+            setIflowGenerationMessage("iFlow generation failed");
+            setIsGeneratingIflow(false);
+            toast.error("iFlow generation failed");
+          }
+          return; // Don't start polling
+        }
+
+        console.log(`✅ Database check passed - starting polling for job ${result.job_id}`);
+      } catch (dbCheckError) {
+        console.warn(`⚠️ Pre-polling database check failed, continuing with polling anyway:`, dbCheckError);
+        // Continue with polling if database check fails
+      }
+
       // Start polling for status
       let failedAttempts = 0;
       let pollCount = 0;
@@ -396,6 +428,39 @@ const JobResult = ({ jobInfo, onNewJob, onJobUpdate }) => {
         try {
           pollCount++;
           console.log(`Polling attempt ${pollCount} for job ${result.job_id}`);
+
+          // Check database polling status every 5 polls to detect backend completion
+          if (pollCount % 5 === 0) {
+            console.log(`🔍 Periodic database polling check (poll ${pollCount})...`);
+            try {
+              const dbPollingStatus = await isPollingActive(result.job_id);
+              console.log(`Database polling status:`, dbPollingStatus);
+
+              if (dbPollingStatus.success && !dbPollingStatus.is_polling_active) {
+                console.log(`✅ Database indicates job is complete (status: ${dbPollingStatus.status}). Stopping poll.`);
+                clearInterval(intervalId);
+                setStatusCheckInterval(null);
+
+                // Update UI based on final status
+                if (dbPollingStatus.status === 'completed') {
+                  setIflowGenerationStatus("completed");
+                  setIflowGenerationMessage("iFlow generation completed successfully");
+                  setIsGeneratingIflow(false);
+                  setIsIflowGenerated(true);
+                  toast.success("iFlow generated successfully!");
+                } else if (dbPollingStatus.status === 'failed') {
+                  setIflowGenerationStatus("failed");
+                  setIflowGenerationMessage("iFlow generation failed");
+                  setIsGeneratingIflow(false);
+                  toast.error("iFlow generation failed");
+                }
+                return;
+              }
+            } catch (dbError) {
+              console.warn(`⚠️ Database polling check failed, continuing with normal polling:`, dbError);
+              // Continue with normal polling if database check fails
+            }
+          }
 
           // If we've reached the maximum number of polls, stop polling
           if (pollCount >= MAX_POLL_COUNT) {
@@ -412,13 +477,88 @@ const JobResult = ({ jobInfo, onNewJob, onJobUpdate }) => {
               setIsIflowGenerated(true);
               toast.success("iFlow generated successfully!");
             } catch (finalDownloadError) {
-              setIflowGenerationStatus("unknown");
-              setIflowGenerationMessage("Status check timed out. The iFlow may still be generating.");
-              setIsGeneratingIflow(false);
-              toast("Status check timed out. Try downloading the iFlow manually.", {
-                icon: "⚠️",
-                duration: 5000
-              });
+              // Check database first, then fall back to Main API status check
+              console.log("🔍 Final download failed, checking database polling status...");
+              try {
+                const dbFinalCheck = await isPollingActive(result.job_id);
+                console.log("Database final polling check:", dbFinalCheck);
+
+                if (dbFinalCheck.success) {
+                  // Use database status as authoritative source
+                  if (!dbFinalCheck.is_polling_active && dbFinalCheck.status === "completed") {
+                    console.log("✅ Database confirms job is completed");
+                    setIflowGenerationStatus("completed");
+                    setIflowGenerationMessage("iFlow generation completed");
+                    setIsGeneratingIflow(false);
+                    setIsIflowGenerated(true);
+                    toast.success("iFlow generated! Download manually if needed.");
+                    return;
+                  } else if (!dbFinalCheck.is_polling_active && dbFinalCheck.status === "failed") {
+                    console.log("❌ Database confirms job failed");
+                    setIflowGenerationStatus("failed");
+                    setIflowGenerationMessage("iFlow generation failed");
+                    setIsGeneratingIflow(false);
+                    toast.error("iFlow generation failed. Please try again.");
+                    return;
+                  } else if (dbFinalCheck.is_polling_active) {
+                    console.log("⏳ Database indicates job is still processing");
+                    setIflowGenerationStatus("processing");
+                    setIflowGenerationMessage("iFlow is still generating in the background.");
+                    // Keep button disabled - polling is still active in backend
+                    toast("iFlow generation is still in progress. Please wait or refresh the page.", {
+                      icon: "⏳",
+                      duration: 5000
+                    });
+                    return;
+                  }
+                }
+
+                // If database check didn't give us a definitive answer, fall back to Main API
+                console.log("⚠️ Database check inconclusive, falling back to Main API status check...");
+              } catch (dbFinalError) {
+                console.warn("⚠️ Database final check failed, falling back to Main API:", dbFinalError);
+              }
+
+              // Fallback: Check the actual job status from Main API
+              try {
+                console.log("Checking job status from Main API...");
+                const finalStatusCheck = await getJobStatus(result.job_id);
+                console.log("Final job status check:", finalStatusCheck);
+
+                // Only re-enable button if job actually failed
+                if (finalStatusCheck.status === "failed") {
+                  setIflowGenerationStatus("failed");
+                  setIflowGenerationMessage(finalStatusCheck.processing_message || "iFlow generation failed");
+                  setIsGeneratingIflow(false);
+                  toast.error("iFlow generation failed. Please try again.");
+                } else if (finalStatusCheck.status === "completed") {
+                  // Job completed but download failed - still mark as generated
+                  setIflowGenerationStatus("completed");
+                  setIflowGenerationMessage("iFlow generation completed");
+                  setIsGeneratingIflow(false);
+                  setIsIflowGenerated(true);
+                  toast.success("iFlow generated! Download manually if needed.");
+                } else {
+                  // Job is still processing - keep button disabled
+                  setIflowGenerationStatus("processing");
+                  setIflowGenerationMessage("iFlow is still generating. Please check back in a few minutes.");
+                  // DO NOT set isGeneratingIflow to false - keep button disabled
+                  toast("iFlow is still generating. The page will auto-update when complete.", {
+                    icon: "⏳",
+                    duration: 5000
+                  });
+                }
+              } catch (statusCheckError) {
+                console.error("Failed to check final job status:", statusCheckError);
+                // If we can't reach the API at all, assume it's still processing
+                setIflowGenerationStatus("unknown");
+                setIflowGenerationMessage("Status check timed out. The iFlow may still be generating.");
+                // Keep button disabled since we don't know the actual status
+                toast("Unable to verify status. Please refresh the page to check completion.", {
+                  icon: "⚠️",
+                  duration: 5000
+                });
+              }
             }
             return;
           }

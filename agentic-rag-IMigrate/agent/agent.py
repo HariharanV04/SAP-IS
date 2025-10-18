@@ -3241,6 +3241,7 @@ Respond in JSON format with this structure:
 {{
     "intent_classification": "complete_iflow_creation",
     "user_goal": "Create a complete SAP iFlow with multiple components",
+    "user_query": "{query}",
     "components_needed": [
         {{
             "type": "ContentModifier",
@@ -3572,6 +3573,7 @@ Focus on understanding the user's natural language and intent, not rigid pattern
         return {
             "intent_classification": intent,
             "user_goal": "Create SAP iFlow components",
+            "user_query": query,
             "components_needed": components,
             "implicit_components": [
                 {
@@ -3678,6 +3680,7 @@ Focus on understanding the user's natural language and intent, not rigid pattern
         strategic_plan = {
             'intent_classification': intent_analysis.get('intent_classification'),
             'user_goal': intent_analysis.get('user_goal'),
+            'user_query': intent_analysis.get('user_query', ''),  # Store original user query
             'total_components': len(all_components),
             'components': all_components,
             'rag_strategy': rag_strategy,
@@ -5107,7 +5110,7 @@ Focus on understanding the user's natural language and intent, not rigid pattern
             selected_components=components_with_content,
             reason="Strategic plan execution with intelligent intent understanding",
             context={
-                "user_query": question,
+                "user_query": strategic_plan.get('user_query', ''),
                 "query_interpretation": strategic_plan.get('query_interpretation', ''),
                 "user_goal": strategic_plan.get('user_goal', ''),
                 "total_components": len(components_with_content),

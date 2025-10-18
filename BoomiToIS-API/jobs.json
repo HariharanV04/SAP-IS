@@ -3083,5 +3083,107 @@
     "created": "062d33d7-ab3e-11f0-ad85-9c2dcd6ffd24",
     "message": "Error generating iFlow: no path specified",
     "source_type": "unknown"
+  },
+  "5ca3bdd5-a9fc-419d-b409-5bf6b38eba4e": {
+    "id": "5ca3bdd5-a9fc-419d-b409-5bf6b38eba4e",
+    "original_job_id": null,
+    "status": "completed",
+    "created": "767eea77-ab6c-11f0-ac65-9c2dcd6ffd24",
+    "message": "iFlow generation completed successfully!",
+    "source_type": "unknown",
+    "files": {
+      "zip": "results\\5ca3bdd5-a9fc-419d-b409-5bf6b38eba4e\\IFlow_1d7873bc.zip",
+      "debug": {
+        "final_iflow_IFlow_1d7873bc.xml": "genai_debug\\final_iflow_IFlow_1d7873bc.xml",
+        "raw_analysis_response_attempt1.txt": "genai_debug\\raw_analysis_response_attempt1.txt"
+      }
+    },
+    "iflow_name": "Integration_1d7873bc",
+    "deployment_status": "completed",
+    "deployment_message": "iFlow deployed successfully",
+    "deployment_details": {
+      "status": "success",
+      "message": "iFlow deployed successfully",
+      "iflow_id": "Integration_1d7873bc",
+      "package_id": "ConversionPackages",
+      "iflow_name": "Integration_1d7873bc",
+      "response_code": 201,
+      "method": "Bearer + Minimal Headers"
+    }
+  },
+  "7e9c90e5-27c7-413d-a8a4-158d39f9756f": {
+    "id": "7e9c90e5-27c7-413d-a8a4-158d39f9756f",
+    "original_job_id": null,
+    "status": "completed",
+    "created": "664fa170-ab6e-11f0-a061-9c2dcd6ffd24",
+    "message": "iFlow generation completed successfully!",
+    "source_type": "unknown",
+    "files": {
+      "zip": "results\\7e9c90e5-27c7-413d-a8a4-158d39f9756f\\IFlow_c3c98d48.zip",
+      "debug": {
+        "final_iflow_IFlow_c3c98d48.xml": "genai_debug\\final_iflow_IFlow_c3c98d48.xml",
+        "raw_analysis_response_attempt1.txt": "genai_debug\\raw_analysis_response_attempt1.txt"
+      }
+    },
+    "iflow_name": "Integration_c3c98d48",
+    "deployment_status": "completed",
+    "deployment_message": "iFlow deployed successfully",
+    "deployment_details": {
+      "status": "success",
+      "message": "iFlow deployed successfully",
+      "iflow_id": "Integration_c3c98d48",
+      "package_id": "ConversionPackages",
+      "iflow_name": "Integration_c3c98d48",
+      "response_code": 201,
+      "method": "Bearer + Minimal Headers"
+    }
+  },
+  "5f1c5c58-bf32-4785-9b33-6cd35b6055bc": {
+    "id": "5f1c5c58-bf32-4785-9b33-6cd35b6055bc",
+    "original_job_id": null,
+    "status": "failed",
+    "created": "77487bf2-ab71-11f0-9a97-9c2dcd6ffd24",
+    "message": "Error generating iFlow: no path specified",
+    "source_type": "unknown"
+  },
+  "7c193b5c-0cc6-49aa-9be4-4a67fd93d071": {
+    "id": "7c193b5c-0cc6-49aa-9be4-4a67fd93d071",
+    "original_job_id": null,
+    "status": "failed",
+    "created": "6760096d-ab74-11f0-a16a-9c2dcd6ffd24",
+    "message": "Error generating iFlow: no path specified",
+    "source_type": "unknown"
+  },
+  "68ba678e-c13d-40f4-962a-0869a0a4eb18": {
+    "id": "68ba678e-c13d-40f4-962a-0869a0a4eb18",
+    "original_job_id": null,
+    "status": "failed",
+    "created": "53845359-ab76-11f0-9358-9c2dcd6ffd24",
+    "message": "Error generating iFlow: no path specified",
+    "source_type": "unknown"
+  },
+  "ee330171-bb77-4907-a9f6-e4c11c8380c3": {
+    "id": "ee330171-bb77-4907-a9f6-e4c11c8380c3",
+    "original_job_id": null,
+    "status": "failed",
+    "created": "d3304477-ab78-11f0-aef2-9c2dcd6ffd24",
+    "message": "Error generating iFlow: no path specified",
+    "source_type": "unknown"
+  },
+  "a97891f1-43d1-454e-8caf-575f33005a3e": {
+    "id": "a97891f1-43d1-454e-8caf-575f33005a3e",
+    "original_job_id": null,
+    "status": "failed",
+    "created": "f737ba07-abb3-11f0-ba00-9c2dcd6ffd24",
+    "message": "Error generating iFlow: no path specified",
+    "source_type": "unknown"
+  },
+  "7ddc63e3-d430-419e-88c4-7110b01df95f": {
+    "id": "7ddc63e3-d430-419e-88c4-7110b01df95f",
+    "original_job_id": null,
+    "status": "failed",
+    "created": "925a05e0-abb9-11f0-ab9f-9c2dcd6ffd24",
+    "message": "Error generating iFlow: no path specified",
+    "source_type": "unknown"
   }
 }

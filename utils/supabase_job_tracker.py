@@ -125,6 +125,15 @@ class SupabaseJobTracker:
             elif status in ['completed', 'failed', 'cancelled']:
                 update_data['completed_at'] = datetime.utcnow().isoformat()
 
+            # Set is_polling_active flag based on status
+            # Reason: Control frontend polling behavior via database state
+            if status in ['processing', 'analyzing', 'generating']:
+                update_data['is_polling_active'] = True
+                logger.info(f"Setting is_polling_active=True for job {job_id} (status: {status})")
+            elif status in ['completed', 'failed', 'cancelled']:
+                update_data['is_polling_active'] = False
+                logger.info(f"Setting is_polling_active=False for job {job_id} (status: {status})")
+
             result = self.client.table('iflow_jobs').update(update_data).eq('job_id', job_id).execute()
             logger.info(f"Updated job {job_id} status to {status}")
             return result.data[0] if result.data else None
@@ -232,6 +241,36 @@ class SupabaseJobTracker:
         except Exception as e:
             logger.error(f"Error getting job {job_id}: {e}")
             return None
+
+    def is_polling_active(self, job_id: str) -> bool:
+        """
+        Check if frontend polling should be active for this job
+
+        Args:
+            job_id: Job identifier
+
+        Returns:
+            True if polling should continue, False if job is complete/failed
+        """
+        try:
+            result = self.client.table('iflow_jobs')\
+                .select('is_polling_active, status')\
+                .eq('job_id', job_id)\
+                .execute()
+
+            if result.data and len(result.data) > 0:
+                job = result.data[0]
+                is_active = job.get('is_polling_active', False)
+                status = job.get('status', 'unknown')
+                logger.debug(f"Job {job_id} polling check: is_polling_active={is_active}, status={status}")
+                return is_active
+
+            logger.warning(f"Job {job_id} not found in database")
+            return False
+
+        except Exception as e:
+            logger.error(f"Error checking polling status for job {job_id}: {e}")
+            return False
 
     def get_recent_jobs(self, limit: int = 20) -> List[Dict[str, Any]]:
         """

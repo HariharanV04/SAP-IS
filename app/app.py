@@ -642,6 +642,78 @@ def update_job(job_id, updates):
 
     """Update a job's data and save to persistent storage"""
 
+    # Update Supabase if enabled
+
+    if SUPABASE_TRACKING_ENABLED and job_tracker:
+
+        try:
+
+            # Extract Supabase-compatible fields from updates
+
+            supabase_status = updates.get('status')
+
+            supabase_step = updates.get('processing_step')
+
+            supabase_error = updates.get('error')
+
+
+
+            # Calculate progress based on status and step
+
+            progress = None
+
+            if supabase_status == 'queued':
+
+                progress = 0
+
+            elif supabase_status == 'processing':
+
+                progress = 20
+
+            elif supabase_status == 'analyzing':
+
+                progress = 40
+
+            elif supabase_status == 'generating':
+
+                progress = 60
+
+            elif supabase_status == 'completed':
+
+                progress = 100
+
+            elif supabase_status == 'failed':
+
+                progress = 0
+
+
+
+            # Update Supabase job status
+
+            if supabase_status:
+
+                job_tracker.update_job_status(
+
+                    job_id=job_id,
+
+                    status=supabase_status,
+
+                    progress=progress,
+
+                    current_step=supabase_step,
+
+                    error_message=supabase_error
+
+                )
+
+                logging.debug(f"Updated Supabase for job {job_id}: status={supabase_status}, progress={progress}")
+
+        except Exception as e:
+
+            logging.warning(f"Failed to update Supabase for job {job_id}: {e}")
+
+
+
     if use_database:
 
         try:
@@ -3128,11 +3200,67 @@ def generate_docs():
 
 
 
+        # Get LLM provider from request (default to 'anthropic' for backward compatibility)
+
+        llm_provider = request.form.get('llm_provider', 'anthropic')
+
+
+
+        logging.info(f"Source code upload - Platform: {platform}, LLM Provider: {llm_provider}, Job ID: {job_id}")
+
+
+
         # Create job folder
 
         job_folder = os.path.join(app.config['UPLOAD_FOLDER'], job_id)
 
         os.makedirs(job_folder, exist_ok=True)
+
+
+
+        # Create Supabase job record for source code upload
+
+        if SUPABASE_TRACKING_ENABLED and job_tracker:
+
+            try:
+
+                # Get file size from first file
+
+                first_file = files[0]
+
+                first_file.seek(0, 2)  # Seek to end to get size
+
+                file_size = first_file.tell()
+
+                first_file.seek(0)  # Reset
+
+
+
+                job_tracker.create_job(
+
+                    job_id=job_id,
+
+                    platform=platform,
+
+                    source_file_name=first_file.filename,
+
+                    source_file_size=file_size,
+
+                    user_id='anonymous',  # TODO: Get actual user ID from auth
+
+                    llm_provider=llm_provider,
+
+                    metadata={'upload_time': datetime.now().isoformat(), 'upload_type': 'source_code'}
+
+                )
+
+                print(f"✅ Created Supabase job record for source code upload: {job_id}")
+
+            except Exception as e:
+
+                print(f"⚠️ Failed to create Supabase job record: {e}")
+
+                logging.error(f"Supabase job creation failed: {e}")
 
 
 
@@ -4019,6 +4147,183 @@ def get_job_details(job_id):
             'success': False,
 
             'error': str(e)
+
+        }), 500
+
+
+
+@app.route('/api/jobs/<job_id>/update', methods=['POST'])
+
+def update_job_endpoint(job_id):
+
+    """
+    Update job status and details (callback endpoint for external APIs like RAG API)
+
+    Expected JSON body:
+    {
+        "status": "completed",
+        "processing_step": "iflow_generated",
+        "processing_message": "iFlow generated successfully",
+        ...other fields to update
+    }
+    """
+
+    try:
+
+        data = request.get_json()
+
+        if not data:
+
+            return jsonify({
+
+                'success': False,
+
+                'error': 'No data provided'
+
+            }), 400
+
+
+
+        logging.info(f"Received job update callback for {job_id}: {data.get('status')}")
+
+
+
+        # Update the job using the existing update_job function
+
+        update_job(job_id, data)
+
+
+
+        return jsonify({
+
+            'success': True,
+
+            'message': f'Job {job_id} updated successfully',
+
+            'job_id': job_id
+
+        }), 200
+
+
+
+    except Exception as e:
+
+        logging.error(f"Error updating job {job_id}: {str(e)}")
+
+        return jsonify({
+
+            'success': False,
+
+            'error': str(e)
+
+        }), 500
+
+
+
+@app.route('/api/jobs/<job_id>/is-polling-active', methods=['GET'])
+
+def check_polling_active(job_id):
+
+    """
+    Check if frontend polling should be active for this job
+    Returns: {"is_polling_active": true/false, "status": "processing/completed/etc"}
+    """
+
+    try:
+
+        # If Supabase tracking is enabled, check the database
+
+        if SUPABASE_TRACKING_ENABLED and job_tracker:
+
+            try:
+
+                is_active = job_tracker.is_polling_active(job_id)
+
+                job = job_tracker.get_job(job_id)
+
+                status = job.get('status', 'unknown') if job else 'not_found'
+
+
+
+                return jsonify({
+
+                    'success': True,
+
+                    'is_polling_active': is_active,
+
+                    'status': status,
+
+                    'job_id': job_id
+
+                }), 200
+
+
+
+            except Exception as supabase_error:
+
+                logging.error(f"Supabase polling check failed for job {job_id}: {supabase_error}")
+
+                # Fall back to local job data
+
+                pass
+
+
+
+        # Fall back to local job data if Supabase not available
+
+        if job_id in jobs:
+
+            job = jobs[job_id]
+
+            status = job.get('status', 'unknown')
+
+            # Determine if polling should be active based on status
+
+            is_active = status in ['queued', 'processing', 'analyzing', 'generating']
+
+
+
+            return jsonify({
+
+                'success': True,
+
+                'is_polling_active': is_active,
+
+                'status': status,
+
+                'job_id': job_id,
+
+                'source': 'local'
+
+            }), 200
+
+
+
+        # Job not found
+
+        return jsonify({
+
+            'success': False,
+
+            'error': f'Job {job_id} not found',
+
+            'is_polling_active': False
+
+        }), 404
+
+
+
+    except Exception as e:
+
+        logging.error(f"Error checking polling status for job {job_id}: {str(e)}")
+
+        return jsonify({
+
+            'success': False,
+
+            'error': str(e),
+
+            'is_polling_active': False
 
         }), 500
 

@@ -868,6 +868,7 @@ const View = () => {
                       Upload Type
                     </label>
                     <Select
+                      aria-label="Select upload type"
                       placeholder="Select upload type"
                       selectedKeys={new Set([uploadType])}
                       onSelectionChange={(keys) => {
@@ -906,6 +907,7 @@ const View = () => {
                       Source Platform
                     </label>
                     <Select
+                      aria-label="Select source platform"
                       placeholder="Select platform"
                       selectedKeys={new Set([selectedPlatform])}
                       onSelectionChange={(keys) => {

@@ -1,0 +1,208 @@
+{
+  "query": "Create a complete SAP iFlow integration package named 'IFlow_3c120013' with the following requirements from the documentation:\n\n# Stripe to Salesforce Opportunity Integration API\r\n\r\n## Table of Contents\r\n\r\n- [Stripe to Salesforce Opportunity Integration API](#stripe-to-salesforce-opportunity-integration-api)\r\n  - [Table of Contents](#table-of-contents)\r\n  - [API Overview](#api-overview)\r\n  - [Endpoints](#endpoints)\r\n    - [Stripe Webhook Subscription Completed Event](#stripe-webhook-subscription-completed-event)\r\n    - [Salesforce Opportunity Creation](#salesforce-opportunity-creation)\r\n  - [Current Boomi Flow Logic](#current-boomi-flow-logic)\r\n    - [Process Flow Overview](#process-flow-overview)\r\n    - [Step-by-Step Flow Description](#step-by-step-flow-description)\r\n      - [**Step 1: Start Event (shape1)**](#step-1-start-event-shape1)\r\n      - [**Step 2: Document Properties (shape6)**](#step-2-document-properties-shape6)\r\n      - [**Step 3: Transform/Map Components (shape4)**](#step-3-transformmap-components-shape4)\r\n      - [**Step 4: Connector Actions (shape3)**](#step-4-connector-actions-shape3)\r\n      - [**Step 5: End Events (shape5)**](#step-5-end-events-shape5)\r\n  - [Boomi Transformations Explained](#boomi-transformations-explained)\r\n    - [Subscription Completed JSON to SF Opportunity CREATE Request XML](#subscription-completed-json-to-sf-opportunity-create-request-xml)\r\n  - [SAP Integration Suite Implementation](#sap-integration-suite-implementation)\r\n    - [Component Mapping](#component-mapping)\r\n      - [Main Process Component Mapping](#main-process-component-mapping)\r\n    - [Integration Flow Visualization](#integration-flow-visualization)\r\n    - [Configuration Details](#configuration-details)\r\n  - [Environment Configuration](#environment-configuration)\r\n  - [API Reference](#api-reference)\r\n    - [Request and Response Schemas](#request-and-response-schemas)\r\n    - [Authentication Requirements](#authentication-requirements)\r\n    - [Error Handling](#error-handling)\r\n\r\n## API Overview\r\n\r\nThis integration creates Salesforce Opportunities from Stripe subscription completion events th\n\nGenerate a production-ready iFlow with proper:\n1. Start and End events\n2. Required adapters and connectors\n3. Content modifiers and processing steps\n4. Proper sequence flows\n5. Error handling\n6. SAP Integration Suite compliance\n",
+  "timestamp": "20251017_214515",
+  "intent_classification": "complete_iflow_creation",
+  "user_goal": "Create a complete SAP iFlow with multiple components",
+  "query_interpretation": "User wants to create a complete iFlow with content modifier, then router splitting to two groovy scripts based on priority field",
+  "total_components": 6,
+  "generation_order": [
+    "StartEvent",
+    "ContentModifier",
+    "RequestReply",
+    "Router",
+    "GroovyScript",
+    "GroovyScript",
+    "EndEvent"
+  ],
+  "integration_approach": "Sequential flow with Router branching to multiple Groovy Scripts based on payload criteria",
+  "execution_steps": [
+    "1. Understand user intent",
+    "2. Identify all required components",
+    "3. Create strategic plan",
+    "4. Execute RAG searches for each component",
+    "5. Generate component XML using authoritative SAP standards",
+    "6. Create iFlow package with proper connections",
+    "7. Export final package"
+  ],
+  "components": [
+    {
+      "type": "ContentModifier",
+      "name": "ContentModifier",
+      "quantity": 1,
+      "explicitly_mentioned": true,
+      "requirements": "Standard content modification",
+      "source": "explicit",
+      "priority": "high"
+    },
+    {
+      "type": "RequestReply",
+      "name": "RequestReply",
+      "quantity": 1,
+      "explicitly_mentioned": true,
+      "requirements": "Request-reply pattern with adapter",
+      "adapter_type": "HTTP",
+      "source": "explicit",
+      "priority": "high"
+    },
+    {
+      "type": "Router",
+      "name": "Router",
+      "quantity": 1,
+      "explicitly_mentioned": true,
+      "requirements": "Content-based routing with branching logic",
+      "routing_criteria": "priority",
+      "branch_count": 2,
+      "branch_targets": [
+        "GroovyScript",
+        "GroovyScript"
+      ],
+      "source": "explicit",
+      "priority": "high"
+    },
+    {
+      "type": "GroovyScript",
+      "name": "GroovyScript",
+      "quantity": 2,
+      "explicitly_mentioned": true,
+      "requirements": "Two groovy script processors for router branches",
+      "source": "explicit",
+      "priority": "high"
+    },
+    {
+      "type": "StartEvent",
+      "name": "Start",
+      "quantity": 1,
+      "reason": "Required for iFlow initiation",
+      "source": "implicit",
+      "priority": "medium"
+    },
+    {
+      "type": "EndEvent",
+      "name": "End",
+      "quantity": 1,
+      "reason": "Required for iFlow termination",
+      "source": "implicit",
+      "priority": "medium"
+    }
+  ],
+  "rag_strategy": {
+    "ContentModifier": {
+      "search_queries": [
+        "contentmodifier",
+        "contentmodifier",
+        "content enricher XML",
+        "content enricher",
+        "enricher",
+        "callActivity enricher",
+        "content modifier XML",
+        "callActivity XML",
+        "enricher XML"
+      ],
+      "search_limit": 5,
+      "chunk_types": [
+        "xml",
+        "groovy",
+        "component"
+      ],
+      "priority": "high"
+    },
+    "RequestReply": {
+      "search_queries": [
+        "requestreply",
+        "requestreply",
+        "RequestReply",
+        "request reply",
+        "activityType RequestReply",
+        "Request Reply XML",
+        "service task request reply",
+        "external call request reply",
+        "RequestReply adapter",
+        "RequestReply HTTP",
+        "RequestReply OData"
+      ],
+      "search_limit": 5,
+      "chunk_types": [
+        "xml",
+        "groovy",
+        "component"
+      ],
+      "priority": "high"
+    },
+    "Router": {
+      "search_queries": [
+        "router",
+        "router",
+        "router XML",
+        "exclusive gateway XML",
+        "gateway XML",
+        "router",
+        "exclusive gateway"
+      ],
+      "search_limit": 5,
+      "chunk_types": [
+        "xml",
+        "groovy",
+        "component"
+      ],
+      "priority": "high"
+    },
+    "GroovyScript": {
+      "search_queries": [
+        "groovyscript",
+        "groovyscript",
+        "groovy script XML",
+        "groovy script",
+        "processData",
+        "import com.sap.gateway",
+        "def Message processData",
+        "groovy transformation",
+        "callActivity groovy"
+      ],
+      "search_limit": 5,
+      "chunk_types": [
+        "xml",
+        "groovy",
+        "component"
+      ],
+      "priority": "high"
+    },
+    "StartEvent": {
+      "search_queries": [
+        "startevent",
+        "startevent",
+        "start event XML",
+        "start event",
+        "startEvent",
+        "message start event",
+        "bpmn2:startEvent",
+        "startEvent XML"
+      ],
+      "search_limit": 5,
+      "chunk_types": [
+        "xml",
+        "groovy",
+        "component"
+      ],
+      "priority": "medium"
+    },
+    "EndEvent": {
+      "search_queries": [
+        "endevent",
+        "endevent",
+        "end event XML",
+        "end event",
+        "endEvent",
+        "message end event",
+        "bpmn2:endEvent",
+        "endEvent XML"
+      ],
+      "search_limit": 5,
+      "chunk_types": [
+        "xml",
+        "groovy",
+        "component"
+      ],
+      "priority": "medium"
+    }
+  }
+}

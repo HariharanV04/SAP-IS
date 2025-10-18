@@ -204,6 +204,24 @@ export const deleteJob = async jobId => {
     }
 }
 
+// Check if polling should be active for a job (database-controlled)
+export const isPollingActive = async jobId => {
+    try {
+        console.log(`Checking if polling should be active for job: ${jobId}`)
+        const response = await api.get(`/jobs/${jobId}/is-polling-active`)
+        console.log(`Polling check response:`, response.data)
+        return response.data
+    } catch (error) {
+        console.error("Error checking polling status:", error)
+        // If we can't reach the API, assume polling should stop
+        return {
+            success: false,
+            is_polling_active: false,
+            error: error.message
+        }
+    }
+}
+
 // Update getDocumentation to use main app API (port 5000) for document retrieval
 export const getDocumentation = async (jobId, fileType) => {
     try {

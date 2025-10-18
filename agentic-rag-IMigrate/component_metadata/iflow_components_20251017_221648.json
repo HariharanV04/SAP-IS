@@ -1,0 +1,117 @@
+{
+  "query": "Create a complete SAP iFlow integration package named 'IFlow_d1c14863' with the following requirements from the documentation:\n\n# SuccessFactors Employee Data Integration to SFTP with Error Handling\r\n\r\n## Table of Contents\r\n\r\n- [API Overview](#api-overview)\r\n- [Endpoints](#endpoints)\r\n- [Current Boomi Flow Logic](#current-boomi-flow-logic)\r\n  - [Process Flow Overview](#process-flow-overview)\r\n  - [Step-by-Step Flow Description](#step-by-step-flow-description)\r\n- [Boomi Transformations Explained](#boomi-transformations-explained)\r\n- [SAP Integration Suite Implementation](#sap-integration-suite-implementation)\r\n  - [Component Mapping](#component-mapping)\r\n  - [Integration Flow Visualization](#integration-flow-visualization)\r\n  - [Configuration Details](#configuration-details)\r\n- [Environment Configuration](#environment-configuration)\r\n- [API Reference](#api-reference)\r\n\r\n## API Overview\r\n\r\nThis integration provides a comprehensive solution for synchronizing employee data from SAP SuccessFactors to external partners via SFTP delivery. The integration focuses on extracting, transforming, and securely delivering employee information while maintaining robust error handling and monitoring capabilities.\r\n\r\n**Base URL:** SAP SuccessFactors OData API endpoints\r\n**Authentication:** OAuth 2.0 with SuccessFactors credentials\r\n**Rate Limiting:** Follows SuccessFactors API throttling limits\r\n**Response Format:** JSON (OData) for SuccessFactors, CSV for final output\r\n\r\nThe integration handles:\r\n- Dynamic employee data extraction based on configurable filters\r\n- Real-time data transformation and enrichment\r\n- Secure PGP encryption for external file delivery\r\n- Comprehensive error tracking and notification\r\n- Multi-destination file delivery (vendor and internal archiving)\r\n\r\n## Endpoints\r\n\r\n### SuccessFactors Employee Data Query\r\n- **HTTP Method:** GET\r\n- **Path:** `/odata/v2/CompoundEmployee`\r\n- **Purpose:** Extract employee demographic and employment information\r\n- **Authentication:** OAuth 2.0 Bearer token\r\n- **Query Parameters:** Dynamic OData filters for employee selection\r\n- **Response Format:** JSON wi\n\nGenerate a production-ready iFlow with proper:\n1. Start and End events\n2. Required adapters and connectors\n3. Content modifiers and processing steps\n4. Proper sequence flows\n5. Error handling\n6. SAP Integration Suite compliance\n",
+  "timestamp": "20251017_221648",
+  "total_components": 6,
+  "components": [
+    {
+      "component_id": 1,
+      "component_type": "ContentModifier",
+      "component_name": "ContentModifier",
+      "xml_element": "callActivity",
+      "keyword_matched": "ContentModifier",
+      "instance_number": 1,
+      "total_instances": 1,
+      "rag_queries": [],
+      "description": "ContentModifier component named 'ContentModifier'",
+      "source": "explicit",
+      "priority": "high",
+      "properties": {
+        "activityType": "Enricher",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::Enricher/version::1.6.1",
+        "componentVersion": "1.6"
+      }
+    },
+    {
+      "component_id": 2,
+      "component_type": "RequestReply",
+      "component_name": "RequestReply",
+      "xml_element": "serviceTask",
+      "keyword_matched": "RequestReply",
+      "instance_number": 1,
+      "total_instances": 1,
+      "rag_queries": [],
+      "description": "RequestReply component named 'RequestReply'",
+      "source": "explicit",
+      "priority": "high",
+      "properties": {
+        "activityType": "RequestReply",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::RequestReply/version::1.0.0",
+        "componentVersion": "1.0",
+        "adapter_type": "HTTP"
+      },
+      "adapter_type": "HTTP"
+    },
+    {
+      "component_id": 3,
+      "component_type": "Router",
+      "component_name": "Router",
+      "xml_element": "callActivity",
+      "keyword_matched": "Router",
+      "instance_number": 1,
+      "total_instances": 1,
+      "rag_queries": [],
+      "description": "Router component named 'Router'",
+      "source": "explicit",
+      "priority": "high",
+      "properties": {
+        "activityType": "ExclusiveGateway",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::ExclusiveGateway/version::1.1.2",
+        "componentVersion": "1.1"
+      }
+    },
+    {
+      "component_id": 4,
+      "component_type": "GroovyScript",
+      "component_name": "GroovyScript",
+      "xml_element": "callActivity",
+      "keyword_matched": "GroovyScript",
+      "instance_number": 1,
+      "total_instances": 2,
+      "rag_queries": [],
+      "description": "GroovyScript component named 'GroovyScript'",
+      "source": "explicit",
+      "priority": "high",
+      "properties": {
+        "activityType": "Script",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::GroovyScript/version::1.1.2",
+        "componentVersion": "1.1"
+      }
+    },
+    {
+      "component_id": 5,
+      "component_type": "StartEvent",
+      "component_name": "Start",
+      "xml_element": "startEvent",
+      "keyword_matched": "StartEvent",
+      "instance_number": 1,
+      "total_instances": 1,
+      "rag_queries": [],
+      "description": "StartEvent component named 'Start'",
+      "source": "implicit",
+      "priority": "medium",
+      "properties": {
+        "activityType": "startEvent",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::MessageStartEvent",
+        "componentVersion": "1.1"
+      }
+    },
+    {
+      "component_id": 6,
+      "component_type": "EndEvent",
+      "component_name": "End",
+      "xml_element": "endEvent",
+      "keyword_matched": "EndEvent",
+      "instance_number": 1,
+      "total_instances": 1,
+      "rag_queries": [],
+      "description": "EndEvent component named 'End'",
+      "source": "implicit",
+      "priority": "medium",
+      "properties": {
+        "activityType": "endEvent",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::MessageEndEvent/version::1.1.0",
+        "componentVersion": "1.1"
+      }
+    }
+  ]
+}

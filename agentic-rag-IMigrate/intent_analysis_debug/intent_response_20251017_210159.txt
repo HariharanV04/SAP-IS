@@ -1,0 +1,154 @@
+================================================================================
+RAW LLM RESPONSE - Intent Analysis
+Timestamp: 2025-10-17T21:01:59.403800
+Query: Create a complete SAP iFlow integration package named 'IFlow_c3c98d48' with the following requirements from the documentation:
+
+# Create Salesforce Opportunities from Stripe Subscriptions Integration...
+================================================================================
+
+FULL RESPONSE:
+--------------------------------------------------------------------------------
+```json
+{
+    "intent_classification": "complete_iflow_creation",
+    "user_goal": "Create a complete SAP iFlow with multiple components",
+    "components_needed": [
+        {
+            "type": "ContentModifier",
+            "name": "ContentModifier",
+            "quantity": 1,
+            "explicitly_mentioned": true,
+            "requirements": "Standard content modification"
+        },
+        {
+            "type": "RequestReply",
+            "name": "RequestReply",
+            "quantity": 1,
+            "explicitly_mentioned": true,
+            "requirements": "Request-reply pattern with adapter",
+            "adapter_type": "HTTP"
+        },
+        {
+            "type": "Router",
+            "name": "Router",
+            "quantity": 1,
+            "explicitly_mentioned": true,
+            "requirements": "Content-based routing with branching logic",
+            "routing_criteria": "priority",
+            "branch_count": 2,
+            "branch_targets": ["GroovyScript", "GroovyScript"]
+        },
+        {
+            "type": "GroovyScript",
+            "name": "GroovyScript",
+            "quantity": 2,
+            "explicitly_mentioned": true,
+            "requirements": "Two groovy script processors for router branches"
+        }
+    ],
+    "implicit_components": [
+        {
+            "type": "StartEvent",
+            "name": "Start",
+            "quantity": 1,
+            "reason": "Required for iFlow initiation"
+        },
+        {
+            "type": "EndEvent",
+            "name": "End",
+            "quantity": 1,
+            "reason": "Required for iFlow termination"
+        }
+    ],
+    "strategic_plan": {
+        "rag_search_strategy": "Search for each component type with optimized queries",
+        "generation_order": ["StartEvent", "ContentModifier", "Router", "GroovyScript", "GroovyScript", "RequestReply", "EndEvent"],
+        "integration_approach": "Sequential flow with Router branching to multiple Groovy Scripts based on payload criteria"
+    },
+    "query_interpretation": "User wants to create a complete iFlow with content modifier, then router splitting to two groovy scripts based on priority field"
+}
+```
+--------------------------------------------------------------------------------
+
+RESPONSE METADATA:
+Type: <class 'langchain_core.messages.ai.AIMessage'>
+Has content attr: True
+Length: 2169 characters
+================================================================================
+
+PARSING SUCCESS:
+Extraction method: markdown_code_block
+Extracted JSON length: 2157 characters
+
+EXTRACTED JSON:
+--------------------------------------------------------------------------------
+{
+  "intent_classification": "complete_iflow_creation",
+  "user_goal": "Create a complete SAP iFlow with multiple components",
+  "components_needed": [
+    {
+      "type": "ContentModifier",
+      "name": "ContentModifier",
+      "quantity": 1,
+      "explicitly_mentioned": true,
+      "requirements": "Standard content modification"
+    },
+    {
+      "type": "RequestReply",
+      "name": "RequestReply",
+      "quantity": 1,
+      "explicitly_mentioned": true,
+      "requirements": "Request-reply pattern with adapter",
+      "adapter_type": "HTTP"
+    },
+    {
+      "type": "Router",
+      "name": "Router",
+      "quantity": 1,
+      "explicitly_mentioned": true,
+      "requirements": "Content-based routing with branching logic",
+      "routing_criteria": "priority",
+      "branch_count": 2,
+      "branch_targets": [
+        "GroovyScript",
+        "GroovyScript"
+      ]
+    },
+    {
+      "type": "GroovyScript",
+      "name": "GroovyScript",
+      "quantity": 2,
+      "explicitly_mentioned": true,
+      "requirements": "Two groovy script processors for router branches"
+    }
+  ],
+  "implicit_components": [
+    {
+      "type": "StartEvent",
+      "name": "Start",
+      "quantity": 1,
+      "reason": "Required for iFlow initiation"
+    },
+    {
+      "type": "EndEvent",
+      "name": "End",
+      "quantity": 1,
+      "reason": "Required for iFlow termination"
+    }
+  ],
+  "strategic_plan": {
+    "rag_search_strategy": "Search for each component type with optimized queries",
+    "generation_order": [
+      "StartEvent",
+      "ContentModifier",
+      "Router",
+      "GroovyScript",
+      "GroovyScript",
+      "RequestReply",
+      "EndEvent"
+    ],
+    "integration_approach": "Sequential flow with Router branching to multiple Groovy Scripts based on payload criteria"
+  },
+  "query_interpretation": "User wants to create a complete iFlow with content modifier, then router splitting to two groovy scripts based on priority field"
+}
+--------------------------------------------------------------------------------

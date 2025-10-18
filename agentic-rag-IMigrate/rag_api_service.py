@@ -14,6 +14,7 @@ import logging
 import json
 from datetime import datetime
 from pathlib import Path
+import requests
 
 from agent.agent import create_sap_iflow_agent
 from knowledge_graph.graph_store import GraphStore
@@ -50,6 +51,60 @@ logger.info(f"Query logs will be saved to: {QUERY_LOG_DIR}")
 logger.info(f"Strategic plans will be saved to: {STRATEGIC_PLANS_DIR}")
 logger.info(f"Metadata will be saved to: {METADATA_OUTPUT_DIR}")
 logger.info(f"Packages will be saved to: {PACKAGES_OUTPUT_DIR}")
+
+# Main API configuration for callbacks
+MAIN_API_URL = os.getenv('MAIN_API_URL', 'http://localhost:5000')
+logger.info(f"Main API URL for callbacks: {MAIN_API_URL}")
+
+
+def update_main_api_job_status(job_id, status, updates=None):
+    """
+    Callback function to update job status in Main API.
+
+    Args:
+        job_id: The job ID to update
+        status: New status ('completed', 'failed', 'generating', etc.)
+        updates: Additional fields to update (dict)
+
+    Returns:
+        bool: True if successful, False otherwise
+    """
+    if not job_id:
+        logger.warning("Cannot update Main API: job_id is None")
+        return False
+
+    try:
+        url = f"{MAIN_API_URL}/api/jobs/{job_id}/update"
+
+        payload = {
+            'status': status
+        }
+
+        if updates:
+            payload.update(updates)
+
+        logger.info(f"📞 Calling back to Main API to update job {job_id}: {status}")
+        logger.debug(f"   URL: {url}")
+        logger.debug(f"   Payload: {payload}")
+
+        response = requests.post(url, json=payload, timeout=10)
+
+        if response.status_code in [200, 201]:
+            logger.info(f"✅ Successfully updated Main API job status: {job_id}")
+            return True
+        else:
+            logger.warning(f"⚠️ Main API returned status {response.status_code}: {response.text}")
+            return False
+
+    except requests.exceptions.Timeout:
+        logger.error(f"⏱️ Timeout calling Main API to update job {job_id}")
+        return False
+    except requests.exceptions.ConnectionError:
+        logger.error(f"🔌 Connection error calling Main API at {MAIN_API_URL}")
+        return False
+    except Exception as e:
+        logger.error(f"❌ Error updating Main API job status: {str(e)}")
+        return False
 
 
 def initialize_agent():
@@ -296,14 +351,29 @@ Generate a production-ready iFlow with proper:
         # Format response to match IMigrate's expected format
         if generation_successful:
             package_path = result.get('package_path', '')
-            
+
             logger.info("="*80)
             logger.info("✅ iFlow Generation SUCCESSFUL")
             logger.info(f"📦 Package: {package_path}")
             logger.info(f"📊 Metadata: {metadata_path}")
             logger.info(f"🔧 Components: {len(result.get('components', []))}")
             logger.info("="*80)
-            
+
+            # Callback to Main API to update job status
+            if job_id:
+                update_main_api_job_status(
+                    job_id=job_id,
+                    status='completed',
+                    updates={
+                        'processing_step': 'iflow_generated',
+                        'processing_message': f'iFlow generated successfully: {iflow_name}',
+                        'package_path': package_path,
+                        'metadata_path': str(metadata_path),
+                        'components': result.get('components', []),
+                        'total_components': len(result.get('components', []))
+                    }
+                )
+
             return jsonify({
                 'status': 'success',
                 'message': f'Generated iFlow: {package_path}',
@@ -321,7 +391,18 @@ Generate a production-ready iFlow with proper:
         else:
             error_msg = result.get('message', 'Failed to generate iFlow')
             logger.error(f"❌ iFlow Generation FAILED: {error_msg}")
-            
+
+            # Callback to Main API to update job status to failed
+            if job_id:
+                update_main_api_job_status(
+                    job_id=job_id,
+                    status='failed',
+                    updates={
+                        'processing_step': 'iflow_generation_failed',
+                        'processing_message': error_msg
+                    }
+                )
+
             return jsonify({
                 'status': 'error',
                 'message': error_msg,
@@ -330,6 +411,19 @@ Generate a production-ready iFlow with proper:
             
     except Exception as e:
         logger.error(f"❌ ERROR in iFlow generation: {str(e)}", exc_info=True)
+
+        # Callback to Main API to update job status to failed
+        job_id = data.get('job_id') if data else None
+        if job_id:
+            update_main_api_job_status(
+                job_id=job_id,
+                status='failed',
+                updates={
+                    'processing_step': 'iflow_generation_error',
+                    'processing_message': f'Error during iFlow generation: {str(e)}'
+                }
+            )
+
         return jsonify({
             'status': 'error',
             'message': f'Error: {str(e)}'

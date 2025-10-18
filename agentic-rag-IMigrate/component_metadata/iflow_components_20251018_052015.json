@@ -1,0 +1,193 @@
+{
+  "iflow_name": "IFlow_02c7f1ff",
+  "job_id": null,
+  "generated_at": "2025-10-18T05:20:15.830516",
+  "components": [
+    {
+      "type": "StartEvent",
+      "name": "Start 1",
+      "xml": "<bpmn2:startEvent id=\"StartEvent_5084b96c\" name=\"Start 1\">\n    <bpmn2:extensionElements>\n        <ifl:property>\n            <key>activityType</key>\n            <value>startEvent</value>\n        </ifl:property>\n        <ifl:property>\n            <key>cmdVariantUri</key>\n            <value>ctype::FlowstepVariant/cname::MessageStartEvent</value>\n        </ifl:property>\n        <ifl:property>\n            <key>componentVersion</key>\n            <value>1.1</value>\n        </ifl:property>\n    </bpmn2:extensionElements>\n    <bpmn2:messageEventDefinition/>\n</bpmn2:startEvent>",
+      "quantity": 1,
+      "source": "implicit",
+      "priority": "medium",
+      "rag_results": []
+    },
+    {
+      "type": "ContentModifier",
+      "name": "Content Modifier 1",
+      "xml": "<bpmn2:callActivity id=\"CallActivity_0528f290\" name=\"Content Modifier 1\">\n    <bpmn2:extensionElements>\n        <ifl:property>\n            <key>activityType</key>\n            <value>Enricher</value>\n        </ifl:property>\n        <ifl:property>\n            <key>cmdVariantUri</key>\n            <value>ctype::FlowstepVariant/cname::Enricher/version::1.6.1</value>\n        </ifl:property>\n        <ifl:property>\n            <key>componentVersion</key>\n            <value>1.6</value>\n        </ifl:property>\n        <ifl:property>\n            <key>bodyType</key>\n            <value>constant</value>\n        </ifl:property>\n        <ifl:property>\n            <key>propertyTable</key>\n            <value></value>\n        </ifl:property>\n        <ifl:property>\n            <key>headerTable</key>\n            <value></value>\n        </ifl:property>\n        <ifl:property>\n            <key>wrapContent</key>\n            <value></value>\n        </ifl:property>\n    </bpmn2:extensionElements>\n</bpmn2:callActivity>",
+      "quantity": 1,
+      "source": "explicit",
+      "priority": "high",
+      "rag_results": []
+    },
+    {
+      "type": "Router",
+      "name": "Router 1",
+      "xml": "<bpmn2:exclusiveGateway id=\"ExclusiveGateway_0d9dfbf3\" name=\"Router 1\">\n    <bpmn2:extensionElements>\n        <ifl:property>\n            <key>componentVersion</key>\n            <value>1.1</value>\n        </ifl:property>\n        <ifl:property>\n            <key>activityType</key>\n            <value>ExclusiveGateway</value>\n        </ifl:property>\n        <ifl:property>\n            <key>cmdVariantUri</key>\n            <value>ctype::FlowstepVariant/cname::ExclusiveGateway/version::1.1.2</value>\n        </ifl:property>\n        <ifl:property>\n            <key>throwException</key>\n            <value>false</value>\n        </ifl:property>\n        <ifl:property>\n            <key>routingConditions</key>\n            <value>2</value>\n        </ifl:property>\n    </bpmn2:extensionElements>\n</bpmn2:exclusiveGateway>",
+      "quantity": 1,
+      "source": "explicit",
+      "priority": "high",
+      "rag_results": [],
+      "branch_count": 2,
+      "routing_criteria": "priority",
+      "branch_targets": [
+        "GroovyScript",
+        "GroovyScript"
+      ],
+      "branches": [
+        {
+          "branch_number": 1,
+          "components": [
+            "Groovy Script 1"
+          ],
+          "component_ids": [
+            "CallActivity_dc4e4c15"
+          ],
+          "routing_condition": "${property.priority} = 'high'"
+        },
+        {
+          "branch_number": 2,
+          "components": [
+            "Groovy Script 2"
+          ],
+          "component_ids": [
+            "CallActivity_75875aea"
+          ],
+          "routing_condition": "default"
+        }
+      ]
+    },
+    {
+      "type": "GroovyScript",
+      "name": "Groovy Script 1",
+      "xml": "<bpmn2:callActivity id=\"CallActivity_dc4e4c15\" name=\"Groovy Script 1\">\n    <bpmn2:extensionElements>\n        <ifl:property>\n            <key>activityType</key>\n            <value>Script</value>\n        </ifl:property>\n        <ifl:property>\n            <key>cmdVariantUri</key>\n            <value>ctype::FlowstepVariant/cname::GroovyScript/version::1.1.2</value>\n        </ifl:property>\n        <ifl:property>\n            <key>componentVersion</key>\n            <value>1.1</value>\n        </ifl:property>\n        <ifl:property>\n            <key>subActivityType</key>\n            <value>GroovyScript</value>\n        </ifl:property>\n        <ifl:property>\n            <key>scriptFunction</key>\n            <value></value>\n        </ifl:property>\n        <ifl:property>\n            <key>scriptBundleId</key>\n            <value></value>\n        </ifl:property>\n        <ifl:property>\n            <key>script</key>\n            <value>groovy_script_1.groovy</value>\n        </ifl:property>\n    </bpmn2:extensionElements>\n</bpmn2:callActivity>",
+      "quantity": 1,
+      "source": "explicit",
+      "priority": "high",
+      "rag_results": [],
+      "branch_number": 1,
+      "is_in_branch": true
+    },
+    {
+      "type": "GroovyScript",
+      "name": "Groovy Script 2",
+      "xml": "<bpmn2:callActivity id=\"CallActivity_75875aea\" name=\"Groovy Script 2\">\n    <bpmn2:extensionElements>\n        <ifl:property>\n            <key>activityType</key>\n            <value>Script</value>\n        </ifl:property>\n        <ifl:property>\n            <key>cmdVariantUri</key>\n            <value>ctype::FlowstepVariant/cname::GroovyScript/version::1.1.2</value>\n        </ifl:property>\n        <ifl:property>\n            <key>componentVersion</key>\n            <value>1.1</value>\n        </ifl:property>\n        <ifl:property>\n            <key>subActivityType</key>\n            <value>GroovyScript</value>\n        </ifl:property>\n        <ifl:property>\n            <key>scriptFunction</key>\n            <value></value>\n        </ifl:property>\n        <ifl:property>\n            <key>scriptBundleId</key>\n            <value></value>\n        </ifl:property>\n        <ifl:property>\n            <key>script</key>\n            <value>groovy_script_2.groovy</value>\n        </ifl:property>\n    </bpmn2:extensionElements>\n</bpmn2:callActivity>",
+      "quantity": 1,
+      "source": "explicit",
+      "priority": "high",
+      "rag_results": [],
+      "branch_number": 2,
+      "is_in_branch": true
+    },
+    {
+      "type": "EndEvent",
+      "name": "End 1",
+      "xml": "<bpmn2:endEvent id=\"EndEvent_39a1c5b2\" name=\"End 1\">\n    <bpmn2:extensionElements>\n        <ifl:property>\n            <key>activityType</key>\n            <value>endEvent</value>\n        </ifl:property>\n        <ifl:property>\n            <key>cmdVariantUri</key>\n            <value>ctype::FlowstepVariant/cname::MessageEndEvent/version::1.1.0</value>\n        </ifl:property>\n        <ifl:property>\n            <key>componentVersion</key>\n            <value>1.1</value>\n        </ifl:property>\n    </bpmn2:extensionElements>\n    <bpmn2:messageEventDefinition/>\n</bpmn2:endEvent>",
+      "quantity": 1,
+      "source": "implicit",
+      "priority": "medium",
+      "rag_results": []
+    }
+  ],
+  "metadata": {
+    "iflow_name": "Processing_Integration",
+    "component_count": 6,
+    "package_path": "generated_packages\\Processing_Integration_Complete_20251018_052014.zip",
+    "components": [
+      {
+        "type": "StartEvent",
+        "name": "Start 1",
+        "xml": "<bpmn2:startEvent id=\"StartEvent_5084b96c\" name=\"Start 1\">\n    <bpmn2:extensionElements>\n        <ifl:property>\n            <key>activityType</key>\n            <value>startEvent</value>\n        </ifl:property>\n        <ifl:property>\n            <key>cmdVariantUri</key>\n            <value>ctype::FlowstepVariant/cname::MessageStartEvent</value>\n        </ifl:property>\n        <ifl:property>\n            <key>componentVersion</key>\n            <value>1.1</value>\n        </ifl:property>\n    </bpmn2:extensionElements>\n    <bpmn2:messageEventDefinition/>\n</bpmn2:startEvent>",
+        "quantity": 1,
+        "source": "implicit",
+        "priority": "medium",
+        "rag_results": []
+      },
+      {
+        "type": "ContentModifier",
+        "name": "Content Modifier 1",
+        "xml": "<bpmn2:callActivity id=\"CallActivity_0528f290\" name=\"Content Modifier 1\">\n    <bpmn2:extensionElements>\n        <ifl:property>\n            <key>activityType</key>\n            <value>Enricher</value>\n        </ifl:property>\n        <ifl:property>\n            <key>cmdVariantUri</key>\n            <value>ctype::FlowstepVariant/cname::Enricher/version::1.6.1</value>\n        </ifl:property>\n        <ifl:property>\n            <key>componentVersion</key>\n            <value>1.6</value>\n        </ifl:property>\n        <ifl:property>\n            <key>bodyType</key>\n            <value>constant</value>\n        </ifl:property>\n        <ifl:property>\n            <key>propertyTable</key>\n            <value></value>\n        </ifl:property>\n        <ifl:property>\n            <key>headerTable</key>\n            <value></value>\n        </ifl:property>\n        <ifl:property>\n            <key>wrapContent</key>\n            <value></value>\n        </ifl:property>\n    </bpmn2:extensionElements>\n</bpmn2:callActivity>",
+        "quantity": 1,
+        "source": "explicit",
+        "priority": "high",
+        "rag_results": []
+      },
+      {
+        "type": "Router",
+        "name": "Router 1",
+        "xml": "<bpmn2:exclusiveGateway id=\"ExclusiveGateway_0d9dfbf3\" name=\"Router 1\">\n    <bpmn2:extensionElements>\n        <ifl:property>\n            <key>componentVersion</key>\n            <value>1.1</value>\n        </ifl:property>\n        <ifl:property>\n            <key>activityType</key>\n            <value>ExclusiveGateway</value>\n        </ifl:property>\n        <ifl:property>\n            <key>cmdVariantUri</key>\n            <value>ctype::FlowstepVariant/cname::ExclusiveGateway/version::1.1.2</value>\n        </ifl:property>\n        <ifl:property>\n            <key>throwException</key>\n            <value>false</value>\n        </ifl:property>\n        <ifl:property>\n            <key>routingConditions</key>\n            <value>2</value>\n        </ifl:property>\n    </bpmn2:extensionElements>\n</bpmn2:exclusiveGateway>",
+        "quantity": 1,
+        "source": "explicit",
+        "priority": "high",
+        "rag_results": [],
+        "branch_count": 2,
+        "routing_criteria": "priority",
+        "branch_targets": [
+          "GroovyScript",
+          "GroovyScript"
+        ],
+        "branches": [
+          {
+            "branch_number": 1,
+            "components": [
+              "Groovy Script 1"
+            ],
+            "component_ids": [
+              "CallActivity_dc4e4c15"
+            ],
+            "routing_condition": "${property.priority} = 'high'"
+          },
+          {
+            "branch_number": 2,
+            "components": [
+              "Groovy Script 2"
+            ],
+            "component_ids": [
+              "CallActivity_75875aea"
+            ],
+            "routing_condition": "default"
+          }
+        ]
+      },
+      {
+        "type": "GroovyScript",
+        "name": "Groovy Script 1",
+        "xml": "<bpmn2:callActivity id=\"CallActivity_dc4e4c15\" name=\"Groovy Script 1\">\n    <bpmn2:extensionElements>\n        <ifl:property>\n            <key>activityType</key>\n            <value>Script</value>\n        </ifl:property>\n        <ifl:property>\n            <key>cmdVariantUri</key>\n            <value>ctype::FlowstepVariant/cname::GroovyScript/version::1.1.2</value>\n        </ifl:property>\n        <ifl:property>\n            <key>componentVersion</key>\n            <value>1.1</value>\n        </ifl:property>\n        <ifl:property>\n            <key>subActivityType</key>\n            <value>GroovyScript</value>\n        </ifl:property>\n        <ifl:property>\n            <key>scriptFunction</key>\n            <value></value>\n        </ifl:property>\n        <ifl:property>\n            <key>scriptBundleId</key>\n            <value></value>\n        </ifl:property>\n        <ifl:property>\n            <key>script</key>\n            <value>groovy_script_1.groovy</value>\n        </ifl:property>\n    </bpmn2:extensionElements>\n</bpmn2:callActivity>",
+        "quantity": 1,
+        "source": "explicit",
+        "priority": "high",
+        "rag_results": [],
+        "branch_number": 1,
+        "is_in_branch": true
+      },
+      {
+        "type": "GroovyScript",
+        "name": "Groovy Script 2",
+        "xml": "<bpmn2:callActivity id=\"CallActivity_75875aea\" name=\"Groovy Script 2\">\n    <bpmn2:extensionElements>\n        <ifl:property>\n            <key>activityType</key>\n            <value>Script</value>\n        </ifl:property>\n        <ifl:property>\n            <key>cmdVariantUri</key>\n            <value>ctype::FlowstepVariant/cname::GroovyScript/version::1.1.2</value>\n        </ifl:property>\n        <ifl:property>\n            <key>componentVersion</key>\n            <value>1.1</value>\n        </ifl:property>\n        <ifl:property>\n            <key>subActivityType</key>\n            <value>GroovyScript</value>\n        </ifl:property>\n        <ifl:property>\n            <key>scriptFunction</key>\n            <value></value>\n        </ifl:property>\n        <ifl:property>\n            <key>scriptBundleId</key>\n            <value></value>\n        </ifl:property>\n        <ifl:property>\n            <key>script</key>\n            <value>groovy_script_2.groovy</value>\n        </ifl:property>\n    </bpmn2:extensionElements>\n</bpmn2:callActivity>",
+        "quantity": 1,
+        "source": "explicit",
+        "priority": "high",
+        "rag_results": [],
+        "branch_number": 2,
+        "is_in_branch": true
+      },
+      {
+        "type": "EndEvent",
+        "name": "End 1",
+        "xml": "<bpmn2:endEvent id=\"EndEvent_39a1c5b2\" name=\"End 1\">\n    <bpmn2:extensionElements>\n        <ifl:property>\n            <key>activityType</key>\n            <value>endEvent</value>\n        </ifl:property>\n        <ifl:property>\n            <key>cmdVariantUri</key>\n            <value>ctype::FlowstepVariant/cname::MessageEndEvent/version::1.1.0</value>\n        </ifl:property>\n        <ifl:property>\n            <key>componentVersion</key>\n            <value>1.1</value>\n        </ifl:property>\n    </bpmn2:extensionElements>\n    <bpmn2:messageEventDefinition/>\n</bpmn2:endEvent>",
+        "quantity": 1,
+        "source": "implicit",
+        "priority": "medium",
+        "rag_results": []
+      }
+    ],
+    "sources_used": 0,
+    "ready_for_import": true,
+    "package_type": "intelligent_iflow"
+  },
+  "package_path": "generated_packages\\Processing_Integration_Complete_20251018_052014.zip",
+  "generation_method": "RAG Agent (Dynamic)",
+  "status": "success",
+  "final_response": "✅ **Complete iFlow Package Created Successfully!**\n\n**iFlow Details:**\n- Name: Processing_Integration\n- Components: 6\n- Package: `generated_packages\\Processing_Integration_Complete_20251018_052014.zip`\n\n**Components Included:**\n   • StartEvent: Start 1\n   • ContentModifier: Content Modifier 1\n   • Router: Router 1\n   • GroovyScript: Groovy Script 1\n   • GroovyScript: Groovy Script 2\n   • EndEvent: End 1\n\n**Package Contents:**\n- Complete SAP iFlow XML with proper BPMN structure\n- All component implementations (XML + scripts)\n- SAP Integration Suite manifest files\n- Proper sequence flows and connections\n- Ready for direct import into SAP IS\n\n**Generated from:**\n- 0 relevant content items from knowledge base\n- Query: \"User wants to create a complete iFlow with content modifier, then router splitting to two groovy scripts based on priority field\"\n\n**Next Steps:**\n1. Download the ZIP file: `generated_packages\\Processing_Integration_Complete_20251018_052014.zip`\n2. Import into SAP Integration Suite\n3. Deploy and configure as needed\n\nThe complete iFlow package is production-ready and fully compliant with SAP Integration Suite requirements."
+}

@@ -9,8 +9,12 @@ from pathlib import Path
 BASE_DIR = Path(__file__).parent.parent
 
 # Supabase Configuration - Updated Service Role Key
-SUPABASE_URL = "https://jnoobtfelhtjfermohfx.supabase.co"
-SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impub29idGZlbGh0amZlcm1vaGZ4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NTY3MTQyMiwiZXhwIjoyMDcxMjQ3NDIyfQ.RcMrsnsu9COzmeNgIJ3-tcn_LJhrcKFWMAAjA3uQVaU"
+# SUPABASE_URL = "https://jnoobtfelhtjfermohfx.supabase.co"
+# SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impub29idGZlbGh0amZlcm1vaGZ4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NTY3MTQyMiwiZXhwIjoyMDcxMjQ3NDIyfQ.RcMrsnsu9COzmeNgIJ3-tcn_LJhrcKFWMAAjA3uQVaU"
+
+SUPABASE_URL ="https://csdzhpskeyqswqmffvxv.supabase.co"
+
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNzZHpocHNrZXlxc3dxbWZmdnh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg0OTU5NzIsImV4cCI6MjA2NDA3MTk3Mn0.AmKTGFbDjFgnLIWnKBjBXELLgPrRkYV-pT7N-9apPvs"
 
 # OpenAI Configuration - Updated API key
 OPENAI_API_KEY = "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"
@@ -34,7 +38,7 @@ POSTGRES_URL = "postgresql://postgres:Vamsikrishna@2003@db.jnoobtfelhtjfermohfx.
 # Neo4j Configuration - Updated credentials
 NEO4J_URI = "neo4j+s://a09ee8ee.databases.neo4j.io"
 NEO4J_USER = "neo4j"
-NEO4J_PASSWORD = "X1hAOjlDuAPAMLE3cA7inKb5RQL6JHKeJeV57hKQ_YY"
+NEO4J_PASSWORD = 'X1hAOjlDuAPAMLE3cA7inKb5RQL6JHKeJeV57hKQ_YY'
 NEO4J_DATABASE = "neo4j"
 AURA_INSTANCEID = "a09ee8ee"
 AURA_INSTANCENAME = "CompleteKG"

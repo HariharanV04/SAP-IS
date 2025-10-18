@@ -1,186 +1,57 @@
 {
   "endpoints": [
     {
-      "id": "successfactors_sftp_integration",
-      "name": "SAP SuccessFactors to SFTP Employee Data Integration",
-      "description": "Comprehensive employee data synchronization from SuccessFactors to NAVEX via SFTP with PGP encryption and error handling",
+      "id": "stripe_salesforce_integration",
+      "name": "Create Salesforce Opportunities from Stripe Subscriptions",
+      "description": "Integration that receives Stripe subscription completion webhooks and creates corresponding opportunities in Salesforce",
       "components": [
         {
           "type": "enricher",
-          "name": "Initialize_Error_Properties_from_Boomi",
+          "name": "Calculate_Dynamic_Properties_from_Boomi",
           "id": "enricher_1",
           "config": {
             "properties": [
               {
-                "name": "RPT_INT_ALL_BRULE_ERR_CNT",
-                "source": "constant",
-                "value": "0"
+                "name": "DDP_CustomerName",
+                "source": "$.data.object.customer.name"
               },
               {
-                "name": "RPT_INT_ALL_CLNS_ERR_CNT",
-                "source": "constant",
-                "value": "0"
+                "name": "DDP_Subscription",
+                "source": "$.data.object.id"
               },
               {
-                "name": "RPT_INT_ALL_DCN_ERR_CNT",
-                "source": "constant",
-                "value": "0"
+                "name": "DDP_SalesforceDescription",
+                "source": "Opportunity created from Stripe subscription"
               },
               {
-                "name": "RPT_INT_ALL_ROUTE_ERR_CNT",
-                "source": "constant",
-                "value": "0"
-              },
-              {
-                "name": "RPT_INT_ALL_TRYCATCH_ERR_CNT",
-                "source": "constant",
-                "value": "0"
-              },
-              {
-                "name": "RPT_INT_ALL_RETURN_ERR_CNT",
-                "source": "constant",
-                "value": "0"
-              },
-              {
-                "name": "RPT_INT_ALL_ERR_CNT",
-                "source": "constant",
-                "value": "0"
-              },
-              {
-                "name": "RPT_INT_INTERFACE_START_TIME",
-                "source": "expression",
-                "value": "now()"
+                "name": "DDP_CloseDate",
+                "source": "calculated_close_date"
               }
             ]
-          }
-        },
-        {
-          "type": "enricher",
-          "name": "Build_Dynamic_Filters_from_Boomi",
-          "id": "enricher_2",
-          "config": {
-            "properties": [
-              {
-                "name": "legal_entity_filter",
-                "source": "expression",
-                "value": "legal_entity_code in ('PEP01','PEP02','PEP03')"
-              },
-              {
-                "name": "employee_class_filter",
-                "source": "expression",
-                "value": "employee_class in ('REG','CON','TEMP')"
-              },
-              {
-                "name": "territory_filter",
-                "source": "expression",
-                "value": "company_territory_code in ('US','CA','MX')"
-              },
-              {
-                "name": "date_filter",
-                "source": "expression",
-                "value": "last_modified_on gt datetime'2024-01-01T00:00:00'"
-              },
-              {
-                "name": "combined_filter",
-                "source": "expression",
-                "value": "${property.legal_entity_filter} and ${property.employee_class_filter} and ${property.territory_filter} and ${property.date_filter}"
-              }
-            ]
-          }
-        },
-        {
-          "type": "odata",
-          "name": "Load_Reference_Data_from_Boomi",
-          "id": "odata_1",
-          "config": {
-            "service_url": "https://instance.successfactors.com/odata/v2/",
-            "entity_set": "Picklist",
-            "operation": "GET",
-            "query_options": "$filter=picklistId eq 'employeeClass' or picklistId eq 'employmentStatus'"
-          }
-        },
-        {
-          "type": "odata",
-          "name": "Extract_Employee_Data_from_Boomi",
-          "id": "odata_2",
-          "config": {
-            "service_url": "https://instance.successfactors.com/odata/v2/",
-            "entity_set": "CompoundEmployee",
-            "operation": "GET",
-            "query_options": "$select=person_id_external,first_name,last_name,email_address,employment_status,employee_class,hire_date,termination_date&$expand=employment_information,personal_information&$filter=${property.combined_filter}&$top=1000"
           }
         },
         {
           "type": "script",
-          "name": "Transform_SuccessFactors_to_NAVEX_from_Boomi",
+          "name": "Transform_Stripe_to_Salesforce_from_Boomi",
           "id": "script_1",
           "config": {
-            "script_content": "import com.sap.gateway.ip.core.customdev.util.Message\nimport groovy.json.JsonSlurper\nimport groovy.json.JsonBuilder\n\ndef Message processData(Message message) {\n    def body = message.getBody(String)\n    def jsonSlurper = new JsonSlurper()\n    def data = jsonSlurper.parseText(body)\n    \n    def transformedRecords = []\n    \n    data.d.results.each { employee ->\n        def record = [\n            'GPID': employee.person_id_external,\n            'First Name': employee.first_name,\n            'Last Name': employee.last_name,\n            'Email Address': employee.email_address,\n            'emplStatus': employee.employment_status,\n            'employee-class': employee.employee_class,\n            'Country': employee.employment_information?.country ?: '',\n            'Location': employee.employment_information?.location ?: '',\n            'Manager name': employee.employment_information?.manager?.name ?: '',\n            'Termination Date': employee.termination_date ?: '',\n            'Original Hire Date': employee.hire_date ?: ''\n        ]\n        transformedRecords.add(record)\n    }\n    \n    def result = new JsonBuilder(transformedRecords)\n    message.setBody(result.toString())\n    return message\n}"
-          }
-        },
-        {
-          "type": "script",
-          "name": "Generate_CSV_from_Boomi",
-          "id": "script_2",
-          "config": {
-            "script_content": "import com.sap.gateway.ip.core.customdev.util.Message\nimport groovy.json.JsonSlurper\n\ndef Message processData(Message message) {\n    def body = message.getBody(String)\n    def jsonSlurper = new JsonSlurper()\n    def records = jsonSlurper.parseText(body)\n    \n    def csvContent = new StringBuilder()\n    \n    // Add CSV header\n    csvContent.append('GPID,First Name,Last Name,Email Address,emplStatus,employee-class,Country,Location,Manager name,Termination Date,Original Hire Date\\n')\n    \n    // Add data rows\n    records.each { record ->\n        csvContent.append(\"\\\"${record['GPID']}\\\",\\\"${record['First Name']}\\\",\\\"${record['Last Name']}\\\",\\\"${record['Email Address']}\\\",\\\"${record['emplStatus']}\\\",\\\"${record['employee-class']}\\\",\\\"${record['Country']}\\\",\\\"${record['Location']}\\\",\\\"${record['Manager name']}\\\",\\\"${record['Termination Date']}\\\",\\\"${record['Original Hire Date']}\\\"\\n\")\n    }\n    \n    message.setBody(csvContent.toString())\n    message.setHeader('Content-Type', 'text/csv')\n    message.setHeader('filename', 'employee_data_' + new Date().format('yyyyMMdd_HHmmss') + '.csv')\n    return message\n}"
-          }
-        },
-        {
-          "type": "script",
-          "name": "PGP_Encrypt_File_from_Boomi",
-          "id": "script_3",
-          "config": {
-            "script_content": "import com.sap.gateway.ip.core.customdev.util.Message\nimport java.security.Security\nimport org.bouncycastle.jce.provider.BouncyCastleProvider\n\ndef Message processData(Message message) {\n    // Add BouncyCastle provider for PGP encryption\n    Security.addProvider(new BouncyCastleProvider())\n    \n    def body = message.getBody(String)\n    def filename = message.getHeaders().get('filename')\n    \n    // Simulate PGP encryption (actual implementation would use PGP libraries)\n    def encryptedContent = 'PGP_ENCRYPTED_CONTENT: ' + body\n    def encryptedFilename = filename + '.pgp'\n    \n    message.setBody(encryptedContent)\n    message.setHeader('filename', encryptedFilename)\n    message.setHeader('Content-Type', 'application/pgp-encrypted')\n    \n    return message\n}"
-          }
-        },
-        {
-          "type": "sftp",
-          "name": "Deliver_to_NAVEX_SFTP_from_Boomi",
-          "id": "sftp_1",
-          "config": {
-            "host": "navex.sftp.server.com",
-            "port": "22",
-            "path": "/incoming/pepsico/",
-            "username": "pepsico_user",
-            "password": "encrypted_password",
-            "operation": "PUT"
-          }
-        },
-        {
-          "type": "sftp",
-          "name": "Archive_Internal_SFTP_from_Boomi",
-          "id": "sftp_2",
-          "config": {
-            "host": "internal.archive.server.com",
-            "port": "22",
-            "path": "/archive/successfactors/",
-            "username": "archive_user",
-            "password": "encrypted_password",
-            "operation": "PUT"
+            "script_content": "import com.sap.gateway.ip.core.customdev.util.Message;\nimport java.util.HashMap;\n\ndef Message processData(Message message) {\n    def body = message.getBody(java.lang.String);\n    def properties = message.getProperties();\n    \n    def customerName = properties.get('DDP_CustomerName');\n    def subscription = properties.get('DDP_Subscription');\n    def description = properties.get('DDP_SalesforceDescription');\n    def closeDate = properties.get('DDP_CloseDate');\n    \n    def salesforceXml = \"\"\"<?xml version='1.0' encoding='UTF-8'?>\n<soapenv:Envelope xmlns:soapenv='http://schemas.xmlsoap.org/soap/envelope/' xmlns:urn='urn:enterprise.soap.sforce.com/2006/04/metadata'>\n   <soapenv:Body>\n      <urn:create>\n         <urn:sObjects>\n            <urn:type>Opportunity</urn:type>\n            <urn:Name>${customerName}</urn:Name>\n            <urn:Description>${description}</urn:Description>\n            <urn:CloseDate>${closeDate}</urn:CloseDate>\n            <urn:StageName>Prospecting</urn:StageName>\n         </urn:sObjects>\n      </urn:create>\n   </soapenv:Body>\n</soapenv:Envelope>\"\"\";\n    \n    message.setBody(salesforceXml);\n    return message;\n}"
           }
         },
         {
           "type": "request_reply",
-          "name": "Send_Email_Notification_from_Boomi",
+          "name": "Create_Salesforce_Opportunity_from_Boomi",
           "id": "request_reply_1",
           "config": {
-            "endpoint_path": "/send",
+            "endpoint_path": "/services/Soap/c/58.0",
             "method": "POST",
-            "url": "smtp://mail.server.com:587"
+            "url": "https://login.salesforce.com/services/Soap/c/58.0"
           }
         }
       ],
       "flow": [
         "enricher_1",
-        "enricher_2",
-        "odata_1",
-        "odata_2",
         "script_1",
-        "script_2",
-        "script_3",
-        "sftp_1",
-        "sftp_2",
         "request_reply_1"
       ],
       "sequence_flows": [
@@ -190,48 +61,13 @@
           "target_ref": "enricher_1"
         },
         {
-          "id": "SequenceFlow_enricher_1_to_enricher_2",
+          "id": "SequenceFlow_enricher_1_to_script_1",
           "source_ref": "enricher_1",
-          "target_ref": "enricher_2"
-        },
-        {
-          "id": "SequenceFlow_enricher_2_to_odata_1",
-          "source_ref": "enricher_2",
-          "target_ref": "odata_1"
-        },
-        {
-          "id": "SequenceFlow_odata_1_to_odata_2",
-          "source_ref": "odata_1",
-          "target_ref": "odata_2"
-        },
-        {
-          "id": "SequenceFlow_odata_2_to_script_1",
-          "source_ref": "odata_2",
           "target_ref": "script_1"
         },
         {
-          "id": "SequenceFlow_script_1_to_script_2",
+          "id": "SequenceFlow_script_1_to_request_reply_1",
           "source_ref": "script_1",
-          "target_ref": "script_2"
-        },
-        {
-          "id": "SequenceFlow_script_2_to_script_3",
-          "source_ref": "script_2",
-          "target_ref": "script_3"
-        },
-        {
-          "id": "SequenceFlow_script_3_to_sftp_1",
-          "source_ref": "script_3",
-          "target_ref": "sftp_1"
-        },
-        {
-          "id": "SequenceFlow_sftp_1_to_sftp_2",
-          "source_ref": "sftp_1",
-          "target_ref": "sftp_2"
-        },
-        {
-          "id": "SequenceFlow_sftp_2_to_request_reply_1",
-          "source_ref": "sftp_2",
           "target_ref": "request_reply_1"
         },
         {

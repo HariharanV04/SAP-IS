@@ -369,13 +369,20 @@ def process_iflow_generation(job_id, markdown_content, iflow_name=None):
                 })
                 save_jobs(jobs)
 
+                # Get the original main job ID (not the BoomiToIS job ID)
+                main_job_id = jobs[job_id].get('original_job_id', job_id)
+
                 # Call RAG API
+                logger.info(f"📡 Sending request to RAG API: {RAG_API_URL}/api/generate-iflow-from-markdown")
+                logger.info(f"   iFlow Name: {iflow_name}")
+                logger.info(f"   Main Job ID: {main_job_id} (BoomiToIS Job ID: {job_id})")
+
                 rag_response = requests.post(
                     f"{RAG_API_URL}/api/generate-iflow-from-markdown",
                     json={
                         'markdown_content': markdown_content,
                         'iflow_name': iflow_name,
-                        'job_id': job_id,
+                        'job_id': main_job_id,  # Pass the MAIN job ID, not BoomiToIS job ID
                         'output_dir': job_result_dir
                     },
                     timeout=RAG_API_TIMEOUT
