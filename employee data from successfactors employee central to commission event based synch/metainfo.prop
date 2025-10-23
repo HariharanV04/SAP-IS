@@ -1,5 +1,0 @@
-#Store metainfo properties
-#Thu Aug 21 14:23:16 UTC 2025
-description=Event-Initiated Integration between SAP SuccessFactors Employee Central and SAP Commissions. The Iflow replicates employee data.
-source=SAPSuccessFactorsEmployeeCentral
-target=SAPCommissions
