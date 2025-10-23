@@ -1,0 +1,155 @@
+================================================================================
+RAW LLM RESPONSE - Intent Analysis
+Timestamp: 2025-10-23T18:25:48.097284
+Query: Create a complete SAP iFlow integration package named 'IFlow_a93feac2' with the following requirements from the documentation:
+
+# Create Salesforce Opportunities from Stripe Subscriptions Integration...
+================================================================================
+
+FULL RESPONSE:
+--------------------------------------------------------------------------------
+```json
+{
+    "intent_classification": "complete_iflow_creation",
+    "user_goal": "Create a complete SAP iFlow with multiple components",
+    "user_query": "Create a complete SAP iFlow integration package named 'IFlow_a93feac2' with the following requirements from the documentation:\n\n# Create Salesforce Opportunities from Stripe Subscriptions Integration\n\n## Table of Contents\n\n1. [API Overview](#api-overview)\n2. [Endpoints](#endpoints)\n   - [Stripe Webhook Endpoint](#stripe-webhook-endpoint)\n   - [Salesforce Opportunity Creation Endpoint](#salesforce-opportunity-creation-endpoint)\n3. [Current Boomi Flow Logic](#current-boomi-flow-logic)\n   - [Process Flow Overview](#process-flow-overview)\n   - [Step-by-Step Flow Description](#step-by-step-flow-description)\n4. [Boomi Transformations Explained](#boomi-transformations-explained)\n   - [Subscription Completed JSON to SF Opportunity CREATE Request XML](#subscription-completed-json-to-sf-opportunity-create-request-xml)\n   - [Field Mappings](#field-mappings)\n   - [Transformation Functions](#transformation-functions)\n5. [SAP Integration Suite Implementation](#sap-integration-suite-implementation)\n   - [Component Mapping](#component-mapping)\n   - [Integration Flow Visualization](#integration-flow-visualization)\n   - [Configuration Details](#configuration-details)\n6. [Environment Configuration](#environment-configuration)\n7. [API Reference](#api-reference)\n   - [Stripe Subscription Events](#stripe-subscription-events)\n   - [Salesforce Opportunity API](#salesforce-opportunity-api)\n\n## API Overview\n\nThis integration provides a real-time synchronization mechanism between Stripe subscription events and Salesforce opportunity creation. The integration is designed to automatically create Salesforce opportunities when specific Stripe subscription events occur, ensuring seamless data flow between the payment processing system and CRM.\n\n**Key Capabilities:**\n- Real-time webhook processing from Stripe subscription events\n- Dynamic property calculation and data enrichment\n- Automated Salesforce opportunity creation with proper field mapping\n- Error handling and logging for subscription processing failures\n\n**Base URL Pattern:**\n- Stripe Webhook Listener: `https://[boomi-runtime]/ws/\n\nGenerate a production-ready iFlow with proper:\n1. Start and End events\n2. Required adapters and connectors\n3. Content modifiers and processing steps\n4. Proper sequence flows\n5. Error handling\n6. SAP Integration Suite compliance\n",
+    "components_needed": [
+        {
+            "type": "ContentModifier",
+            "name": "ContentModifier",
+            "quantity": 1,
+            "explicitly_mentioned": true,
+            "requirements": "Standard content modification"
+        },
+        {
+            "type": "RequestReply",
+            "name": "RequestReply",
+            "quantity": 1,
+            "explicitly_mentioned": true,
+            "requirements": "Request-reply pattern with adapter",
+            "adapter_type": "HTTP"
+        },
+        {
+            "type": "Router",
+            "name": "Router",
+            "quantity": 1,
+            "explicitly_mentioned": true,
+            "requirements": "Content-based routing with branching logic",
+            "routing_criteria": "priority",
+            "branch_count": 2,
+            "branch_targets": ["GroovyScript", "GroovyScript"]
+        },
+        {
+            "type": "GroovyScript",
+            "name": "GroovyScript",
+            "quantity": 2,
+            "explicitly_mentioned": true,
+            "requirements": "Two groovy script processors for router branches"
+        }
+    ],
+    "implicit_components": [
+        {
+            "type": "StartEvent",
+            "name": "Start",
+            "quantity": 1,
+            "reason": "Required for iFlow initiation"
+        },
+        {
+            "type": "EndEvent",
+            "name": "End",
+            "quantity": 1,
+            "reason": "Required for iFlow termination"
+        }
+    ],
+    "strategic_plan": {
+        "rag_search_strategy": "Search for each component type with optimized queries",
+        "generation_order": ["StartEvent", "ContentModifier", "Router", "GroovyScript", "GroovyScript", "EndEvent"],
+        "integration_approach": "Sequential flow with Router branching to multiple Groovy Scripts based on payload criteria"
+    },
+    "query_interpretation": "User wants to create a complete iFlow with content modifier, then router splitting to two groovy scripts based on priority field"
+}
+```
+--------------------------------------------------------------------------------
+
+RESPONSE METADATA:
+Type: <class 'langchain_core.messages.ai.AIMessage'>
+Has content attr: True
+Length: 4544 characters
+================================================================================
+
+PARSING SUCCESS:
+Extraction method: markdown_code_block
+Extracted JSON length: 4532 characters
+
+EXTRACTED JSON:
+--------------------------------------------------------------------------------
+{
+  "intent_classification": "complete_iflow_creation",
+  "user_goal": "Create a complete SAP iFlow with multiple components",
+  "user_query": "Create a complete SAP iFlow integration package named 'IFlow_a93feac2' with the following requirements from the documentation:\n\n# Create Salesforce Opportunities from Stripe Subscriptions Integration\n\n## Table of Contents\n\n1. [API Overview](#api-overview)\n2. [Endpoints](#endpoints)\n   - [Stripe Webhook Endpoint](#stripe-webhook-endpoint)\n   - [Salesforce Opportunity Creation Endpoint](#salesforce-opportunity-creation-endpoint)\n3. [Current Boomi Flow Logic](#current-boomi-flow-logic)\n   - [Process Flow Overview](#process-flow-overview)\n   - [Step-by-Step Flow Description](#step-by-step-flow-description)\n4. [Boomi Transformations Explained](#boomi-transformations-explained)\n   - [Subscription Completed JSON to SF Opportunity CREATE Request XML](#subscription-completed-json-to-sf-opportunity-create-request-xml)\n   - [Field Mappings](#field-mappings)\n   - [Transformation Functions](#transformation-functions)\n5. [SAP Integration Suite Implementation](#sap-integration-suite-implementation)\n   - [Component Mapping](#component-mapping)\n   - [Integration Flow Visualization](#integration-flow-visualization)\n   - [Configuration Details](#configuration-details)\n6. [Environment Configuration](#environment-configuration)\n7. [API Reference](#api-reference)\n   - [Stripe Subscription Events](#stripe-subscription-events)\n   - [Salesforce Opportunity API](#salesforce-opportunity-api)\n\n## API Overview\n\nThis integration provides a real-time synchronization mechanism between Stripe subscription events and Salesforce opportunity creation. The integration is designed to automatically create Salesforce opportunities when specific Stripe subscription events occur, ensuring seamless data flow between the payment processing system and CRM.\n\n**Key Capabilities:**\n- Real-time webhook processing from Stripe subscription events\n- Dynamic property calculation and data enrichment\n- Automated Salesforce opportunity creation with proper field mapping\n- Error handling and logging for subscription processing failures\n\n**Base URL Pattern:**\n- Stripe Webhook Listener: `https://[boomi-runtime]/ws/\n\nGenerate a production-ready iFlow with proper:\n1. Start and End events\n2. Required adapters and connectors\n3. Content modifiers and processing steps\n4. Proper sequence flows\n5. Error handling\n6. SAP Integration Suite compliance\n",
+  "components_needed": [
+    {
+      "type": "ContentModifier",
+      "name": "ContentModifier",
+      "quantity": 1,
+      "explicitly_mentioned": true,
+      "requirements": "Standard content modification"
+    },
+    {
+      "type": "RequestReply",
+      "name": "RequestReply",
+      "quantity": 1,
+      "explicitly_mentioned": true,
+      "requirements": "Request-reply pattern with adapter",
+      "adapter_type": "HTTP"
+    },
+    {
+      "type": "Router",
+      "name": "Router",
+      "quantity": 1,
+      "explicitly_mentioned": true,
+      "requirements": "Content-based routing with branching logic",
+      "routing_criteria": "priority",
+      "branch_count": 2,
+      "branch_targets": [
+        "GroovyScript",
+        "GroovyScript"
+      ]
+    },
+    {
+      "type": "GroovyScript",
+      "name": "GroovyScript",
+      "quantity": 2,
+      "explicitly_mentioned": true,
+      "requirements": "Two groovy script processors for router branches"
+    }
+  ],
+  "implicit_components": [
+    {
+      "type": "StartEvent",
+      "name": "Start",
+      "quantity": 1,
+      "reason": "Required for iFlow initiation"
+    },
+    {
+      "type": "EndEvent",
+      "name": "End",
+      "quantity": 1,
+      "reason": "Required for iFlow termination"
+    }
+  ],
+  "strategic_plan": {
+    "rag_search_strategy": "Search for each component type with optimized queries",
+    "generation_order": [
+      "StartEvent",
+      "ContentModifier",
+      "Router",
+      "GroovyScript",
+      "GroovyScript",
+      "EndEvent"
+    ],
+    "integration_approach": "Sequential flow with Router branching to multiple Groovy Scripts based on payload criteria"
+  },
+  "query_interpretation": "User wants to create a complete iFlow with content modifier, then router splitting to two groovy scripts based on priority field"
+}
+--------------------------------------------------------------------------------

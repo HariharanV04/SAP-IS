@@ -126,6 +126,57 @@ class SapBtpIntegration:
             logger.error(f"Error listing integration packages: {str(e)}")
             raise
     
+    def ensure_package_exists(self, package_id, package_name=None):
+        """
+        Check if a package exists, create it if it doesn't
+        
+        Args:
+            package_id: Package ID to check/create
+            package_name: Optional package name (defaults to package_id)
+            
+        Returns:
+            bool: True if package exists or was created successfully
+        """
+        try:
+            # Check if package exists
+            headers = self.get_headers()
+            check_url = f"{self.integration_packages_api}('{package_id}')"
+            check_response = requests.get(check_url, headers=headers)
+            
+            if check_response.status_code == 200:
+                logger.info(f"✅ Package '{package_id}' already exists")
+                return True
+            
+            # Package doesn't exist, create it
+            logger.info(f"📦 Package '{package_id}' not found, creating it...")
+            
+            package_name = package_name or package_id
+            create_payload = {
+                "Id": package_id,
+                "Name": package_name,
+                "Description": f"Auto-created package for IMigrate deployment: {package_name}",
+                "ShortText": package_name,
+                "Version": "1.0.0",
+                "Vendor": "IMigrate"
+            }
+            
+            create_response = requests.post(
+                self.integration_packages_api,
+                headers=headers,
+                json=create_payload
+            )
+            
+            if create_response.status_code in [200, 201]:
+                logger.info(f"✅ Successfully created package '{package_id}'")
+                return True
+            else:
+                logger.error(f"❌ Failed to create package '{package_id}': {create_response.status_code} - {create_response.text}")
+                return False
+                
+        except Exception as e:
+            logger.error(f"Error ensuring package exists: {str(e)}")
+            return False
+    
     def deploy_integration_flow(self, package_id, iflow_name, iflow_zip_path, iflow_id=None, description=None):
         """
         Deploy an integration flow to SAP Integration Suite
@@ -144,6 +195,11 @@ class SapBtpIntegration:
             # If no iflow_id provided, use the iflow_name (with spaces replaced by underscores)
             if not iflow_id:
                 iflow_id = iflow_name.replace(' ', '_')
+            
+            # Step 0: Ensure package exists (auto-create if needed)
+            logger.info(f"📦 Checking if package '{package_id}' exists...")
+            if not self.ensure_package_exists(package_id, iflow_name):
+                raise Exception(f"Failed to ensure package '{package_id}' exists")
             
             # Step 1: Create or update the integration flow design time artifact
             headers = self.get_headers()

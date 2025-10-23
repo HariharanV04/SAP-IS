@@ -1,3 +1,0 @@
-@echo off
-echo Starting MuleToIS API server...
-python app.py

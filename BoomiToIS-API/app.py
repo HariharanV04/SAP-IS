@@ -85,6 +85,9 @@ from sap_btp_integration import SapBtpIntegration
 # Import the direct iFlow deployment module
 from direct_iflow_deployment import DirectIflowDeployment, deploy_iflow
 
+# Import feedback API
+from feedback_api import feedback_bp
+
 # SAP BTP Integration configuration
 SAP_BTP_TENANT_URL = os.getenv('SAP_BTP_TENANT_URL')
 SAP_BTP_CLIENT_ID = os.getenv('SAP_BTP_CLIENT_ID')
@@ -112,6 +115,9 @@ logger.info(f"Using CORS origin: {cors_origin}")
 
 # Enable CORS for all routes with additional options
 CORS(app, resources={r"/*": {"origins": cors_origin, "supports_credentials": True}})
+
+# Register feedback blueprint
+app.register_blueprint(feedback_bp)
 
 # Add a global CORS handler
 @app.after_request
@@ -168,10 +174,23 @@ def load_jobs():
 # Function to save jobs to JSON file
 def save_jobs(jobs_dict):
     try:
-        with open(app.config['JOBS_FILE'], 'w') as f:
-            json.dump(jobs_dict, f, indent=2)
+        jobs_file_path = app.config['JOBS_FILE']
+        # Create directory if it doesn't exist
+        os.makedirs(os.path.dirname(jobs_file_path), exist_ok=True)
+        
+        # Write to a temporary file first, then rename (atomic operation)
+        temp_file = jobs_file_path + '.tmp'
+        with open(temp_file, 'w', encoding='utf-8') as f:
+            json.dump(jobs_dict, f, indent=2, default=str)
+        
+        # Rename temp file to actual file (atomic on most systems)
+        if os.path.exists(jobs_file_path):
+            os.remove(jobs_file_path)
+        os.rename(temp_file, jobs_file_path)
     except Exception as e:
-        logging.error(f"Error saving jobs file: {str(e)}")
+        logging.error(f"Error saving jobs file to '{app.config.get('JOBS_FILE', 'unknown')}': {str(e)}")
+        import traceback
+        logging.error(traceback.format_exc())
 
 # In-memory job storage (initialized from file and periodically saved to file)
 jobs = load_jobs()
@@ -225,12 +244,30 @@ def generate_iflow(job_id=None):
 
         # Get markdown from request body first (prioritize direct markdown over fetching)
         data = request.json
+        
+        # DEBUG: Log incoming request details
+        logger.info(f"📥 Incoming request to generate-iflow:")
+        logger.info(f"   URL job_id parameter: {job_id}")
+        logger.info(f"   Request body keys: {list(data.keys()) if data else 'None'}")
+        if data:
+            logger.info(f"   Body has job_id: {'job_id' in data}")
+            if 'job_id' in data:
+                logger.info(f"   Body job_id value: {data['job_id']}")
 
         # Check if markdown is provided in request body
         if data and 'markdown' in data:
             # Use markdown from request body (for document upload jobs)
             markdown_content = data['markdown']
             logger.info(f"Using markdown from request body, length: {len(markdown_content)} characters")
+
+            # CRITICAL: Extract job_id from request body if not in URL
+            if not job_id and 'job_id' in data:
+                job_id = data['job_id']
+                logger.info(f"📌 Using job_id from request body: {job_id}")
+            elif job_id:
+                logger.info(f"📌 Using job_id from URL parameter: {job_id}")
+            else:
+                logger.warning(f"⚠️ No job_id found in URL or request body!")
 
             iflow_name = data.get('iflow_name', f"IFlow_{job_id[:8] if job_id else 'Generated'}")
             source_type = data.get('source_type', 'unknown')
@@ -285,6 +322,33 @@ def generate_iflow(job_id=None):
             }), 400
         # Generate a new job ID for iFlow generation
         iflow_job_id = str(uuid.uuid4())
+
+        # PERSISTENT MAPPING: Store job_id mapping even if None
+        # This creates a retrievable relationship for status updates later
+        job_mapping_file = os.path.join(app.config['RESULTS_FOLDER'], 'job_mappings.json')
+        try:
+            if os.path.exists(job_mapping_file):
+                with open(job_mapping_file, 'r') as f:
+                    job_mappings = json.load(f)
+            else:
+                job_mappings = {}
+        except:
+            job_mappings = {}
+        
+        # Store bidirectional mapping
+        if job_id:
+            job_mappings[iflow_job_id] = job_id  # BoomiToIS → Main API
+            job_mappings[job_id] = iflow_job_id  # Main API → BoomiToIS
+            logger.info(f"💾 Saved job mapping: {iflow_job_id} ↔ {job_id}")
+        else:
+            # Even if job_id is None, store the BoomiToIS job_id for future lookup
+            job_mappings[iflow_job_id] = None
+            logger.warning(f"💾 Saved BoomiToIS job without Main API job_id: {iflow_job_id}")
+        
+        # Save mappings to file
+        os.makedirs(app.config['RESULTS_FOLDER'], exist_ok=True)
+        with open(job_mapping_file, 'w') as f:
+            json.dump(job_mappings, f, indent=2)
 
         # Create job record
         jobs[iflow_job_id] = {
@@ -390,9 +454,28 @@ def process_iflow_generation(job_id, markdown_content, iflow_name=None):
 
                 if rag_response.status_code == 200:
                     result = rag_response.json()
-                    logger.info(f"✅ RAG API generated iFlow successfully")
+                    logger.info(f"✅ RAG API returned 200 status")
                     logger.info(f"   Generation method: {result.get('generation_method', 'RAG Agent')}")
                     logger.info(f"   Components: {len(result.get('components', []))}")
+                    
+                    # Validate RAG response has valid package path
+                    package_path = result.get('files', {}).get('zip', '')
+                    if not package_path or package_path.strip() == '':
+                        logger.error(f"❌ RAG API returned empty package_path")
+                        logger.warning("⚠️ Falling back to template-based generation")
+                        
+                        # Fallback to template-based generation
+                        result = generate_iflow_from_markdown(
+                            markdown_content=markdown_content,
+                            api_key=ANTHROPIC_API_KEY,
+                            output_dir=job_result_dir,
+                            iflow_name=iflow_name,
+                            job_id=job_id,
+                            use_converter=False
+                        )
+                        result['generation_method'] = 'Template-based (RAG empty path fallback)'
+                    else:
+                        logger.info(f"   Package path: {package_path}")
                 else:
                     logger.error(f"❌ RAG API error: {rag_response.status_code} - {rag_response.text}")
                     logger.warning("⚠️ Falling back to template-based generation")
@@ -453,6 +536,59 @@ def process_iflow_generation(job_id, markdown_content, iflow_name=None):
         if result["status"] == "success":
             # Update job with file paths
             zip_path = result["files"]["zip"]
+            
+            # Validate zip_path before using it
+            if not zip_path or not isinstance(zip_path, str) or zip_path.strip() == '':
+                raise ValueError(f"Invalid zip_path received: '{zip_path}'")
+            
+            # Resolve the absolute path - RAG API returns path relative to its directory
+            # Convert to absolute path by checking multiple possible locations
+            if not os.path.isabs(zip_path):
+                # Try RAG API directory first (most common)
+                rag_api_base = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'agentic-rag-IMigrate')
+                absolute_zip_path = os.path.join(rag_api_base, zip_path)
+                
+                if not os.path.exists(absolute_zip_path):
+                    # Try BoomiToIS-API directory as fallback
+                    absolute_zip_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), zip_path)
+                    
+                    if not os.path.exists(absolute_zip_path):
+                        # Try current working directory
+                        absolute_zip_path = os.path.abspath(zip_path)
+                        
+                        if not os.path.exists(absolute_zip_path):
+                            logger.error(f"❌ ZIP file not found in any expected location:")
+                            logger.error(f"   1. RAG API dir: {os.path.join(rag_api_base, zip_path)}")
+                            logger.error(f"   2. BoomiToIS dir: {os.path.join(os.path.dirname(os.path.abspath(__file__)), zip_path)}")
+                            logger.error(f"   3. Current dir: {os.path.abspath(zip_path)}")
+                            raise ValueError(f"Generated ZIP file not found: {zip_path}")
+                
+                zip_path = absolute_zip_path
+            else:
+                # Already absolute path, just verify it exists
+                if not os.path.exists(zip_path):
+                    logger.warning(f"⚠️ ZIP file not found at absolute path: {zip_path}")
+                    raise ValueError(f"Generated ZIP file not found: {zip_path}")
+            
+            # Retry mechanism: Check for ZIP file existence with retries (handles file system delays, network drives, antivirus scanning)
+            import time
+            max_retries = 10
+            retry_interval = 10  # seconds
+            
+            for attempt in range(1, max_retries + 1):
+                if os.path.exists(zip_path):
+                    logger.info(f"✅ Verified ZIP file exists (attempt {attempt}/{max_retries}): {zip_path}")
+                    break
+                else:
+                    if attempt < max_retries:
+                        logger.warning(f"⚠️ ZIP file not found yet (attempt {attempt}/{max_retries}), retrying in {retry_interval} seconds...")
+                        logger.warning(f"   Path checked: {zip_path}")
+                        time.sleep(retry_interval)
+                    else:
+                        # Final attempt failed
+                        logger.error(f"❌ ZIP file not found after {max_retries} attempts ({max_retries * retry_interval} seconds)")
+                        logger.error(f"   Path: {zip_path}")
+                        raise ValueError(f"Generated ZIP file not found after {max_retries} retries: {zip_path}")
             relative_zip_path = os.path.relpath(zip_path, os.path.dirname(os.path.abspath(__file__)))
 
             # Add debug files if they exist
@@ -461,6 +597,7 @@ def process_iflow_generation(job_id, markdown_content, iflow_name=None):
                 relative_debug_path = os.path.relpath(debug_path, os.path.dirname(os.path.abspath(__file__)))
                 debug_files[debug_file] = relative_debug_path
 
+            # Only mark as completed after all verification is done
             jobs[job_id].update({
                 'status': 'completed',
                 'message': 'iFlow generation completed successfully!',
@@ -471,12 +608,111 @@ def process_iflow_generation(job_id, markdown_content, iflow_name=None):
                 'iflow_name': iflow_name
             })
             save_jobs(jobs)  # Save job data to file
+            logger.info(f"✅ Job {job_id} marked as completed and saved")
+            
+            # Update Main API with completion status
+            try:
+                main_job_id = jobs[job_id].get('original_job_id')
+                
+                # FALLBACK: If not in job record, try to retrieve from persistent mapping
+                if not main_job_id:
+                    logger.warning(f"⚠️ No original_job_id in job record, checking persistent mapping...")
+                    job_mapping_file = os.path.join(app.config['RESULTS_FOLDER'], 'job_mappings.json')
+                    try:
+                        if os.path.exists(job_mapping_file):
+                            with open(job_mapping_file, 'r') as f:
+                                job_mappings = json.load(f)
+                            main_job_id = job_mappings.get(job_id)
+                            if main_job_id:
+                                logger.info(f"✅ Retrieved main_job_id from persistent mapping: {main_job_id}")
+                    except Exception as e:
+                        logger.error(f"❌ Error reading job mappings: {e}")
+                
+                if main_job_id:
+                    logger.info(f"📡 Updating Main API job {main_job_id} to 'completed' status")
+                    
+                    # Get Main API URL
+                    MAIN_API_URL = os.getenv('MAIN_API_URL', 'http://localhost:5000')
+                    MAIN_API_HOST = os.getenv('MAIN_API_HOST', 'localhost')
+                    MAIN_API_PORT = os.getenv('MAIN_API_PORT', '5000')
+                    MAIN_API_PROTOCOL = os.getenv('MAIN_API_PROTOCOL', 'http')
+                    
+                    if not MAIN_API_URL or MAIN_API_URL == 'http://localhost:5000':
+                        MAIN_API_URL = f"{MAIN_API_PROTOCOL}://{MAIN_API_HOST}"
+                        if MAIN_API_PORT and MAIN_API_PORT not in ['80', '443']:
+                            MAIN_API_URL += f":{MAIN_API_PORT}"
+                    
+                    # Update Main API job status
+                    import requests
+                    update_response = requests.post(
+                        f"{MAIN_API_URL}/api/jobs/{main_job_id}/update",
+                        json={
+                            'status': 'completed',
+                            'processing_message': 'iFlow generation completed successfully!',
+                            'iflow_package_path': zip_path,
+                            'package_path': zip_path,
+                            'iflow_name': iflow_name
+                        },
+                        timeout=10
+                    )
+                    
+                    if update_response.status_code == 200:
+                        logger.info(f"✅ Successfully updated Main API job {main_job_id}")
+                    else:
+                        logger.warning(f"⚠️ Main API update returned {update_response.status_code}: {update_response.text}")
+                else:
+                    logger.warning(f"⚠️ No original_job_id found for BoomiToIS job {job_id}, skipping Main API update")
+                    
+            except Exception as update_error:
+                logger.error(f"❌ Error updating Main API: {str(update_error)}")
+                # Don't fail the whole job if Main API update fails
         else:
             jobs[job_id].update({
                 'status': 'failed',
                 'message': result["message"]
             })
             save_jobs(jobs)  # Save job data to file
+            
+            # Update Main API with failure status
+            try:
+                main_job_id = jobs[job_id].get('original_job_id')
+                
+                # FALLBACK: Check persistent mapping
+                if not main_job_id:
+                    job_mapping_file = os.path.join(app.config['RESULTS_FOLDER'], 'job_mappings.json')
+                    try:
+                        if os.path.exists(job_mapping_file):
+                            with open(job_mapping_file, 'r') as f:
+                                job_mappings = json.load(f)
+                            main_job_id = job_mappings.get(job_id)
+                    except:
+                        pass
+                
+                if main_job_id:
+                    logger.info(f"📡 Updating Main API job {main_job_id} to 'failed' status")
+                    
+                    MAIN_API_URL = os.getenv('MAIN_API_URL', 'http://localhost:5000')
+                    MAIN_API_HOST = os.getenv('MAIN_API_HOST', 'localhost')
+                    MAIN_API_PORT = os.getenv('MAIN_API_PORT', '5000')
+                    MAIN_API_PROTOCOL = os.getenv('MAIN_API_PROTOCOL', 'http')
+                    
+                    if not MAIN_API_URL or MAIN_API_URL == 'http://localhost:5000':
+                        MAIN_API_URL = f"{MAIN_API_PROTOCOL}://{MAIN_API_HOST}"
+                        if MAIN_API_PORT and MAIN_API_PORT not in ['80', '443']:
+                            MAIN_API_URL += f":{MAIN_API_PORT}"
+                    
+                    import requests
+                    requests.post(
+                        f"{MAIN_API_URL}/api/jobs/{main_job_id}/update",
+                        json={
+                            'status': 'failed',
+                            'processing_message': result["message"],
+                            'error': result["message"]
+                        },
+                        timeout=10
+                    )
+            except Exception as update_error:
+                logger.error(f"❌ Error updating Main API: {str(update_error)}")
 
     except Exception as e:
         logger.error(f"Error generating iFlow: {str(e)}")
@@ -485,6 +721,47 @@ def process_iflow_generation(job_id, markdown_content, iflow_name=None):
             'message': f'Error generating iFlow: {str(e)}'
         })
         save_jobs(jobs)  # Save job data to file
+        
+        # Update Main API with exception status
+        try:
+            main_job_id = jobs[job_id].get('original_job_id')
+            
+            # FALLBACK: Check persistent mapping
+            if not main_job_id:
+                job_mapping_file = os.path.join(app.config['RESULTS_FOLDER'], 'job_mappings.json')
+                try:
+                    if os.path.exists(job_mapping_file):
+                        with open(job_mapping_file, 'r') as f:
+                            job_mappings = json.load(f)
+                        main_job_id = job_mappings.get(job_id)
+                except:
+                    pass
+            
+            if main_job_id:
+                logger.info(f"📡 Updating Main API job {main_job_id} to 'failed' status (exception)")
+                
+                MAIN_API_URL = os.getenv('MAIN_API_URL', 'http://localhost:5000')
+                MAIN_API_HOST = os.getenv('MAIN_API_HOST', 'localhost')
+                MAIN_API_PORT = os.getenv('MAIN_API_PORT', '5000')
+                MAIN_API_PROTOCOL = os.getenv('MAIN_API_PROTOCOL', 'http')
+                
+                if not MAIN_API_URL or MAIN_API_URL == 'http://localhost:5000':
+                    MAIN_API_URL = f"{MAIN_API_PROTOCOL}://{MAIN_API_HOST}"
+                    if MAIN_API_PORT and MAIN_API_PORT not in ['80', '443']:
+                        MAIN_API_URL += f":{MAIN_API_PORT}"
+                
+                import requests
+                requests.post(
+                    f"{MAIN_API_URL}/api/jobs/{main_job_id}/update",
+                    json={
+                        'status': 'failed',
+                        'processing_message': f'Error generating iFlow: {str(e)}',
+                        'error': str(e)
+                    },
+                    timeout=10
+                )
+        except Exception as update_error:
+            logger.error(f"❌ Error updating Main API: {str(update_error)}")
 
 @app.route('/api/jobs/<job_id>', methods=['GET', 'OPTIONS'])
 @app.route('/api/iflow-generation/<job_id>', methods=['GET', 'OPTIONS'])
@@ -938,11 +1215,19 @@ def direct_deploy_to_sap(job_id):
 
         # First check if the ZIP file is in the job data
         if 'files' in job and 'zip' in job['files']:
-            zip_path = job['files']['zip']
+            stored_path = job['files']['zip']
+            
+            # Extract just the filename from the stored path
+            zip_filename = os.path.basename(stored_path)
+            
+            # ALWAYS look in agentic-rag-IMigrate/generated_packages/
+            imigrate_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            zip_path = os.path.join(imigrate_root, 'agentic-rag-IMigrate', 'generated_packages', zip_filename)
+            
             if os.path.exists(zip_path):
-                logger.info(f"Found ZIP file in job data: {zip_path}")
+                logger.info(f"Found ZIP file at: {zip_path}")
             else:
-                logger.warning(f"ZIP file in job data does not exist: {zip_path}")
+                logger.warning(f"ZIP file not found at expected location: {zip_path}")
                 zip_path = None
 
         # If ZIP file not found in job data, search for it in the results directory
@@ -984,13 +1269,22 @@ def direct_deploy_to_sap(job_id):
         })
         save_jobs(jobs)  # Save job data to file
 
-        # Deploy the iFlow using direct deployment
+        # Deploy the iFlow using direct deployment (original working method)
         logger.info(f"Deploying iFlow using direct deployment: {zip_path}")
+        logger.info(f"Using SAP BTP tenant: {SAP_BTP_TENANT_URL}")
+        logger.info(f"Using OAuth URL: {SAP_BTP_OAUTH_URL}")
+        logger.info(f"Using package: {package_id}")
+        
+        # Use the original working deployment method with new credentials
         deployment_result = deploy_iflow(
             iflow_path=zip_path,
             iflow_id=iflow_id,
             iflow_name=iflow_name,
-            package_id=package_id
+            package_id=package_id,
+            client_id=SAP_BTP_CLIENT_ID,
+            client_secret=SAP_BTP_CLIENT_SECRET,
+            token_url=SAP_BTP_OAUTH_URL,
+            base_url=SAP_BTP_TENANT_URL
         )
 
         # Update job status based on deployment result

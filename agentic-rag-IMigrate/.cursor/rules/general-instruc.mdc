@@ -6,3 +6,5 @@ alwaysApply: true
 make sure you delete all the test files after verification of output.
 
 also ensure that you dont make any changes or modifications in the package generation method since the agent seems to be generating SAP Integration Suite importable iflows.
+
+Never create .md files unless I ask you to. Maintain all the documentation in a maximum of 4-5 markdown files only. There should only be 4 to 5 markdowns for the entire IMigrate directory.

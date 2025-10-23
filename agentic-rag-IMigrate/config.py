@@ -36,12 +36,13 @@ MAX_TEXT_MATCHES = int(os.getenv("MAX_TEXT_MATCHES", "10"))
 POSTGRES_URL = "postgresql://postgres:Vamsikrishna@2003@db.jnoobtfelhtjfermohfx.supabase.co:5432/postgres"
 
 # Neo4j Configuration - Updated credentials
-NEO4J_URI = "neo4j+s://a09ee8ee.databases.neo4j.io"
-NEO4J_USER = "neo4j"
-NEO4J_PASSWORD = 'X1hAOjlDuAPAMLE3cA7inKb5RQL6JHKeJeV57hKQ_YY'
-NEO4J_DATABASE = "neo4j"
-AURA_INSTANCEID = "a09ee8ee"
-AURA_INSTANCENAME = "CompleteKG"
+NEO4J_URI='neo4j+s://a09ee8ee.databases.neo4j.io' 
+NEO4J_USER='neo4j'  # Changed from NEO4J_USERNAME to NEO4J_USER
+NEO4J_USERNAME='neo4j'  # Keep for backward compatibility
+NEO4J_PASSWORD='X1hAOjlDuAPAMLE3cA7inKb5RQL6JHKeJeV57hKQ_YY'
+NEO4J_DATABASE='neo4j'
+AURA_INSTANCEID='a09ee8ee' 
+AURA_INSTANCENAME='CompleteKG'
 
 # Logging Configuration
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")

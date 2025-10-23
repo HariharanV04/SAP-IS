@@ -1,0 +1,71 @@
+Manifest-Version: 1.0
+Bundle-SymbolicName: TerritoryandQuota_Commission_ManagedQuota_Transacti
+ onSync; singleton:=true
+Bundle-ManifestVersion: 2
+Origin-Bundle-SymbolicName: TerritoryandQuota_Commission_ManagedQuota_Tr
+ ansactionSync
+Origin-Bundle-Version: 1.0.2
+Import-Package: com.sap.esb.application.services.cxf.interceptor,com.sap
+ .esb.security,com.sap.it.op.agent.api,com.sap.it.op.agent.collector.cam
+ el,com.sap.it.op.agent.collector.cxf,com.sap.it.op.agent.mpl,javax.jms,
+ javax.jws,javax.wsdl,javax.xml.bind.annotation,javax.xml.namespace,java
+ x.xml.ws,org.apache.camel;version="2.8",org.apache.camel.builder;versio
+ n="2.8",org.apache.camel.builder.xml;version="2.8",org.apache.camel.com
+ ponent.cxf,org.apache.camel.model;version="2.8",org.apache.camel.proces
+ sor;version="2.8",org.apache.camel.processor.aggregate;version="2.8",or
+ g.apache.camel.spring.spi;version="2.8",org.apache.commons.logging,org.
+ apache.cxf.binding,org.apache.cxf.binding.soap,org.apache.cxf.binding.s
+ oap.spring,org.apache.cxf.bus,org.apache.cxf.bus.resource,org.apache.cx
+ f.bus.spring,org.apache.cxf.buslifecycle,org.apache.cxf.catalog,org.apa
+ che.cxf.configuration.jsse;version="2.5",org.apache.cxf.configuration.s
+ pring,org.apache.cxf.endpoint,org.apache.cxf.headers,org.apache.cxf.int
+ erceptor,org.apache.cxf.management.counters;version="2.5",org.apache.cx
+ f.message,org.apache.cxf.phase,org.apache.cxf.resource,org.apache.cxf.s
+ ervice.factory,org.apache.cxf.service.model,org.apache.cxf.transport,or
+ g.apache.cxf.transport.common.gzip,org.apache.cxf.transport.http,org.ap
+ ache.cxf.transport.http.policy,org.apache.cxf.workqueue,org.apache.cxf.
+ ws.rm.persistence,org.apache.cxf.wsdl11,org.osgi.framework;version="1.6
+ .0",org.slf4j;version="1.6",org.springframework.beans.factory.config;ve
+ rsion="3.0",com.sap.esb.camel.security.cms,org.apache.camel.spi,com.sap
+ .esb.webservice.audit.log,com.sap.esb.camel.endpoint.configurator.api,c
+ om.sap.esb.camel.jdbc.idempotency.reorg,javax.sql,org.apache.camel.proc
+ essor.idempotent.jdbc,org.osgi.service.blueprint;version="[1.0.0,2.0.0)
+ "
+Require-Capability: messagemapping.MM_Commissions_OrderFlagUpdate;resolu
+ tion:=optional;bundleType:String="MessageMapping";source:String="refere
+ nce",messagemapping.MM_Targettype_Eventtype_API;resolution:=optional;bu
+ ndleType:String="MessageMapping";source:String="reference",messagemappi
+ ng.MM_TerritoryQuota_Commission_Sync_ManagedQuota_TransactionFile;resol
+ ution:=optional;bundleType:String="MessageMapping";source:String="refer
+ ence",messagemapping.MM_TerritoryQuota_Commission_Sync_QuotaCell_Transa
+ ctionFile;resolution:=optional;bundleType:String="MessageMapping";sourc
+ e:String="reference",messagemapping.MM_TerritoryQuota_Commission_Sync_M
+ anagedQuota_AssignmentFile;resolution:=optional;bundleType:String="Mess
+ ageMapping";source:String="reference",messagemapping.MM_TerritoryQuota_
+ Commission_Sync_ManagedQuota_Orders_API;resolution:=optional;bundleType
+ :String="MessageMapping";source:String="reference",messagemapping.MM_Te
+ rritoryQuota_Commission_Sync_ManagedQuota_TransactionandAssignment_API;
+ resolution:=optional;bundleType:String="MessageMapping";source:String="
+ reference",messagemapping.MM_TerritoryQuota_Commission_Sync_QuotaCell_O
+ rderFile;resolution:=optional;bundleType:String="MessageMapping";source
+ :String="reference",messagemapping.MM_TerritoryQuota_Commission_Sync_Qu
+ otaCell_AssignmentFile;resolution:=optional;bundleType:String="MessageM
+ apping";source:String="reference",messagemapping.MM_TerritoryQuota_Comm
+ ission_Sync_ManagedQuota_OrderFile;resolution:=optional;bundleType:Stri
+ ng="MessageMapping";source:String="reference"
+Origin-Bundle-Name: Create Sales Orders and Transactions in SAP Incentiv
+ e Management using Manage Quota
+SAP-RuntimeProfile: iflmap
+Bundle-Name: Create Sales Orders and Transactions in SAP Incentive Manag
+ ement using Manage Quota
+Bundle-Version: 1.0.2
+SAP-NodeType: IFLMAP
+Origin-ModifiedDate: 1754646937646
+SAP-BundleType: IntegrationFlow
+Import-Service: com.sap.esb.webservice.audit.log.AuditLogger,com.sap.esb
+ .security.KeyManagerFactory;multiple:=false,com.sap.esb.security.TrustM
+ anagerFactory;multiple:=false,javax.sql.DataSource;multiple:=false;filt
+ er="(dataSourceName=default)",org.apache.cxf.ws.rm.persistence.RMStore;
+ multiple:=false,com.sap.esb.camel.security.cms.SignatureSplitter;multip
+ le:=false
+

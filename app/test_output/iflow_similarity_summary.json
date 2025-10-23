@@ -1,0 +1,120 @@
+{
+  "search_method": "RAG (Retrieval Augmented Generation)",
+  "total_results": 10,
+  "match_report": {
+    "total_results": 10,
+    "high_quality_matches": 10,
+    "medium_quality_matches": 0,
+    "low_quality_matches": 0,
+    "recommendations": [
+      {
+        "type": "high_confidence",
+        "message": "Found 10 high-confidence matches (>80% similarity)",
+        "action": "Top match: 'Notify SFTP File Pick up failure' - Consider using as reference",
+        "confidence": "High"
+      }
+    ],
+    "best_match": {
+      "rank": 1,
+      "id": "94dfd1beae99494798b8d2c467295ca6",
+      "name": "Notify SFTP File Pick up failure",
+      "description": "This integration flow implements a comprehensive solution for integration process in enterprise systems. This integration process integration delivers significant business value through automated data synchronization, reduced manual processing, enhanced data accuracy, and improved system connectivity. The solution ensures real-time data consistency across connected systems while providing comprehensive monitoring and error handling capabilities. The integration architecture leverages SAP Cloud Platform Integration capabilities with built-in error handling, retry mechanisms, and monitoring dashboards. The solution supports both synchronous and asynchronous processing patterns, ensuring optimal performance and reliability for enterprise-scale operations. Enterprise-grade security features include data encryption, authentication protocols, audit logging, and compliance with regulatory requirements. The integration provides complete visibility into data flow, transformation rules, and processing statistics through advanced monitoring and reporting capabilities. The integration flow incorporates industry-standard protocols and data formats to ensure compatibility with diverse enterprise systems. Performance optimization features include intelligent caching, batch processing capabilities, and configurable throughput settings. The solution supports hybrid deployment scenarios and provides comprehensive documentation and maintenance capabilities for long-term operational excellence. The integration implements robust data validation and transformation rules to ensure data quality and consistency. Advanced routing capabilities enable intelligent message distribution based on business rules and system availability. Comprehensive logging and audit trails provide complete traceability for compliance and troubleshooting purposes.",
+      "similarity_score": 0.8357,
+      "quality": "High",
+      "type": "SAP_Integration_Flow"
+    },
+    "avg_similarity": 0.8187599999999999
+  },
+  "similar_iflows": [
+    {
+      "rank": 1,
+      "id": "94dfd1beae99494798b8d2c467295ca6",
+      "name": "Notify SFTP File Pick up failure",
+      "description": "This integration flow implements a comprehensive solution for integration process in enterprise systems. This integration process integration delivers significant business value through automated data synchronization, reduced manual processing, enhanced data accuracy, and improved system connectivity. The solution ensures real-time data consistency across connected systems while providing comprehensive monitoring and error handling capabilities. The integration architecture leverages SAP Cloud Platform Integration capabilities with built-in error handling, retry mechanisms, and monitoring dashboards. The solution supports both synchronous and asynchronous processing patterns, ensuring optimal performance and reliability for enterprise-scale operations. Enterprise-grade security features include data encryption, authentication protocols, audit logging, and compliance with regulatory requirements. The integration provides complete visibility into data flow, transformation rules, and processing statistics through advanced monitoring and reporting capabilities. The integration flow incorporates industry-standard protocols and data formats to ensure compatibility with diverse enterprise systems. Performance optimization features include intelligent caching, batch processing capabilities, and configurable throughput settings. The solution supports hybrid deployment scenarios and provides comprehensive documentation and maintenance capabilities for long-term operational excellence. The integration implements robust data validation and transformation rules to ensure data quality and consistency. Advanced routing capabilities enable intelligent message distribution based on business rules and system availability. Comprehensive logging and audit trails provide complete traceability for compliance and troubleshooting purposes.",
+      "similarity_score": 0.8357,
+      "quality": "High",
+      "type": "SAP_Integration_Flow"
+    },
+    {
+      "rank": 2,
+      "id": "4ff718b520284ee48bf8da5d79262b0d",
+      "name": "Step 1a - SFTP Sender",
+      "description": "This integration flow implements a comprehensive solution for integration process in enterprise systems. This integration process integration delivers significant business value through automated data synchronization, reduced manual processing, enhanced data accuracy, and improved system connectivity. The solution ensures real-time data consistency across connected systems while providing comprehensive monitoring and error handling capabilities. The integration architecture leverages SAP Cloud Platform Integration capabilities with built-in error handling, retry mechanisms, and monitoring dashboards. The solution supports both synchronous and asynchronous processing patterns, ensuring optimal performance and reliability for enterprise-scale operations. Enterprise-grade security features include data encryption, authentication protocols, audit logging, and compliance with regulatory requirements. The integration provides complete visibility into data flow, transformation rules, and processing statistics through advanced monitoring and reporting capabilities. The integration flow incorporates industry-standard protocols and data formats to ensure compatibility with diverse enterprise systems. Performance optimization features include intelligent caching, batch processing capabilities, and configurable throughput settings. The solution supports hybrid deployment scenarios and provides comprehensive documentation and maintenance capabilities for long-term operational excellence. The integration implements robust data validation and transformation rules to ensure data quality and consistency. Advanced routing capabilities enable intelligent message distribution based on business rules and system availability. Comprehensive logging and audit trails provide complete traceability for compliance and troubleshooting purposes.",
+      "similarity_score": 0.828,
+      "quality": "High",
+      "type": "SAP_Integration_Flow"
+    },
+    {
+      "rank": 3,
+      "id": "3b0735597e734248932ac4b42db7b6a4",
+      "name": "Cobrainer Integration - Check Existence of SAP SuccessFacto rs SFTP Import Files",
+      "description": "This integration flow implements a comprehensive solution for integration process in enterprise systems. This integration process integration delivers significant business value through automated data synchronization, reduced manual processing, enhanced data accuracy, and improved system connectivity. The solution ensures real-time data consistency across connected systems while providing comprehensive monitoring and error handling capabilities. The integration architecture leverages SAP Cloud Platform Integration capabilities with built-in error handling, retry mechanisms, and monitoring dashboards. The solution supports both synchronous and asynchronous processing patterns, ensuring optimal performance and reliability for enterprise-scale operations. Enterprise-grade security features include data encryption, authentication protocols, audit logging, and compliance with regulatory requirements. The integration provides complete visibility into data flow, transformation rules, and processing statistics through advanced monitoring and reporting capabilities. The integration flow incorporates industry-standard protocols and data formats to ensure compatibility with diverse enterprise systems. Performance optimization features include intelligent caching, batch processing capabilities, and configurable throughput settings. The solution supports hybrid deployment scenarios and provides comprehensive documentation and maintenance capabilities for long-term operational excellence. The integration implements robust data validation and transformation rules to ensure data quality and consistency. Advanced routing capabilities enable intelligent message distribution based on business rules and system availability. Comprehensive logging and audit trails provide complete traceability for compliance and troubleshooting purposes.",
+      "similarity_score": 0.8251,
+      "quality": "High",
+      "type": "SAP_Integration_Flow"
+    },
+    {
+      "rank": 4,
+      "id": "2f04c0fbd75a44c7b355e17c27f37a24",
+      "name": "File Transfer - Combine XML Files via Poll Enrich",
+      "description": "This integration flow implements a comprehensive solution for integration process in enterprise systems. This integration process integration delivers significant business value through automated data synchronization, reduced manual processing, enhanced data accuracy, and improved system connectivity. The solution ensures real-time data consistency across connected systems while providing comprehensive monitoring and error handling capabilities. The integration architecture leverages SAP Cloud Platform Integration capabilities with built-in error handling, retry mechanisms, and monitoring dashboards. The solution supports both synchronous and asynchronous processing patterns, ensuring optimal performance and reliability for enterprise-scale operations. Enterprise-grade security features include data encryption, authentication protocols, audit logging, and compliance with regulatory requirements. The integration provides complete visibility into data flow, transformation rules, and processing statistics through advanced monitoring and reporting capabilities. The integration flow incorporates industry-standard protocols and data formats to ensure compatibility with diverse enterprise systems. Performance optimization features include intelligent caching, batch processing capabilities, and configurable throughput settings. The solution supports hybrid deployment scenarios and provides comprehensive documentation and maintenance capabilities for long-term operational excellence. The integration implements robust data validation and transformation rules to ensure data quality and consistency. Advanced routing capabilities enable intelligent message distribution based on business rules and system availability. Comprehensive logging and audit trails provide complete traceability for compliance and troubleshooting purposes.",
+      "similarity_score": 0.82,
+      "quality": "High",
+      "type": "SAP_Integration_Flow"
+    },
+    {
+      "rank": 5,
+      "id": "e4e67ba64a714546b7da83e9494b606e",
+      "name": "Replicate Time Sheet Data from SAP SuccessFactors Employe e Central to SAP ERP",
+      "description": "This integration flow implements a comprehensive solution for integration process in enterprise systems. This integration process integration delivers significant business value through automated data synchronization, reduced manual processing, enhanced data accuracy, and improved system connectivity. The solution ensures real-time data consistency across connected systems while providing comprehensive monitoring and error handling capabilities. The integration architecture leverages SAP Cloud Platform Integration capabilities with built-in error handling, retry mechanisms, and monitoring dashboards. The solution supports both synchronous and asynchronous processing patterns, ensuring optimal performance and reliability for enterprise-scale operations. Enterprise-grade security features include data encryption, authentication protocols, audit logging, and compliance with regulatory requirements. The integration provides complete visibility into data flow, transformation rules, and processing statistics through advanced monitoring and reporting capabilities. The integration flow incorporates industry-standard protocols and data formats to ensure compatibility with diverse enterprise systems. Performance optimization features include intelligent caching, batch processing capabilities, and configurable throughput settings. The solution supports hybrid deployment scenarios and provides comprehensive documentation and maintenance capabilities for long-term operational excellence. The integration implements robust data validation and transformation rules to ensure data quality and consistency. Advanced routing capabilities enable intelligent message distribution based on business rules and system availability. Comprehensive logging and audit trails provide complete traceability for compliance and troubleshooting purposes.",
+      "similarity_score": 0.8172,
+      "quality": "High",
+      "type": "SAP_Integration_Flow"
+    },
+    {
+      "rank": 6,
+      "id": "15cda01af37f4940b519750b86f4a58d",
+      "name": "Extract employee data from SAP SuccessFactors Employee Cent ral for employee data integration",
+      "description": "This integration flow implements a comprehensive solution for integration process in enterprise systems. This integration process integration delivers significant business value through automated data synchronization, reduced manual processing, enhanced data accuracy, and improved system connectivity. The solution ensures real-time data consistency across connected systems while providing comprehensive monitoring and error handling capabilities. The integration architecture leverages SAP Cloud Platform Integration capabilities with built-in error handling, retry mechanisms, and monitoring dashboards. The solution supports both synchronous and asynchronous processing patterns, ensuring optimal performance and reliability for enterprise-scale operations. Enterprise-grade security features include data encryption, authentication protocols, audit logging, and compliance with regulatory requirements. The integration provides complete visibility into data flow, transformation rules, and processing statistics through advanced monitoring and reporting capabilities. The integration flow incorporates industry-standard protocols and data formats to ensure compatibility with diverse enterprise systems. Performance optimization features include intelligent caching, batch processing capabilities, and configurable throughput settings. The solution supports hybrid deployment scenarios and provides comprehensive documentation and maintenance capabilities for long-term operational excellence. The integration implements robust data validation and transformation rules to ensure data quality and consistency. Advanced routing capabilities enable intelligent message distribution based on business rules and system availability. Comprehensive logging and audit trails provide complete traceability for compliance and troubleshooting purposes.",
+      "similarity_score": 0.8154,
+      "quality": "High",
+      "type": "SAP_Integration_Flow"
+    },
+    {
+      "rank": 7,
+      "id": "6444995c50a446cab09403f74da74945",
+      "name": "Sample Integration Flow for WebDAV Adapter",
+      "description": "This integration flow implements a comprehensive solution for integration process in enterprise systems. This integration process integration delivers significant business value through automated data synchronization, reduced manual processing, enhanced data accuracy, and improved system connectivity. The solution ensures real-time data consistency across connected systems while providing comprehensive monitoring and error handling capabilities. The integration architecture leverages SAP Cloud Platform Integration capabilities with built-in error handling, retry mechanisms, and monitoring dashboards. The solution supports both synchronous and asynchronous processing patterns, ensuring optimal performance and reliability for enterprise-scale operations. Enterprise-grade security features include data encryption, authentication protocols, audit logging, and compliance with regulatory requirements. The integration provides complete visibility into data flow, transformation rules, and processing statistics through advanced monitoring and reporting capabilities. The integration flow incorporates industry-standard protocols and data formats to ensure compatibility with diverse enterprise systems. Performance optimization features include intelligent caching, batch processing capabilities, and configurable throughput settings. The solution supports hybrid deployment scenarios and provides comprehensive documentation and maintenance capabilities for long-term operational excellence. The integration implements robust data validation and transformation rules to ensure data quality and consistency. Advanced routing capabilities enable intelligent message distribution based on business rules and system availability. Comprehensive logging and audit trails provide complete traceability for compliance and troubleshooting purposes.",
+      "similarity_score": 0.8123,
+      "quality": "High",
+      "type": "SAP_Integration_Flow"
+    },
+    {
+      "rank": 8,
+      "id": "fe1d789c8542495fb2bd2b930b423bd5",
+      "name": "Replicate Product From SAP Master Data Integration Into S AP Entitlement Management System With Timer",
+      "description": "This integration flow implements a comprehensive solution for integration process in enterprise systems. This integration process integration delivers significant business value through automated data synchronization, reduced manual processing, enhanced data accuracy, and improved system connectivity. The solution ensures real-time data consistency across connected systems while providing comprehensive monitoring and error handling capabilities. The integration architecture leverages SAP Cloud Platform Integration capabilities with built-in error handling, retry mechanisms, and monitoring dashboards. The solution supports both synchronous and asynchronous processing patterns, ensuring optimal performance and reliability for enterprise-scale operations. Enterprise-grade security features include data encryption, authentication protocols, audit logging, and compliance with regulatory requirements. The integration provides complete visibility into data flow, transformation rules, and processing statistics through advanced monitoring and reporting capabilities. The integration flow incorporates industry-standard protocols and data formats to ensure compatibility with diverse enterprise systems. Performance optimization features include intelligent caching, batch processing capabilities, and configurable throughput settings. The solution supports hybrid deployment scenarios and provides comprehensive documentation and maintenance capabilities for long-term operational excellence. The integration implements robust data validation and transformation rules to ensure data quality and consistency. Advanced routing capabilities enable intelligent message distribution based on business rules and system availability. Comprehensive logging and audit trails provide complete traceability for compliance and troubleshooting purposes.",
+      "similarity_score": 0.8121,
+      "quality": "High",
+      "type": "SAP_Integration_Flow"
+    },
+    {
+      "rank": 9,
+      "id": "207c6e6281074906a5dab645f93db75d",
+      "name": "Generate Initials for New Hire - Process Request",
+      "description": "This integration flow implements a comprehensive solution for integration process in enterprise systems. This integration process integration delivers significant business value through automated data synchronization, reduced manual processing, enhanced data accuracy, and improved system connectivity. The solution ensures real-time data consistency across connected systems while providing comprehensive monitoring and error handling capabilities. The integration architecture leverages SAP Cloud Platform Integration capabilities with built-in error handling, retry mechanisms, and monitoring dashboards. The solution supports both synchronous and asynchronous processing patterns, ensuring optimal performance and reliability for enterprise-scale operations. Enterprise-grade security features include data encryption, authentication protocols, audit logging, and compliance with regulatory requirements. The integration provides complete visibility into data flow, transformation rules, and processing statistics through advanced monitoring and reporting capabilities. The integration flow incorporates industry-standard protocols and data formats to ensure compatibility with diverse enterprise systems. Performance optimization features include intelligent caching, batch processing capabilities, and configurable throughput settings. The solution supports hybrid deployment scenarios and provides comprehensive documentation and maintenance capabilities for long-term operational excellence. The integration implements robust data validation and transformation rules to ensure data quality and consistency. Advanced routing capabilities enable intelligent message distribution based on business rules and system availability. Comprehensive logging and audit trails provide complete traceability for compliance and troubleshooting purposes.",
+      "similarity_score": 0.812,
+      "quality": "High",
+      "type": "SAP_Integration_Flow"
+    },
+    {
+      "rank": 10,
+      "id": "bf6ac442fece4603aa8dbc503632cbe2",
+      "name": "Extract Time data from SAP Time and Attendance Management by WorkForce Software for payroll data integration",
+      "description": "This integration flow implements a comprehensive solution for integration process in enterprise systems. This integration process integration delivers significant business value through automated data synchronization, reduced manual processing, enhanced data accuracy, and improved system connectivity. The solution ensures real-time data consistency across connected systems while providing comprehensive monitoring and error handling capabilities. The integration architecture leverages SAP Cloud Platform Integration capabilities with built-in error handling, retry mechanisms, and monitoring dashboards. The solution supports both synchronous and asynchronous processing patterns, ensuring optimal performance and reliability for enterprise-scale operations. Enterprise-grade security features include data encryption, authentication protocols, audit logging, and compliance with regulatory requirements. The integration provides complete visibility into data flow, transformation rules, and processing statistics through advanced monitoring and reporting capabilities. The integration flow incorporates industry-standard protocols and data formats to ensure compatibility with diverse enterprise systems. Performance optimization features include intelligent caching, batch processing capabilities, and configurable throughput settings. The solution supports hybrid deployment scenarios and provides comprehensive documentation and maintenance capabilities for long-term operational excellence. The integration implements robust data validation and transformation rules to ensure data quality and consistency. Advanced routing capabilities enable intelligent message distribution based on business rules and system availability. Comprehensive logging and audit trails provide complete traceability for compliance and troubleshooting purposes.",
+      "similarity_score": 0.8098,
+      "quality": "High",
+      "type": "SAP_Integration_Flow"
+    }
+  ]
+}

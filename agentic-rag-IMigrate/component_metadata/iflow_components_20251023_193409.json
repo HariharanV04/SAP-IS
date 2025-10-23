@@ -1,0 +1,117 @@
+{
+  "query": "Create a complete SAP iFlow integration package named 'IFlow_166a20e6' with the following requirements from the documentation:\n\n# Boomi Integration Documentation\r\n\r\n## Table of Contents\r\n\r\n- [Summary](#summary)\r\n- [Key Processing Steps](#key-processing-steps)\r\n  - [1. Process Initialization](#1-process-initialization)\r\n  - [2. Data Extraction Phase](#2-data-extraction-phase)\r\n  - [3. Data Transformation Phase](#3-data-transformation-phase)\r\n  - [4. Output Generation](#4-output-generation)\r\n  - [5. Delivery and Notification](#5-delivery-and-notification)\r\n- [Data Transformation Steps](#data-transformation-steps)\r\n  - [Field Mapping and Conversion](#field-mapping-and-conversion)\r\n  - [Data Formatting and Validation](#data-formatting-and-validation)\r\n  - [String Processing and Business Logic](#string-processing-and-business-logic)\r\n- [Security and Deployment](#security-and-deployment)\r\n  - [Security Requirements](#security-requirements)\r\n  - [Deployment Configuration](#deployment-configuration)\r\n  - [Monitoring and Alerting](#monitoring-and-alerting)\r\n- [Boomi Processes](#boomi-processes)\r\n  - [1. None](#1-none)\r\n- [Data Mappings and Transformations](#data-mappings-and-transformations)\r\n  - [1. Canonical To Kafka Avro](#1-canonical-to-kafka-avro)\r\n\r\n\r\n\r\n**Generated on:** 2025-10-23 19:33:24\r\n\r\n## Summary\r\n\r\n- **Total Files Processed:** 2\r\n- **Processes:** 1\r\n- **Maps:** 1\r\n- **Connectors:** 0\r\n\r\n## Key Processing Steps\r\n\r\nThe integration follows a structured approach to employee data synchronization:\r\n\r\n### 1. Process Initialization\r\n- **Error Reporting Setup**: Initialize comprehensive error tracking across all component types\r\n- **Property Validation**: Verify all required process properties are configured\r\n- **Connection Testing**: Validate connectivity to SuccessFactors and SFTP endpoints\r\n\r\n### 2. Data Extraction Phase\r\n- **Filter Construction**: Build dynamic WHERE clauses based on multiple filter criteria\r\n- **Reference Data Loading**: Retrieve picklist values for data enrichment\r\n- **Employee Data Query**: Execute SuccessFactors queries with constructed filters\r\n\r\n### 3. Data Transforma\n\nGenerate a production-ready iFlow with proper:\n1. Start and End events\n2. Required adapters and connectors\n3. Content modifiers and processing steps\n4. Proper sequence flows\n5. Error handling\n6. SAP Integration Suite compliance\n",
+  "timestamp": "20251023_193409",
+  "total_components": 6,
+  "components": [
+    {
+      "component_id": 1,
+      "component_type": "ContentModifier",
+      "component_name": "ContentModifier",
+      "xml_element": "callActivity",
+      "keyword_matched": "ContentModifier",
+      "instance_number": 1,
+      "total_instances": 1,
+      "rag_queries": [],
+      "description": "ContentModifier component named 'ContentModifier'",
+      "source": "explicit",
+      "priority": "high",
+      "properties": {
+        "activityType": "Enricher",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::Enricher/version::1.6.1",
+        "componentVersion": "1.6"
+      }
+    },
+    {
+      "component_id": 2,
+      "component_type": "RequestReply",
+      "component_name": "RequestReply",
+      "xml_element": "serviceTask",
+      "keyword_matched": "RequestReply",
+      "instance_number": 1,
+      "total_instances": 1,
+      "rag_queries": [],
+      "description": "RequestReply component named 'RequestReply'",
+      "source": "explicit",
+      "priority": "high",
+      "properties": {
+        "activityType": "RequestReply",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::RequestReply/version::1.0.0",
+        "componentVersion": "1.0",
+        "adapter_type": "HTTP"
+      },
+      "adapter_type": "HTTP"
+    },
+    {
+      "component_id": 3,
+      "component_type": "Router",
+      "component_name": "Router",
+      "xml_element": "callActivity",
+      "keyword_matched": "Router",
+      "instance_number": 1,
+      "total_instances": 1,
+      "rag_queries": [],
+      "description": "Router component named 'Router'",
+      "source": "explicit",
+      "priority": "high",
+      "properties": {
+        "activityType": "ExclusiveGateway",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::ExclusiveGateway/version::1.1.2",
+        "componentVersion": "1.1"
+      }
+    },
+    {
+      "component_id": 4,
+      "component_type": "GroovyScript",
+      "component_name": "GroovyScript",
+      "xml_element": "callActivity",
+      "keyword_matched": "GroovyScript",
+      "instance_number": 1,
+      "total_instances": 2,
+      "rag_queries": [],
+      "description": "GroovyScript component named 'GroovyScript'",
+      "source": "explicit",
+      "priority": "high",
+      "properties": {
+        "activityType": "Script",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::GroovyScript/version::1.1.2",
+        "componentVersion": "1.1"
+      }
+    },
+    {
+      "component_id": 5,
+      "component_type": "StartEvent",
+      "component_name": "Start",
+      "xml_element": "startEvent",
+      "keyword_matched": "StartEvent",
+      "instance_number": 1,
+      "total_instances": 1,
+      "rag_queries": [],
+      "description": "StartEvent component named 'Start'",
+      "source": "implicit",
+      "priority": "medium",
+      "properties": {
+        "activityType": "startEvent",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::MessageStartEvent",
+        "componentVersion": "1.1"
+      }
+    },
+    {
+      "component_id": 6,
+      "component_type": "EndEvent",
+      "component_name": "End",
+      "xml_element": "endEvent",
+      "keyword_matched": "EndEvent",
+      "instance_number": 1,
+      "total_instances": 1,
+      "rag_queries": [],
+      "description": "EndEvent component named 'End'",
+      "source": "implicit",
+      "priority": "medium",
+      "properties": {
+        "activityType": "endEvent",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::MessageEndEvent/version::1.1.0",
+        "componentVersion": "1.1"
+      }
+    }
+  ]
+}

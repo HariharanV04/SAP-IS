@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useRef } from "react"
 import {
   ExternalLink,
   CheckCircle,
@@ -15,7 +15,8 @@ import {
   RotateCcw,
   ArrowRight,
   ChevronDown,
-  Zap
+  Zap,
+  MessageSquare
 } from "lucide-react"
 
 import {
@@ -37,6 +38,7 @@ import {
 } from "@services/api"
 
 import { toast } from "react-hot-toast"
+import FeedbackModal from "@components/FeedbackModal"
 
 // Get environment variables for polling configuration
 const DISABLE_AUTO_POLLING = import.meta.env.VITE_DISABLE_AUTO_POLLING === 'true'
@@ -49,6 +51,7 @@ const JobResult = ({ jobInfo, onNewJob, onJobUpdate }) => {
   const [iflowMatchStatus, setIflowMatchStatus] = useState(null)
   const [iflowMatchMessage, setIflowMatchMessage] = useState(null)
   const [iflowMatchFiles, setIflowMatchFiles] = useState(null)
+  const [iflowMatchResult, setIflowMatchResult] = useState(null)
   const [isGeneratingIflow, setIsGeneratingIflow] = useState(false)
 
   // Debouncing to prevent rapid multiple clicks
@@ -56,6 +59,9 @@ const JobResult = ({ jobInfo, onNewJob, onJobUpdate }) => {
   const [isIflowGenerated, setIsIflowGenerated] = useState(false)
   const [isDeploying, setIsDeploying] = useState(false)
   const [isDeployed, setIsDeployed] = useState(false)
+  
+  // Feedback modal state
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false)
 
   // Simple deployment configuration state
   const [showDeploymentConfig, setShowDeploymentConfig] = useState(false)
@@ -75,6 +81,22 @@ const JobResult = ({ jobInfo, onNewJob, onJobUpdate }) => {
   const [isDeleting, setIsDeleting] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
+  // 🧪 TEST MODE - Press Ctrl+Shift+T to toggle
+  const [testMode, setTestMode] = useState(false)
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      if (e.ctrlKey && e.shiftKey && e.key === 'T') {
+        setTestMode(prev => !prev)
+        toast(testMode ? "Test mode OFF" : "🧪 Test mode ON - Use test buttons below", {
+          icon: testMode ? "🔒" : "🧪",
+          duration: 3000
+        })
+      }
+    }
+    window.addEventListener('keydown', handleKeyPress)
+    return () => window.removeEventListener('keydown', handleKeyPress)
+  }, [testMode])
+
   // Check if iFlow match has been processed
   useEffect(() => {
     if (jobInfo.status === "completed" && jobInfo.id) {
@@ -90,6 +112,7 @@ const JobResult = ({ jobInfo, onNewJob, onJobUpdate }) => {
         setIflowMatchStatus(result.status)
         setIflowMatchMessage(result.message)
         setIflowMatchFiles(result.files || null)
+        setIflowMatchResult(result.result || null)
       }
     } catch (error) {
       console.error("Error checking iFlow match status:", error)
@@ -145,6 +168,7 @@ const JobResult = ({ jobInfo, onNewJob, onJobUpdate }) => {
 
             if (statusResult.status === "completed") {
               setIflowMatchFiles(statusResult.files || null);
+              setIflowMatchResult(statusResult.result || null);
               setIsGeneratingIflowMatch(false);
               toast.success("SAP Integration Suite equivalent search completed!");
             } else {
@@ -173,6 +197,7 @@ const JobResult = ({ jobInfo, onNewJob, onJobUpdate }) => {
 
           if (statusResult.status === "completed") {
             setIflowMatchFiles(statusResult.files || null)
+            setIflowMatchResult(statusResult.result || null)
             clearInterval(intervalId)
             setIflowMatchInterval(null)
             setIsGeneratingIflowMatch(false)
@@ -223,6 +248,46 @@ const JobResult = ({ jobInfo, onNewJob, onJobUpdate }) => {
   const [iflowGenerationFiles, setIflowGenerationFiles] = useState(null)
   const [statusCheckInterval, setStatusCheckInterval] = useState(null)
   const [iflowMatchInterval, setIflowMatchInterval] = useState(null)
+  const safetyTimeoutRef = useRef(null)
+
+  // Initialize iFlow generation button state based on job status
+  // ONLY runs on initial load or when job ID changes - NOT during active generation
+  useEffect(() => {
+    // Skip if generation is actively in progress (don't interfere with active flow)
+    if (isGeneratingIflow) {
+      console.log(`⏭️ Skipping state initialization - generation already in progress for job ${jobInfo.id}`)
+      return
+    }
+
+    // Reset states when job changes or component mounts
+    if (jobInfo && jobInfo.id) {
+      // Check if iFlow was already generated for this job
+      // Only consider it "generated" if status is completed AND package exists
+      // NOTE: 'documentation_completed' means docs are ready but iFlow NOT generated yet
+      const hasPackagePath = jobInfo.package_path || jobInfo.iflow_package_path
+      const isFullyCompleted = jobInfo.status === 'completed' && hasPackagePath
+      const isDocOnlyCompleted = jobInfo.status === 'documentation_completed'
+      
+      if (isFullyCompleted) {
+        console.log(`✅ Job ${jobInfo.id} already has iFlow generated, initializing button to "Generated" state`)
+        console.log(`   Status: ${jobInfo.status}, Package: ${hasPackagePath}`)
+        setIsIflowGenerated(true)
+        setIsGeneratingIflow(false)
+        setIflowGenerationStatus("completed")
+        setIflowGenerationMessage("iFlow already generated")
+      } else {
+        // Reset states for new/different jobs without iFlow
+        console.log(`🔄 Resetting iFlow button state for job ${jobInfo.id}`)
+        console.log(`   Status: ${jobInfo.status}, Package: ${hasPackagePath}`)
+        console.log(`   Documentation only? ${isDocOnlyCompleted}`)
+        setIsIflowGenerated(false)
+        setIsGeneratingIflow(false)
+        setIflowGenerationStatus(null)
+        setIflowGenerationMessage(null)
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [jobInfo.id]) // ONLY re-run when job ID changes, NOT on jobInfo updates
 
   // Set default custom iFlow name when iflowJobId becomes available
   useEffect(() => {
@@ -235,6 +300,15 @@ const JobResult = ({ jobInfo, onNewJob, onJobUpdate }) => {
     }
   }, [iflowJobId, jobInfo.id, jobInfo.filename, customIflowName])
 
+  // Clean up safety timeout when generation completes or fails
+  useEffect(() => {
+    if (!isGeneratingIflow && safetyTimeoutRef.current) {
+      console.log("🧹 Clearing safety timeout - generation no longer in progress");
+      clearTimeout(safetyTimeoutRef.current);
+      safetyTimeoutRef.current = null;
+    }
+  }, [isGeneratingIflow]);
+
   // Clean up any existing intervals when component unmounts or when starting a new job
   useEffect(() => {
     return () => {
@@ -245,6 +319,11 @@ const JobResult = ({ jobInfo, onNewJob, onJobUpdate }) => {
       if (iflowMatchInterval) {
         console.log("Cleaning up iFlow match interval on unmount");
         clearInterval(iflowMatchInterval);
+      }
+      if (safetyTimeoutRef.current) {
+        console.log("Cleaning up safety timeout on unmount");
+        clearTimeout(safetyTimeoutRef.current);
+        safetyTimeoutRef.current = null;
       }
     };
   }, [statusCheckInterval, iflowMatchInterval]);
@@ -268,6 +347,20 @@ const JobResult = ({ jobInfo, onNewJob, onJobUpdate }) => {
     setIflowGenerationStatus("processing");
     setIflowGenerationMessage("Starting SAP API/iFlow generation...");
 
+    // Clear any existing safety timeout
+    if (safetyTimeoutRef.current) {
+      clearTimeout(safetyTimeoutRef.current);
+    }
+
+    // Safety timeout: If still "generating" after 10 minutes, reset button state
+    safetyTimeoutRef.current = setTimeout(() => {
+      console.warn("⚠️ Safety timeout: iFlow generation took too long, resetting button state");
+      setIsGeneratingIflow(false);
+      setIflowGenerationStatus("timeout");
+      setIflowGenerationMessage("Generation timed out. Please try again or check job status.");
+      toast.error("iFlow generation timed out. Please try again.");
+    }, 600000); // 10 minutes
+
     try {
       // Clear any existing interval first
       if (statusCheckInterval) {
@@ -278,19 +371,21 @@ const JobResult = ({ jobInfo, onNewJob, onJobUpdate }) => {
 
       console.log(`Generating iFlow for job ${jobInfo.id}...`)
       console.log(`Platform detected: ${jobInfo.platform || 'mulesoft'}`)
+      console.log(`Source type: ${jobInfo.source_type}`)
 
-      // Check if this is a documentation upload job
-      const isDocumentationUpload = jobInfo.source_type === 'uploaded_documentation' ||
-                                   jobInfo.status === 'documentation_ready';
+      // Check if this is a PURE documentation upload job (not XML/ZIP processing)
+      // Note: documentation_completed status can apply to both doc uploads AND XML processing
+      // So we ONLY check source_type to determine routing
+      const isDocumentationUpload = jobInfo.source_type === 'uploaded_documentation';
 
       let result;
       if (isDocumentationUpload) {
-        console.log("Using main API endpoint for documentation upload job");
+        console.log("✅ Using main API endpoint for pure documentation upload job");
         // Call the main API endpoint for documentation upload jobs
         result = await generateIflowFromDocs(jobInfo.id);
       } else {
-        console.log("Using direct BoomiToIS-API endpoint for XML processing job");
-        // Call the BoomiToIS-API directly for XML processing jobs
+        console.log("✅ Using BoomiToIS-API endpoint for XML/ZIP processing job");
+        // Call the BoomiToIS-API directly for XML/ZIP processing jobs (Boomi/MuleSoft)
         result = await generateIflow(jobInfo.id, jobInfo.platform || 'mulesoft');
       }
 
@@ -322,35 +417,27 @@ const JobResult = ({ jobInfo, onNewJob, onJobUpdate }) => {
       if (DISABLE_AUTO_POLLING) {
         console.log("Auto-polling is disabled by environment configuration. Making a single status check.");
 
+        // Determine which job ID to check
+        const jobIdToCheck = isDocumentationUpload ? (result.boomi_job_id || result.job_id) : result.job_id;
+        console.log(`🔍 Job ID for status check: ${jobIdToCheck} (isDocumentationUpload: ${isDocumentationUpload})`);
+
         // Make status checks after delays to catch completion
         const checkStatuses = async (attempt = 1, maxAttempts = 6) => {
           try {
             let statusToCheck;
 
-            if (isDocumentationUpload) {
-              // For documentation upload jobs, check the main job status
-              // The main API will poll the BoomiToIS-API and update the main job status
-              statusToCheck = await getJobStatus(jobInfo.id);
-              console.log(`Status check attempt ${attempt} (main job):`, {
-                mainJobStatus: statusToCheck.status,
-                processingMessage: statusToCheck.processing_message
-              });
+            // Always check Main API status - RAG updates Main API, not platform API
+            // Main API syncs with platform API automatically
+            statusToCheck = await getJobStatus(jobInfo.id);
+            console.log(`Status check attempt ${attempt} (Main API):`, {
+              status: statusToCheck.status,
+              processingMessage: statusToCheck.processing_message
+            });
 
-              // Update main job info if it has changed
-              if (statusToCheck.status !== jobInfo.status) {
-                console.log(`Main job status updated from ${jobInfo.status} to ${statusToCheck.status}`);
-                // Only update parent if this is NOT a SAP equivalent search operation
-                // to prevent interference with main progress tracking
-                if (typeof onJobUpdate === 'function' && !isGeneratingIflowMatch) {
-                  onJobUpdate(statusToCheck);
-                }
-              }
-            } else {
-              // For XML processing jobs, check the BoomiToIS-API job status directly
-              statusToCheck = await getJobStatus(result.job_id);
-              console.log(`Status check attempt ${attempt} (BoomiToIS-API job):`, {
-                iflowStatus: statusToCheck.status
-              });
+            // Update parent component with latest job info if available
+            if (statusToCheck.status !== jobInfo.status && typeof onJobUpdate === 'function' && !isGeneratingIflowMatch) {
+              console.log(`Main job status updated from ${jobInfo.status} to ${statusToCheck.status}`);
+              onJobUpdate(statusToCheck);
             }
 
             if (statusToCheck.status === "completed") {
@@ -386,14 +473,27 @@ const JobResult = ({ jobInfo, onNewJob, onJobUpdate }) => {
         return;
       }
 
+      // Determine which job IDs exist in the system
+      // - mainJobId: Used for ALL status checks, database checks, and downloads (Main App tracking)
+      // - platformJobId: For reference only (platform APIs don't get updated by RAG)
+      const mainJobId = jobInfo.id; // Main app job ID (in Supabase) - USE THIS FOR POLLING!
+      const platformJobId = isDocumentationUpload ? (result.boomi_job_id || result.job_id) : result.job_id;
+      
+      console.log(`🔍 Job IDs determined:`, {
+        mainJobId,
+        platformJobId,
+        isDocumentationUpload
+      });
+
       // Check database before starting polling to prevent duplicate/unnecessary polling
-      console.log(`🔍 Checking database polling status before starting poll for job ${result.job_id}...`);
+      // NOTE: Database check uses MAIN job ID (Supabase tracks main app jobs, not platform API jobs)
+      console.log(`🔍 Checking database polling status before starting poll for main job ${mainJobId}...`);
       try {
-        const prePollingCheck = await isPollingActive(result.job_id);
-        console.log(`Pre-polling database check:`, prePollingCheck);
+        const prePollingCheck = await isPollingActive(mainJobId);
+        console.log(`Pre-polling database check for main job:`, prePollingCheck);
 
         if (prePollingCheck.success && !prePollingCheck.is_polling_active) {
-          console.log(`⚠️ Database indicates job ${result.job_id} is not active for polling (status: ${prePollingCheck.status})`);
+          console.log(`⚠️ Database indicates main job ${mainJobId} is not active for polling (status: ${prePollingCheck.status})`);
 
           // Job already complete, update UI accordingly
           if (prePollingCheck.status === 'completed') {
@@ -411,7 +511,7 @@ const JobResult = ({ jobInfo, onNewJob, onJobUpdate }) => {
           return; // Don't start polling
         }
 
-        console.log(`✅ Database check passed - starting polling for job ${result.job_id}`);
+        console.log(`✅ Database check passed - starting polling for main job ${mainJobId}`);
       } catch (dbCheckError) {
         console.warn(`⚠️ Pre-polling database check failed, continuing with polling anyway:`, dbCheckError);
         // Continue with polling if database check fails
@@ -421,19 +521,25 @@ const JobResult = ({ jobInfo, onNewJob, onJobUpdate }) => {
       let failedAttempts = 0;
       let pollCount = 0;
 
-      console.log(`Starting polling for iFlow generation job ${result.job_id}`);
+      console.log(`Starting polling for iFlow generation:`);
+      console.log(`  - Main job ID (Supabase): ${mainJobId}`);
+      console.log(`  - Platform job ID (API): ${platformJobId}`);
       console.log(`Polling configuration: Max polls: ${MAX_POLL_COUNT}, Interval: ${POLL_INTERVAL_MS}ms, Max failed attempts: ${MAX_FAILED_ATTEMPTS}`);
 
       const intervalId = setInterval(async () => {
         try {
           pollCount++;
-          console.log(`Polling attempt ${pollCount} for job ${result.job_id}`);
+          console.log(`Polling attempt ${pollCount}:`, {
+            mainJobId,
+            platformJobId
+          });
 
           // Check database polling status every 5 polls to detect backend completion
+          // NOTE: Database check uses MAIN job ID (Supabase tracks main app jobs)
           if (pollCount % 5 === 0) {
-            console.log(`🔍 Periodic database polling check (poll ${pollCount})...`);
+            console.log(`🔍 Periodic database polling check (poll ${pollCount}) for main job ${mainJobId}...`);
             try {
-              const dbPollingStatus = await isPollingActive(result.job_id);
+              const dbPollingStatus = await isPollingActive(mainJobId);
               console.log(`Database polling status:`, dbPollingStatus);
 
               if (dbPollingStatus.success && !dbPollingStatus.is_polling_active) {
@@ -468,20 +574,20 @@ const JobResult = ({ jobInfo, onNewJob, onJobUpdate }) => {
             clearInterval(intervalId);
             setStatusCheckInterval(null);
 
-            // Try one final direct download
+            // Try one final direct download using main job ID
             try {
-              await downloadGeneratedIflow(result.job_id, jobInfo.platform || 'mulesoft');
+              await downloadGeneratedIflow(mainJobId, jobInfo.platform || 'mulesoft');
               setIflowGenerationStatus("completed");
               setIflowGenerationMessage("iFlow generation completed successfully");
               setIsGeneratingIflow(false);
               setIsIflowGenerated(true);
               toast.success("iFlow generated successfully!");
             } catch (finalDownloadError) {
-              // Check database first, then fall back to Main API status check
-              console.log("🔍 Final download failed, checking database polling status...");
+              // Check database first (using MAIN job ID), then fall back to Main API status check
+              console.log("🔍 Final download failed, checking database polling status for main job...");
               try {
-                const dbFinalCheck = await isPollingActive(result.job_id);
-                console.log("Database final polling check:", dbFinalCheck);
+                const dbFinalCheck = await isPollingActive(mainJobId);
+                console.log("Database final polling check (main job):", dbFinalCheck);
 
                 if (dbFinalCheck.success) {
                   // Use database status as authoritative source
@@ -521,9 +627,9 @@ const JobResult = ({ jobInfo, onNewJob, onJobUpdate }) => {
 
               // Fallback: Check the actual job status from Main API
               try {
-                console.log("Checking job status from Main API...");
-                const finalStatusCheck = await getJobStatus(result.job_id);
-                console.log("Final job status check:", finalStatusCheck);
+                console.log("Checking main job status from API...");
+                const finalStatusCheck = await getJobStatus(mainJobId);
+                console.log("Final main job status check:", finalStatusCheck);
 
                 // Only re-enable button if job actually failed
                 if (finalStatusCheck.status === "failed") {
@@ -563,17 +669,27 @@ const JobResult = ({ jobInfo, onNewJob, onJobUpdate }) => {
             return;
           }
 
-          // Use main API status which includes BoomiToIS-API sync
-          const statusResult = await getJobStatus(result.job_id)
+          // Check Main API status - RAG updates Main API, not platform API
+          // Main API's get_job_status also checks platform API and syncs the status
+          let statusResult;
+          if (isDocumentationUpload) {
+            // For documentation uploads, check Main API which syncs with platform API
+            statusResult = await getJobStatus(mainJobId);
+            console.log(`📊 Main API status for main job ${mainJobId}:`, statusResult);
+          } else {
+            // For direct XML uploads, also check Main API
+            statusResult = await getJobStatus(mainJobId);
+            console.log(`📊 Main API status for main job ${mainJobId}:`, statusResult);
+          }
 
           // If the result has an error status, handle it but don't stop polling yet
           if (statusResult.status === 'failed') {
             console.warn("Job failed:", statusResult.processing_message || statusResult.message);
             failedAttempts++;
 
-            // Only if we've had multiple consecutive failures, try direct download
+            // Only if we've had multiple consecutive failures, try direct download using main job ID
             if (failedAttempts >= MAX_FAILED_ATTEMPTS) {
-              await handleDirectDownloadCheck(result.job_id, intervalId);
+              await handleDirectDownloadCheck(mainJobId, intervalId);
             }
             return;
           }
@@ -601,9 +717,9 @@ const JobResult = ({ jobInfo, onNewJob, onJobUpdate }) => {
           console.error("Error polling iFlow generation status:", error)
           failedAttempts++;
 
-          // If we've had multiple consecutive failures, try to download the file directly
+          // If we've had multiple consecutive failures, try to download the file directly using main job ID
           if (failedAttempts >= MAX_FAILED_ATTEMPTS) {
-            await handleDirectDownloadCheck(result.job_id, intervalId);
+            await handleDirectDownloadCheck(mainJobId, intervalId);
           }
         }
       }, POLL_INTERVAL_MS) // Use configured polling interval
@@ -616,7 +732,74 @@ const JobResult = ({ jobInfo, onNewJob, onJobUpdate }) => {
       setIsGeneratingIflow(false)
       setIflowGenerationStatus("failed")
       setIflowGenerationMessage("Failed to start SAP API/iFlow generation")
+      // Clear safety timeout on error
+      if (safetyTimeoutRef.current) {
+        clearTimeout(safetyTimeoutRef.current)
+        safetyTimeoutRef.current = null
+      }
     }
+  }
+
+  // 🧪 TEST MODE FUNCTIONS - Simulate different scenarios
+  const testSimulateGenerating = () => {
+    console.log("🧪 TEST: Simulating 'Generating' state")
+    setIsGeneratingIflow(true)
+    setIflowGenerationStatus("processing")
+    setIflowGenerationMessage("🧪 TEST: Generating iFlow...")
+    toast("🧪 Simulating generation in progress", { icon: "⚙️" })
+  }
+
+  const testSimulateBackendUpdate = () => {
+    console.log("🧪 TEST: Simulating backend updating jobInfo with package_path DURING generation")
+    console.log("🧪 TEST: This should NOT change button to 'Generated' if fix works correctly")
+    
+    // Simulate what happens when backend updates the job
+    if (typeof onJobUpdate === 'function') {
+      const updatedJob = {
+        ...jobInfo,
+        package_path: "test/fake/package.zip",
+        processing_step: "iflow_generating"
+      }
+      onJobUpdate(updatedJob)
+      toast("🧪 Simulated backend update with package_path", { icon: "📦" })
+    } else {
+      toast.error("🧪 onJobUpdate not available")
+    }
+  }
+
+  const testSimulateSuccess = () => {
+    console.log("🧪 TEST: Simulating successful completion")
+    setIsGeneratingIflow(false)
+    setIsIflowGenerated(true)
+    setIflowGenerationStatus("completed")
+    setIflowGenerationMessage("🧪 TEST: iFlow generated successfully")
+    toast.success("🧪 Simulated successful generation")
+  }
+
+  const testSimulateError = () => {
+    console.log("🧪 TEST: Simulating error")
+    setIsGeneratingIflow(false)
+    setIsIflowGenerated(false)
+    setIflowGenerationStatus("failed")
+    setIflowGenerationMessage("🧪 TEST: Generation failed")
+    toast.error("🧪 Simulated generation error")
+  }
+
+  const testSimulateTimeout = () => {
+    console.log("🧪 TEST: Simulating safety timeout")
+    setIsGeneratingIflow(false)
+    setIflowGenerationStatus("timeout")
+    setIflowGenerationMessage("🧪 TEST: Generation timed out")
+    toast.error("🧪 Simulated timeout")
+  }
+
+  const testReset = () => {
+    console.log("🧪 TEST: Resetting all states")
+    setIsGeneratingIflow(false)
+    setIsIflowGenerated(false)
+    setIflowGenerationStatus(null)
+    setIflowGenerationMessage(null)
+    toast("🧪 States reset", { icon: "🔄" })
   }
 
   // Helper function to check if the file exists by trying to download it
@@ -644,6 +827,9 @@ const JobResult = ({ jobInfo, onNewJob, onJobUpdate }) => {
   }
 
   const handleDeployToSap = async () => {
+    // Define deployJobId outside try block so it's available in catch
+    let deployJobId = null
+    
     try {
       setIsDeploying(true)
 
@@ -654,7 +840,7 @@ const JobResult = ({ jobInfo, onNewJob, onJobUpdate }) => {
         return
       }
 
-      const deployJobId = iflowJobId
+      deployJobId = iflowJobId
 
       console.log(`Deploying iFlow for job ${deployJobId} to SAP Integration Suite...`)
 
@@ -777,7 +963,9 @@ const JobResult = ({ jobInfo, onNewJob, onJobUpdate }) => {
       // Refresh job data even on exception to show any partial updates
       if (typeof onJobUpdate === 'function') {
         try {
-          const updatedJobData = await getJobStatus(deployJobId)
+          // Use deployJobId if available, otherwise fall back to main job ID
+          const jobIdToRefresh = deployJobId || jobInfo.id
+          const updatedJobData = await getJobStatus(jobIdToRefresh)
           if (updatedJobData) {
             console.log("Refreshed job data after deployment exception:", updatedJobData)
             onJobUpdate(updatedJobData)
@@ -967,7 +1155,7 @@ const JobResult = ({ jobInfo, onNewJob, onJobUpdate }) => {
     <div className="bg-white shadow-sm rounded-lg p-6 space-y-6">
 
 
-      {(jobInfo.status === "completed" || jobInfo.status === "documentation_ready") && (
+      {(jobInfo.status === "completed" || jobInfo.status === "documentation_ready" || jobInfo.status === "documentation_completed") && (
         <>
           <div>
             <h4 className="font-semibold text-gray-800 mb-3">
@@ -1054,6 +1242,79 @@ const JobResult = ({ jobInfo, onNewJob, onJobUpdate }) => {
                   </>
                 )}
               </button>
+
+              {/* 🧪 TEST MODE PANEL */}
+              {testMode && (
+                <div className="mt-4 w-full p-4 bg-yellow-50 border-2 border-yellow-300 rounded-lg">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-bold text-yellow-800 flex items-center gap-2">
+                      🧪 Test Mode Active
+                      <span className="text-xs font-normal">(Press Ctrl+Shift+T to exit)</span>
+                    </h4>
+                  </div>
+                  
+                  <div className="text-xs text-yellow-700 mb-3">
+                    <p className="font-semibold mb-1">Current States:</p>
+                    <ul className="space-y-1 pl-4">
+                      <li>• isGeneratingIflow: <strong>{String(isGeneratingIflow)}</strong></li>
+                      <li>• isIflowGenerated: <strong>{String(isIflowGenerated)}</strong></li>
+                      <li>• Status: <strong>{iflowGenerationStatus || 'null'}</strong></li>
+                      <li>• jobInfo.package_path: <strong>{jobInfo.package_path || 'null'}</strong></li>
+                    </ul>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2">
+                    <button
+                      onClick={testSimulateGenerating}
+                      className="px-3 py-2 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
+                    >
+                      1️⃣ Start Generating
+                    </button>
+                    <button
+                      onClick={testSimulateBackendUpdate}
+                      className="px-3 py-2 text-sm bg-orange-500 text-white rounded hover:bg-orange-600"
+                      title="Simulates backend updating jobInfo with package_path DURING generation"
+                    >
+                      2️⃣ Backend Update
+                    </button>
+                    <button
+                      onClick={testSimulateSuccess}
+                      className="px-3 py-2 text-sm bg-green-500 text-white rounded hover:bg-green-600"
+                    >
+                      ✅ Complete Success
+                    </button>
+                    <button
+                      onClick={testSimulateError}
+                      className="px-3 py-2 text-sm bg-red-500 text-white rounded hover:bg-red-600"
+                    >
+                      ❌ Error
+                    </button>
+                    <button
+                      onClick={testSimulateTimeout}
+                      className="px-3 py-2 text-sm bg-purple-500 text-white rounded hover:bg-purple-600"
+                    >
+                      ⏱️ Timeout
+                    </button>
+                    <button
+                      onClick={testReset}
+                      className="px-3 py-2 text-sm bg-gray-500 text-white rounded hover:bg-gray-600"
+                    >
+                      🔄 Reset
+                    </button>
+                  </div>
+
+                  <div className="mt-3 p-2 bg-yellow-100 rounded text-xs">
+                    <p className="font-semibold text-yellow-900 mb-1">🎯 Test Scenario (The Bug Fix):</p>
+                    <ol className="text-yellow-800 space-y-1 pl-4">
+                      <li>1. Click "1️⃣ Start Generating" → Button shows "Generating..." ✅</li>
+                      <li>2. Click "2️⃣ Backend Update" → <strong className="text-red-600">Button should STAY "Generating..."</strong> ✅</li>
+                      <li>3. If button changes to "Generated", the fix didn't work! ❌</li>
+                      <li>4. Click "✅ Complete Success" → Button shows "Generated"</li>
+                      <li>5. Click "🔄 Reset" to test again</li>
+                    </ol>
+                  </div>
+                </div>
+              )}
 
               <div className="mx-2 text-gray-400">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -1263,6 +1524,22 @@ const JobResult = ({ jobInfo, onNewJob, onJobUpdate }) => {
                 </div>
               </div>
             )}
+            
+            {/* Feedback Button - Show after iFlow generation or deployment */}
+            {(isIflowGenerated || isDeployed || jobInfo.status === 'completed') && (
+              <div className="mt-4">
+                <button
+                  onClick={() => setShowFeedbackModal(true)}
+                  className="w-full px-6 py-4 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-lg font-medium flex items-center justify-center gap-3 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
+                >
+                  <MessageSquare className="h-5 w-5" />
+                  <span>Provide Feedback - Help Us Improve</span>
+                </button>
+                <p className="text-center text-sm text-gray-500 mt-2">
+                  Your feedback helps us improve conversion quality for everyone
+                </p>
+              </div>
+            )}
 
             {/* Show iFlow match status and results */}
             {iflowMatchStatus && (
@@ -1288,6 +1565,124 @@ const JobResult = ({ jobInfo, onNewJob, onJobUpdate }) => {
                     {iflowMatchMessage ||
                       "Processing SAP Integration Suite equivalent search..."}
                   </p>
+
+                  {iflowMatchStatus === "completed" && iflowMatchResult && iflowMatchResult.top_matches && iflowMatchResult.top_matches.length > 0 && (
+                    <div className="mt-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <h5 className="text-base font-semibold text-gray-800 flex items-center gap-2">
+                          <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                          </svg>
+                          Top {iflowMatchResult.top_matches.length} Similar Integration Flows
+                        </h5>
+                        <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                          {iflowMatchResult.iflow_count || iflowMatchResult.top_matches.length} matches found
+                        </span>
+                      </div>
+
+                      {/* Table-like columnar display */}
+                      <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+                        {/* Header */}
+                        <div className="bg-gradient-to-r from-blue-50 to-blue-100 px-4 py-3 border-b border-blue-200">
+                          <div className="grid grid-cols-12 gap-3 items-center text-xs font-semibold text-gray-700 uppercase tracking-wide">
+                            <div className="col-span-1 text-center">Rank</div>
+                            <div className="col-span-6">Integration Flow Name</div>
+                            <div className="col-span-2 text-center">Quality</div>
+                            <div className="col-span-3 text-center">Match Score</div>
+                          </div>
+                        </div>
+
+                        {/* Rows */}
+                        <div className="divide-y divide-gray-100">
+                          {iflowMatchResult.top_matches.map((match, index) => (
+                            <div
+                              key={index}
+                              className="px-4 py-4 hover:bg-blue-50 transition-colors duration-150"
+                            >
+                              <div className="grid grid-cols-12 gap-3 items-center">
+                                {/* Rank */}
+                                <div className="col-span-1 flex justify-center">
+                                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white ${
+                                    index === 0 ? 'bg-gradient-to-br from-yellow-400 to-yellow-600 shadow-lg' :
+                                    index === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-500' :
+                                    index === 2 ? 'bg-gradient-to-br from-orange-400 to-orange-600' :
+                                    'bg-gradient-to-br from-blue-500 to-blue-600'
+                                  }`}>
+                                    {index + 1}
+                                  </div>
+                                </div>
+
+                                {/* Name & Description */}
+                                <div className="col-span-6">
+                                  <h6 className="font-medium text-gray-900 text-sm mb-1 leading-tight" title={match.name}>
+                                    {match.name}
+                                  </h6>
+                                  <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed" title={match.description}>
+                                    {match.description}
+                                  </p>
+                                </div>
+
+                                {/* Quality Badge */}
+                                <div className="col-span-2 flex justify-center">
+                                  <span className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm ${
+                                    match.quality === 'High' 
+                                      ? 'bg-green-100 text-green-700 border border-green-300'
+                                      : match.quality === 'Medium'
+                                      ? 'bg-yellow-100 text-yellow-700 border border-yellow-300'
+                                      : 'bg-gray-100 text-gray-700 border border-gray-300'
+                                  }`}>
+                                    {match.quality === 'High' && (
+                                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                      </svg>
+                                    )}
+                                    {match.quality}
+                                  </span>
+                                </div>
+
+                                {/* Similarity Score with Bar */}
+                                <div className="col-span-3">
+                                  <div className="flex flex-col items-center gap-2">
+                                    <div className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
+                                      {(match.similarity_score * 100).toFixed(1)}%
+                                    </div>
+                                    <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden shadow-inner">
+                                      <div
+                                        className={`h-full rounded-full transition-all duration-500 ${
+                                          match.similarity_score >= 0.8
+                                            ? 'bg-gradient-to-r from-green-400 to-green-600'
+                                            : match.similarity_score >= 0.6
+                                            ? 'bg-gradient-to-r from-yellow-400 to-yellow-600'
+                                            : 'bg-gradient-to-r from-gray-400 to-gray-600'
+                                        }`}
+                                        style={{ width: `${match.similarity_score * 100}%` }}
+                                      />
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Legend */}
+                      <div className="flex items-center justify-center gap-4 text-xs text-gray-600 pt-2">
+                        <div className="flex items-center gap-1">
+                          <div className="w-3 h-3 rounded-full bg-gradient-to-r from-green-400 to-green-600"></div>
+                          <span>High Quality (&gt;80%)</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <div className="w-3 h-3 rounded-full bg-gradient-to-r from-yellow-400 to-yellow-600"></div>
+                          <span>Medium (60-80%)</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <div className="w-3 h-3 rounded-full bg-gradient-to-r from-gray-400 to-gray-600"></div>
+                          <span>Low (&lt;60%)</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   {iflowMatchStatus === "completed" && iflowMatchFiles && (
                     <div className="mt-3 space-y-2">
@@ -1432,7 +1827,7 @@ const JobResult = ({ jobInfo, onNewJob, onJobUpdate }) => {
 
           {/* Intermediate Processing Files Section - Show for documentation uploads */}
           {console.log('JobInfo debug:', { source_type: jobInfo.source_type, status: jobInfo.status, files: jobInfo.files })}
-          {(jobInfo.source_type === 'uploaded_documentation' || jobInfo.status === 'documentation_ready') && (
+          {(jobInfo.source_type === 'uploaded_documentation' || jobInfo.status === 'documentation_ready' || jobInfo.status === 'documentation_completed') && (
             <div>
               <h4 className="font-semibold text-gray-800 mb-3">
                 Processing Files:
@@ -1587,17 +1982,20 @@ const JobResult = ({ jobInfo, onNewJob, onJobUpdate }) => {
         </>
       )}
 
-      {jobInfo.file_info && (
+      {/* File Analysis section - Hidden for now */}
+      {false && jobInfo.file_info && (
         <div className="mt-6">
-          <button
-            onClick={() => setShowFileAnalysis(!showFileAnalysis)}
-            className="flex items-center justify-between w-full font-semibold text-gray-800 mb-3 bg-gray-100 p-3 rounded-md hover:bg-gray-200 transition-colors"
-          >
-            <span>File Analysis</span>
-            <span className="text-gray-500">
-              {showFileAnalysis ? '▼' : '►'}
-            </span>
-          </button>
+          <div className="flex items-center justify-between mb-3">
+            <button
+              onClick={() => setShowFileAnalysis(!showFileAnalysis)}
+              className="flex items-center space-x-2 font-semibold text-gray-800 bg-gray-100 px-4 py-3 rounded-md hover:bg-gray-200 transition-colors"
+            >
+              <span>File Analysis</span>
+              <span className="text-gray-500">
+                {showFileAnalysis ? '▼' : '►'}
+              </span>
+            </button>
+          </div>
 
           {showFileAnalysis && (
             <div className="overflow-x-auto">
@@ -1690,7 +2088,8 @@ const JobResult = ({ jobInfo, onNewJob, onJobUpdate }) => {
         </div>
       )}
 
-      {jobInfo.parsed_details && (
+      {/* Parsed Components section - Hidden for now */}
+      {false && jobInfo.parsed_details && (
         <div>
           <h4 className="font-semibold text-gray-800 mb-3">
             Parsed Components:
@@ -1785,21 +2184,23 @@ const JobResult = ({ jobInfo, onNewJob, onJobUpdate }) => {
 
       {/* Job Status Information */}
       <div className="border-t pt-6">
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-2">
             {getStatusIcon()}
             <h3 className="text-lg font-semibold text-gray-800">
               Job Status: <span className="capitalize">{jobInfo.status}</span>
             </h3>
           </div>
-          <div className="flex items-center space-x-2">
+          
+          {/* Action Buttons */}
+          <div className="flex items-center gap-3">
             <button
               onClick={() => {
                 if (onNewJob) {
                   onNewJob()
                 }
               }}
-              className="flex items-center space-x-1 px-3 py-1 text-sm text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-colors duration-200"
+              className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 active:bg-blue-800 shadow-sm hover:shadow transition-all duration-200"
               title="Start a new upload"
             >
               <Plus className="h-4 w-4" />
@@ -1807,7 +2208,7 @@ const JobResult = ({ jobInfo, onNewJob, onJobUpdate }) => {
             </button>
             <button
               onClick={() => setShowDeleteConfirm(true)}
-              className="flex items-center space-x-1 px-3 py-1 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors duration-200"
+              className="flex items-center gap-2 px-4 py-2.5 bg-white text-red-600 text-sm font-medium border-2 border-red-200 rounded-lg hover:bg-red-50 hover:border-red-300 active:bg-red-100 shadow-sm transition-all duration-200"
               title="Delete this job and all associated files"
             >
               <Trash2 className="h-4 w-4" />
@@ -1914,6 +2315,13 @@ const JobResult = ({ jobInfo, onNewJob, onJobUpdate }) => {
       )}
 
       {/* Removed the Upload New File button */}
+      
+      {/* Feedback Modal */}
+      <FeedbackModal
+        isOpen={showFeedbackModal}
+        onClose={() => setShowFeedbackModal(false)}
+        jobInfo={jobInfo}
+      />
     </div>
   )
 }

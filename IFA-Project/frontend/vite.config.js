@@ -59,6 +59,16 @@ export default ({ mode }) => {
     },
     server: {
         proxy: {
+            // Feedback API goes to BoomiToIS-API (port 5003) - MUST BE FIRST!
+            '/api/feedback': {
+                target: IFLOW_SERVER_PATH,
+                changeOrigin: true,
+                secure: false,
+                rewrite: (path) => {
+                    console.log('[PROXY] Feedback request:', path, '-> Port 5003');
+                    return path;
+                }
+            },
             '/auth': {
                 target: SERVER_PATH,
                 changeOrigin: true,

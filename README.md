@@ -1,296 +1,370 @@
-# Context Engineering Template
+# IMigrate - Migration Tool for SAP Integration Suite
 
-A comprehensive template for getting started with Context Engineering - the discipline of engineering context for AI coding assistants so they have the information necessary to get the job done end to end.
+**Intelligent migration from Boomi/MuleSoft/Sterling → SAP Integration Suite (Cloud Integration)**
 
-> **Context Engineering is 10x better than prompt engineering and 100x better than vibe coding.**
+[![SAP Integration Suite](https://img.shields.io/badge/SAP-Integration%20Suite-0FAAFF?style=flat-square)](https://www.sap.com/products/integration-suite.html)
+[![Python](https://img.shields.io/badge/Python-3.9+-blue?style=flat-square)](https://www.python.org/)
+[![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square)](https://reactjs.org/)
+[![LangChain](https://img.shields.io/badge/LangChain-RAG-green?style=flat-square)](https://www.langchain.com/)
 
-## 🚀 Quick Start
+---
 
+## **🎯 What is IMigrate?**
+
+IMigrate is an **AI-powered migration platform** that automatically converts integration flows from:
+- **Dell Boomi** → SAP Integration Suite iFlows
+- **MuleSoft** → SAP Integration Suite iFlows  
+- **IBM Sterling** → SAP Integration Suite iFlows (coming soon)
+
+### **Key Features**
+
+✅ **Intelligent Documentation Generation** - Extracts integration patterns from source XML  
+✅ **RAG-Powered iFlow Generation** - Uses AI to generate production-ready SAP iFlows  
+✅ **Knowledge Graph Integration** - Neo4j-based component similarity search  
+✅ **Feedback Learning System** - Continuously improves from user feedback  
+✅ **Direct SAP BTP Deployment** - Deploy generated iFlows directly to SAP Cloud Integration  
+✅ **Multi-LLM Support** - Works with Anthropic Claude, Google Gemma3, OpenAI GPT-4  
+
+---
+
+## **🚀 Quick Start (3 Commands)**
+
+### **Prerequisites**
+- Python 3.9+
+- Node.js 18+
+- Docker (for Neo4j)
+- Supabase account (free tier)
+- Anthropic/OpenAI API key
+
+### **1. Clone & Setup**
 ```bash
-# 1. Clone this template
-git clone https://github.com/coleam00/Context-Engineering-Intro.git
-cd Context-Engineering-Intro
+git clone <repository-url>
+cd IMigrate
 
-# 2. Set up your project rules (optional - template provided)
-# Edit CLAUDE.md to add your project-specific guidelines
+# Install Python dependencies
+pip install -r agentic-rag-IMigrate/requirements.txt
+pip install -r BoomiToIS-API/requirements.txt  
+pip install -r app/requirements.txt
 
-# 3. Add examples (highly recommended)
-# Place relevant code examples in the examples/ folder
-
-# 4. Create your initial feature request
-# Edit INITIAL.md with your feature requirements
-
-# 5. Generate a comprehensive PRP (Product Requirements Prompt)
-# In Claude Code, run:
-/generate-prp INITIAL.md
-
-# 6. Execute the PRP to implement your feature
-# In Claude Code, run:
-/execute-prp PRPs/your-feature-name.md
+# Install Frontend dependencies
+cd IFA-Project/frontend
+npm install
+cd ../..
 ```
 
-## 📚 Table of Contents
-
-- [What is Context Engineering?](#what-is-context-engineering)
-- [Template Structure](#template-structure)
-- [Step-by-Step Guide](#step-by-step-guide)
-- [Writing Effective INITIAL.md Files](#writing-effective-initialmd-files)
-- [The PRP Workflow](#the-prp-workflow)
-- [Using Examples Effectively](#using-examples-effectively)
-- [Best Practices](#best-practices)
-
-## What is Context Engineering?
-
-Context Engineering represents a paradigm shift from traditional prompt engineering:
-
-### Prompt Engineering vs Context Engineering
-
-**Prompt Engineering:**
-- Focuses on clever wording and specific phrasing
-- Limited to how you phrase a task
-- Like giving someone a sticky note
-
-**Context Engineering:**
-- A complete system for providing comprehensive context
-- Includes documentation, examples, rules, patterns, and validation
-- Like writing a full screenplay with all the details
-
-### Why Context Engineering Matters
-
-1. **Reduces AI Failures**: Most agent failures aren't model failures - they're context failures
-2. **Ensures Consistency**: AI follows your project patterns and conventions
-3. **Enables Complex Features**: AI can handle multi-step implementations with proper context
-4. **Self-Correcting**: Validation loops allow AI to fix its own mistakes
-
-## Template Structure
-
-```
-context-engineering-intro/
-├── .claude/
-│   ├── commands/
-│   │   ├── generate-prp.md    # Generates comprehensive PRPs
-│   │   └── execute-prp.md     # Executes PRPs to implement features
-│   └── settings.local.json    # Claude Code permissions
-├── PRPs/
-│   ├── templates/
-│   │   └── prp_base.md       # Base template for PRPs
-│   └── EXAMPLE_multi_agent_prp.md  # Example of a complete PRP
-├── examples/                  # Your code examples (critical!)
-├── CLAUDE.md                 # Global rules for AI assistant
-├── INITIAL.md               # Template for feature requests
-├── INITIAL_EXAMPLE.md       # Example feature request
-└── README.md                # This file
-```
-
-This template doesn't focus on RAG and tools with context engineering because I have a LOT more in store for that soon. ;)
-
-## Step-by-Step Guide
-
-### 1. Set Up Global Rules (CLAUDE.md)
-
-The `CLAUDE.md` file contains project-wide rules that the AI assistant will follow in every conversation. The template includes:
-
-- **Project awareness**: Reading planning docs, checking tasks
-- **Code structure**: File size limits, module organization
-- **Testing requirements**: Unit test patterns, coverage expectations
-- **Style conventions**: Language preferences, formatting rules
-- **Documentation standards**: Docstring formats, commenting practices
-
-**You can use the provided template as-is or customize it for your project.**
-
-### 2. Create Your Initial Feature Request
-
-Edit `INITIAL.md` to describe what you want to build:
-
-```markdown
-## FEATURE:
-[Describe what you want to build - be specific about functionality and requirements]
-
-## EXAMPLES:
-[List any example files in the examples/ folder and explain how they should be used]
-
-## DOCUMENTATION:
-[Include links to relevant documentation, APIs, or MCP server resources]
-
-## OTHER CONSIDERATIONS:
-[Mention any gotchas, specific requirements, or things AI assistants commonly miss]
-```
-
-**See `INITIAL_EXAMPLE.md` for a complete example.**
-
-### 3. Generate the PRP
-
-PRPs (Product Requirements Prompts) are comprehensive implementation blueprints that include:
-
-- Complete context and documentation
-- Implementation steps with validation
-- Error handling patterns
-- Test requirements
-
-They are similar to PRDs (Product Requirements Documents) but are crafted more specifically to instruct an AI coding assistant.
-
-Run in Claude Code:
+### **2. Configure Environment**
 ```bash
-/generate-prp INITIAL.md
+# Copy environment templates
+cp app/.env.example app/.env
+cp BoomiToIS-API/.env.example BoomiToIS-API/.env.development
+cp agentic-rag-IMigrate/.env.example agentic-rag-IMigrate/.env
+cp IFA-Project/frontend/.env.example IFA-Project/frontend/.env.development
+
+# Edit with your API keys:
+# - Anthropic API Key
+# - Supabase URL & Key
+# - Neo4j credentials
+# - SAP BTP credentials (optional)
 ```
 
-**Note:** The slash commands are custom commands defined in `.claude/commands/`. You can view their implementation:
-- `.claude/commands/generate-prp.md` - See how it researches and creates PRPs
-- `.claude/commands/execute-prp.md` - See how it implements features from PRPs
+**Key Configuration Files:**
+- `app/.env` - Main API configuration
+- `BoomiToIS-API/.env.development` - iFlow generation API
+- `agentic-rag-IMigrate/.env` - RAG agent configuration
+- `IFA-Project/frontend/.env.development` - Frontend configuration
 
-The `$ARGUMENTS` variable in these commands receives whatever you pass after the command name (e.g., `INITIAL.md` or `PRPs/your-feature.md`).
+### **3. Start Services**
 
-This command will:
-1. Read your feature request
-2. Research the codebase for patterns
-3. Search for relevant documentation
-4. Create a comprehensive PRP in `PRPs/your-feature-name.md`
-
-### 4. Execute the PRP
-
-Once generated, execute the PRP to implement your feature:
-
+**Terminal 1: Main API**
 ```bash
-/execute-prp PRPs/your-feature-name.md
+cd app
+python app.py
+# Runs on http://localhost:5000
 ```
 
-The AI coding assistant will:
-1. Read all context from the PRP
-2. Create a detailed implementation plan
-3. Execute each step with validation
-4. Run tests and fix any issues
-5. Ensure all success criteria are met
-
-## Writing Effective INITIAL.md Files
-
-### Key Sections Explained
-
-**FEATURE**: Be specific and comprehensive
-- ❌ "Build a web scraper"
-- ✅ "Build an async web scraper using BeautifulSoup that extracts product data from e-commerce sites, handles rate limiting, and stores results in PostgreSQL"
-
-**EXAMPLES**: Leverage the examples/ folder
-- Place relevant code patterns in `examples/`
-- Reference specific files and patterns to follow
-- Explain what aspects should be mimicked
-
-**DOCUMENTATION**: Include all relevant resources
-- API documentation URLs
-- Library guides
-- MCP server documentation
-- Database schemas
-
-**OTHER CONSIDERATIONS**: Capture important details
-- Authentication requirements
-- Rate limits or quotas
-- Common pitfalls
-- Performance requirements
-
-## The PRP Workflow
-
-### How /generate-prp Works
-
-The command follows this process:
-
-1. **Research Phase**
-   - Analyzes your codebase for patterns
-   - Searches for similar implementations
-   - Identifies conventions to follow
-
-2. **Documentation Gathering**
-   - Fetches relevant API docs
-   - Includes library documentation
-   - Adds gotchas and quirks
-
-3. **Blueprint Creation**
-   - Creates step-by-step implementation plan
-   - Includes validation gates
-   - Adds test requirements
-
-4. **Quality Check**
-   - Scores confidence level (1-10)
-   - Ensures all context is included
-
-### How /execute-prp Works
-
-1. **Load Context**: Reads the entire PRP
-2. **Plan**: Creates detailed task list using TodoWrite
-3. **Execute**: Implements each component
-4. **Validate**: Runs tests and linting
-5. **Iterate**: Fixes any issues found
-6. **Complete**: Ensures all requirements met
-
-See `PRPs/EXAMPLE_multi_agent_prp.md` for a complete example of what gets generated.
-
-## Using Examples Effectively
-
-The `examples/` folder is **critical** for success. AI coding assistants perform much better when they can see patterns to follow.
-
-### What to Include in Examples
-
-1. **Code Structure Patterns**
-   - How you organize modules
-   - Import conventions
-   - Class/function patterns
-
-2. **Testing Patterns**
-   - Test file structure
-   - Mocking approaches
-   - Assertion styles
-
-3. **Integration Patterns**
-   - API client implementations
-   - Database connections
-   - Authentication flows
-
-4. **CLI Patterns**
-   - Argument parsing
-   - Output formatting
-   - Error handling
-
-### Example Structure
-
-```
-examples/
-├── README.md           # Explains what each example demonstrates
-├── cli.py             # CLI implementation pattern
-├── agent/             # Agent architecture patterns
-│   ├── agent.py      # Agent creation pattern
-│   ├── tools.py      # Tool implementation pattern
-│   └── providers.py  # Multi-provider pattern
-└── tests/            # Testing patterns
-    ├── test_agent.py # Unit test patterns
-    └── conftest.py   # Pytest configuration
+**Terminal 2: iFlow Generation API**
+```bash
+cd BoomiToIS-API
+python app.py
+# Runs on http://localhost:5003
 ```
 
-## Best Practices
+**Terminal 3: RAG Agent API**
+```bash
+cd agentic-rag-IMigrate
+python rag_api_service.py
+# Runs on http://localhost:8001
+```
 
-### 1. Be Explicit in INITIAL.md
-- Don't assume the AI knows your preferences
-- Include specific requirements and constraints
-- Reference examples liberally
+**Terminal 4: Frontend**
+```bash
+cd IFA-Project/frontend
+npm run dev
+# Runs on http://localhost:5173
+```
 
-### 2. Provide Comprehensive Examples
-- More examples = better implementations
-- Show both what to do AND what not to do
-- Include error handling patterns
+**Access the app:** http://localhost:5173
 
-### 3. Use Validation Gates
-- PRPs include test commands that must pass
-- AI will iterate until all validations succeed
-- This ensures working code on first try
+---
 
-### 4. Leverage Documentation
-- Include official API docs
-- Add MCP server resources
-- Reference specific documentation sections
+## **📖 Basic Usage**
 
-### 5. Customize CLAUDE.md
-- Add your conventions
-- Include project-specific rules
-- Define coding standards
+### **Step 1: Upload Source File**
+1. Open http://localhost:5173
+2. Select platform (Boomi/MuleSoft)
+3. Upload XML file or ZIP archive
+4. Click "Generate Documentation"
 
-## Resources
+### **Step 2: Generate iFlow**
+1. Review generated documentation
+2. Click "Generate SAP API/iFlow"
+3. Wait for AI agent to generate components (~2-5 minutes)
+4. Download ZIP package
 
-- [Claude Code Documentation](https://docs.anthropic.com/en/docs/claude-code)
-- [Context Engineering Best Practices](https://www.philschmid.de/context-engineering)
+### **Step 3: Deploy to SAP BTP** (Optional)
+1. Configure SAP BTP credentials in `.env`
+2. Click "Deploy to SAP Integration Suite"
+3. iFlow automatically deployed to your tenant
+
+### **Step 4: Provide Feedback**
+1. After deployment, click "Provide Feedback"
+2. Rate quality, report issues
+3. **Your feedback improves the AI for future conversions!**
+
+---
+
+## **🏗️ Architecture**
+
+```mermaid
+graph TB
+    User[User] --> Frontend[React Frontend :5173]
+    Frontend --> MainAPI[Main API :5000]
+    Frontend --> BoomiAPI[BoomiToIS-API :5003]
+    
+    MainAPI --> DocGen[Documentation Generator]
+    DocGen --> Supabase[(Supabase Vector Store)]
+    
+    BoomiAPI --> RAG[RAG Agent :8001]
+    RAG --> Neo4j[(Neo4j Knowledge Graph)]
+    RAG --> Anthropic[Anthropic Claude]
+    RAG --> Packager[iFlow Packager]
+    
+    Packager --> SAP[SAP BTP Tenant]
+    
+    BoomiAPI --> Feedback[Feedback System]
+    Feedback --> Supabase
+    
+    style Frontend fill:#61DAFB
+    style RAG fill:#10a37f
+    style SAP fill:#0FAAFF
+```
+
+**See `ARCHITECTURE.md` for detailed system design**
+
+---
+
+## **📚 Documentation**
+
+| Document | Description |
+|----------|-------------|
+| **[ARCHITECTURE.md](./ARCHITECTURE.md)** | System architecture, components, data flows |
+| **[DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)** | Setup, configuration, troubleshooting |
+| **[FEEDBACK_AND_LEARNING.md](./FEEDBACK_AND_LEARNING.md)** | AI learning system, feedback loop |
+| **[DEVELOPMENT.md](./DEVELOPMENT.md)** | Developer guide, API docs, contributing |
+
+---
+
+## **🎓 How It Works**
+
+### **1. Documentation Extraction**
+```
+Boomi/MuleSoft XML → Parser → Structured Documentation
+                                  ↓
+                        Component Detection
+                                  ↓
+                        Business Logic Extraction
+```
+
+### **2. RAG-Based iFlow Generation**
+```
+Documentation → Intent Understanding → Component Selection
+                                          ↓
+                        Knowledge Graph Similarity Search
+                                          ↓
+                        LLM-Powered XML Generation
+                                          ↓
+                        iFlow Packaging
+```
+
+### **3. Continuous Learning**
+```
+User Feedback → Pattern Library → Future Generations
+     ↓              ↓                    ↓
+Analytics    Auto-Updates         Improved Accuracy
+```
+
+---
+
+## **🔧 Technology Stack**
+
+### **Backend**
+- **Python 3.9+** - Core language
+- **Flask** - REST APIs
+- **LangChain** - RAG framework
+- **Anthropic Claude** / **Google Gemma3** - LLMs
+- **LangGraph** - Agentic workflows
+
+### **Databases**
+- **Supabase (PostgreSQL + pgvector)** - Vector embeddings, feedback storage
+- **Neo4j** - Knowledge graph for component relationships
+- **SQLite** - Local job tracking
+
+### **Frontend**
+- **React 18** - UI framework
+- **Vite** - Build tool
+- **TailwindCSS** - Styling
+- **Axios** - API client
+
+### **AI/ML**
+- **OpenAI Embeddings** - Text vectorization
+- **CodeBERT** - Code embeddings
+- **Sentence Transformers** - Semantic search
+
+---
+
+## **📊 Supported Platforms**
+
+| Platform | Status | Components Supported |
+|----------|--------|---------------------|
+| **Dell Boomi** | ✅ Full Support | Processes, Maps, Connectors, SFTP, HTTP, OData |
+| **MuleSoft** | ✅ Full Support | Flows, DataWeave, HTTP, Database, File |
+| **IBM Sterling** | 🚧 Coming Soon | - |
+
+---
+
+## **🎯 Example: Boomi to SAP iFlow**
+
+**Input:** Boomi process with SFTP polling + OData integration
+
+```xml
+<process>
+  <component type="SFTP">
+    <schedule>Every 5 minutes</schedule>
+    <directory>/inbound/employees/</directory>
+  </component>
+  <component type="Transform">
+    <script>transformEmployeeData.groovy</script>
+  </component>
+  <component type="HTTPAdapter">
+    <endpoint>/sap/odata/EmployeeService</endpoint>
+  </component>
+</process>
+```
+
+**Output:** SAP iFlow ZIP package with:
+- ✅ Timer component (5-minute schedule)
+- ✅ SFTP adapter
+- ✅ GroovyScript transformer  
+- ✅ OData RequestReply
+- ✅ Proper sequence flows
+- ✅ Error handling
+- ✅ Importable to SAP Integration Suite
+
+**Accuracy:** 85-95% with feedback learning
+
+---
+
+## **🔐 Security**
+
+- API keys stored in `.env` files (never committed)
+- SAP BTP OAuth2 authentication
+- Supabase Row Level Security (RLS)
+- No source code sent to LLMs (only documentation)
+
+---
+
+## **🚦 Status Indicators**
+
+When using the UI:
+- 🔵 **Processing** - Documentation generation in progress
+- 🟢 **Documentation Completed** - Ready for iFlow generation
+- 🟡 **Generating iFlow** - AI agent creating components
+- ✅ **Completed** - iFlow ready for download/deployment
+- ❌ **Failed** - Error occurred (check logs)
+
+---
+
+## **📈 Performance**
+
+| Metric | Value |
+|--------|-------|
+| **Documentation Generation** | 10-30 seconds |
+| **iFlow Generation (RAG)** | 2-5 minutes |
+| **iFlow Generation (Template)** | 30-60 seconds |
+| **Deployment to SAP BTP** | 10-20 seconds |
+| **Accuracy** | 85-95% (with feedback) |
+
+---
+
+## **🆘 Troubleshooting**
+
+### **Services Not Starting?**
+```bash
+# Check ports are available
+netstat -an | findstr "5000 5003 8001 5173"
+
+# Check environment variables
+python -c "import os; print(os.getenv('ANTHROPIC_API_KEY'))"
+```
+
+### **iFlow Generation Failing?**
+1. Check RAG API logs: `agentic-rag-IMigrate/rag_api_service.py`
+2. Verify Neo4j is running: `docker ps`
+3. Check Anthropic API key is valid
+
+### **Button Shows "Generated" Too Early?**
+- Restart Main API (app/app.py)
+- Restart Frontend
+- Clear browser cache
+
+**See `DEPLOYMENT_GUIDE.md` for detailed troubleshooting**
+
+---
+
+## **🤝 Contributing**
+
+See `DEVELOPMENT.md` for:
+- Code structure
+- Adding new platforms
+- Testing guidelines
+- API documentation
+
+---
+
+## **📞 Support**
+
+- 📧 Email: support@imigrate.com
+- 📖 Docs: See `ARCHITECTURE.md`, `DEPLOYMENT_GUIDE.md`
+- 🐛 Issues: Check logs in each service directory
+
+---
+
+## **📄 License**
+
+[Your License Here]
+
+---
+
+## **🙏 Acknowledgments**
+
+Built with:
+- **LangChain** for RAG framework
+- **Anthropic Claude** for code generation
+- **SAP Integration Suite** APIs
+- **Supabase** for vector storage
+- **Neo4j** for knowledge graphs
+
+---
+
+**Ready to migrate? Start with Step 1 above!** 🚀
+

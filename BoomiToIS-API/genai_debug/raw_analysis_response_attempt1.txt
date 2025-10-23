@@ -1,77 +1,81 @@
 {
-    "endpoints": [
+  "endpoints": [
+    {
+      "id": "stripe_salesforce_integration",
+      "name": "Create Salesforce Opportunities from Stripe Subscriptions",
+      "description": "Event-driven integration that receives Stripe subscription webhook events and creates corresponding opportunities in Salesforce with enhanced customer and subscription data",
+      "components": [
         {
-            "id": "stripe_salesforce_integration",
-            "name": "Create Salesforce Opportunities from Stripe Subscriptions",
-            "description": "Integration that receives Stripe subscription completion webhooks and creates corresponding opportunities in Salesforce",
-            "components": [
-                {
-                    "type": "enricher",
-                    "name": "Calculate_Dynamic_Properties_from_Boomi",
-                    "id": "enricher_1",
-                    "config": {
-                        "properties": [
-                            {
-                                "name": "DDP_CustomerName",
-                                "source": "$.data.object.customer.name"
-                            },
-                            {
-                                "name": "DDP_Subscription", 
-                                "source": "$.data.object.id"
-                            },
-                            {
-                                "name": "DDP_SalesforceDescription",
-                                "source": "Opportunity created from Stripe subscription"
-                            },
-                            {
-                                "name": "DDP_CloseDate",
-                                "source": "calculated_close_date"
-                            }
-                        ]
-                    }
-                },
-                {
-                    "type": "script",
-                    "name": "Transform_Stripe_to_Salesforce_from_Boomi",
-                    "id": "script_1",
-                    "config": {
-                        "script_content": "import com.sap.gateway.ip.core.customdev.util.Message;\nimport java.util.HashMap;\n\ndef Message processData(Message message) {\n    def body = message.getBody(java.lang.String);\n    def properties = message.getProperties();\n    \n    def customerName = properties.get('DDP_CustomerName');\n    def subscription = properties.get('DDP_Subscription');\n    def description = properties.get('DDP_SalesforceDescription');\n    def closeDate = properties.get('DDP_CloseDate');\n    \n    def salesforceXml = \"\"\"<?xml version='1.0' encoding='UTF-8'?>\n<soapenv:Envelope xmlns:soapenv='http://schemas.xmlsoap.org/soap/envelope/' xmlns:urn='urn:enterprise.soap.sforce.com/2006/04/metadata'>\n   <soapenv:Body>\n      <urn:create>\n         <urn:sObjects>\n            <urn:type>Opportunity</urn:type>\n            <urn:Name>${customerName}</urn:Name>\n            <urn:Description>${description}</urn:Description>\n            <urn:CloseDate>${closeDate}</urn:CloseDate>\n            <urn:StageName>Prospecting</urn:StageName>\n         </urn:sObjects>\n      </urn:create>\n   </soapenv:Body>\n</soapenv:Envelope>\"\"\";\n    \n    message.setBody(salesforceXml);\n    return message;\n}"
-                    }
-                },
-                {
-                    "type": "request_reply",
-                    "name": "Create_Salesforce_Opportunity_from_Boomi",
-                    "id": "request_reply_1",
-                    "config": {
-                        "endpoint_path": "/services/Soap/c/58.0",
-                        "method": "POST",
-                        "url": "https://login.salesforce.com/services/Soap/c/58.0"
-                    }
-                }
-            ],
-            "flow": ["enricher_1", "script_1", "request_reply_1"],
-            "sequence_flows": [
-                {
-                    "id": "flow_StartEvent_2_to_enricher_1",
-                    "source_ref": "StartEvent_2",
-                    "target_ref": "enricher_1"
-                },
-                {
-                    "id": "SequenceFlow_enricher_1_to_script_1",
-                    "source_ref": "enricher_1",
-                    "target_ref": "script_1"
-                },
-                {
-                    "id": "SequenceFlow_script_1_to_request_reply_1",
-                    "source_ref": "script_1",
-                    "target_ref": "request_reply_1"
-                },
-                {
-                    "id": "flow_request_reply_1_to_EndEvent_2",
-                    "source_ref": "request_reply_1",
-                    "target_ref": "EndEvent_2"
-                }
+          "type": "enricher",
+          "name": "Set_Dynamic_Properties_from_Boomi",
+          "id": "enricher_1",
+          "config": {
+            "properties": [
+              {
+                "name": "DDP_CustomerName",
+                "source": "customer_name_calculation"
+              },
+              {
+                "name": "DDP_Subscription", 
+                "source": "subscription_details_formatting"
+              },
+              {
+                "name": "DDP_SalesforceDescription",
+                "source": "salesforce_description_generation"
+              },
+              {
+                "name": "DDP_CloseDate",
+                "source": "close_date_calculation"
+              }
             ]
+          }
+        },
+        {
+          "type": "script",
+          "name": "Transform_Subscription_Data_from_Boomi",
+          "id": "script_1",
+          "config": {
+            "script_content": "import com.sap.gateway.ip.core.customdev.util.Message\nimport groovy.json.JsonSlurper\nimport groovy.json.JsonBuilder\n\ndef Message processData(Message message) {\n    def body = message.getBody(String)\n    def jsonSlurper = new JsonSlurper()\n    def stripeData = jsonSlurper.parseText(body)\n    \n    // Get dynamic properties\n    def customerName = message.getProperty('DDP_CustomerName')\n    def subscriptionDetails = message.getProperty('DDP_Subscription')\n    def description = message.getProperty('DDP_SalesforceDescription')\n    def closeDate = message.getProperty('DDP_CloseDate')\n    \n    // Transform to Salesforce opportunity format\n    def opportunity = [\n        Name: customerName,\n        Description: description,\n        CloseDate: closeDate,\n        StageName: 'Closed Won',\n        Probability: 100,\n        Amount: stripeData.data?.object?.items?.data[0]?.price?.unit_amount ? stripeData.data.object.items.data[0].price.unit_amount / 100 : 0\n    ]\n    \n    def jsonBuilder = new JsonBuilder(opportunity)\n    message.setBody(jsonBuilder.toString())\n    \n    return message\n}"
+          }
+        },
+        {
+          "type": "request_reply",
+          "name": "Create_Salesforce_Opportunity_from_Boomi",
+          "id": "request_reply_1",
+          "config": {
+            "endpoint_path": "/services/data/v58.0/sobjects/Opportunity",
+            "method": "POST",
+            "url": "https://company.my.salesforce.com/services/data/v58.0/sobjects/Opportunity"
+          }
         }
-    ]
+      ],
+      "flow": [
+        "enricher_1",
+        "script_1", 
+        "request_reply_1"
+      ],
+      "sequence_flows": [
+        {
+          "id": "flow_StartEvent_2_to_enricher_1",
+          "source_ref": "StartEvent_2",
+          "target_ref": "enricher_1"
+        },
+        {
+          "id": "SequenceFlow_enricher_1_to_script_1",
+          "source_ref": "enricher_1",
+          "target_ref": "script_1"
+        },
+        {
+          "id": "SequenceFlow_script_1_to_request_reply_1",
+          "source_ref": "script_1",
+          "target_ref": "request_reply_1"
+        },
+        {
+          "id": "flow_request_reply_1_to_EndEvent_2",
+          "source_ref": "request_reply_1",
+          "target_ref": "EndEvent_2"
+        }
+      ]
+    }
+  ]
 }

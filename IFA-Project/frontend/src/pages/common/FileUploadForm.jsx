@@ -204,24 +204,27 @@ const FileUploadForm = ({ onSubmit, isLoading, selectedPlatform = 'mulesoft', hi
           </div>
         </div>
 
-        <div className="flex items-center space-x-2 mt-8">
-          <input
-            type="checkbox"
-            id="enhance"
-            name="enhance"
-            checked={enhance}
-            onChange={e => setEnhance(e.target.checked)}
-            className="h-4 w-4 text-company-orange-600 focus:ring-company-orange-500 border-gray-300 rounded"
-          />
-          <div>
-            <label htmlFor="enhance" className="font-medium text-gray-700">
-              Enhance documentation with AI
-            </label>
-            <p className="text-xs text-gray-500">
-              Note: AI enhancement may take 1-2 minutes for complex APIs
-            </p>
+        {/* AI Enhancement checkbox - Hidden for now */}
+        {false && (
+          <div className="flex items-center space-x-2 mt-8">
+            <input
+              type="checkbox"
+              id="enhance"
+              name="enhance"
+              checked={enhance}
+              onChange={e => setEnhance(e.target.checked)}
+              className="h-4 w-4 text-company-orange-600 focus:ring-company-orange-500 border-gray-300 rounded"
+            />
+            <div>
+              <label htmlFor="enhance" className="font-medium text-gray-700">
+                Enhance documentation with AI
+              </label>
+              <p className="text-xs text-gray-500">
+                Note: AI enhancement may take 1-2 minutes for complex APIs
+              </p>
+            </div>
           </div>
-        </div>
+        )}
 
 
       </CustomCard>

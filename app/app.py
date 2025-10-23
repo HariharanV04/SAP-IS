@@ -1723,11 +1723,11 @@ def process_boomi_documentation(job_id, input_dir, enhance=False):
 
         update_job(job_id, {
 
-            'status': 'completed',
+            'status': 'documentation_completed',  # Not fully completed until iFlow generated
 
-            'processing_step': 'completed',
+            'processing_step': 'documentation_ready',
 
-            'processing_message': f'Dell Boomi documentation generation completed successfully {enhancement_status}',
+            'processing_message': f'Dell Boomi documentation generation completed successfully {enhancement_status}. Ready for iFlow generation.',
 
             'files': {
 
@@ -4409,7 +4409,7 @@ def get_documentation(job_id, file_type):
 
 
 
-    if job['status'] not in ['completed', 'documentation_ready']:
+    if job['status'] not in ['completed', 'documentation_ready', 'documentation_completed']:
 
         return jsonify({'error': 'Documentation not ready', 'status': job['status']}), 404
 
@@ -4689,7 +4689,7 @@ def generate_similarity_report(job_id):
 
 
 
-    if job['status'] not in ['completed', 'documentation_ready']:
+    if job['status'] not in ['completed', 'documentation_ready', 'documentation_completed']:
 
         return jsonify({'error': 'Documentation not ready, cannot generate similarity report', 'status': job['status']}), 404
 
@@ -4861,7 +4861,7 @@ def generate_iflow_match(job_id):
 
         job = jobs[job_id]
 
-        if job['status'] not in ['completed', 'documentation_ready']:
+        if job['status'] not in ['completed', 'documentation_ready', 'documentation_completed']:
 
             return jsonify({'error': 'Documentation not ready', 'status': job['status']}), 400
 
@@ -4989,13 +4989,9 @@ def process_iflow_match(job_id, markdown_file_path):
 
 
 
-        # Get GitHub token from environment
-
-        github_token = os.environ.get("GITHUB_TOKEN")
-
-        if not github_token:
-
-            logging.warning("No GitHub token found in environment. SAP Integration Suite equivalent search may fail.")
+        # GitHub token no longer needed - using RAG search instead
+        github_token = None
+        logging.info("✅ Using RAG-based similarity search (no GitHub token required)")
 
 
 
@@ -5047,19 +5043,28 @@ def process_iflow_match(job_id, markdown_file_path):
 
 
 
-            # Update job with file paths
+            # Update job with file paths and top matches
+            top_match = result.get("top_match")
+            top_matches = result.get("top_matches", [])
+            iflow_count = result.get("iflow_count", 0)
 
             update_job(job_id, {
 
                 'iflow_match_status': 'completed',
 
-                'iflow_match_message': 'SAP Integration Suite equivalent search completed successfully!',
+                'iflow_match_message': f'Found {iflow_count} similar iFlows - SAP Integration Suite equivalent search completed!',
 
                 'iflow_match_files': files_dict,
 
                 'iflow_match_result': {
 
-                    'message': result["message"]
+                    'message': result["message"],
+                    
+                    'iflow_count': iflow_count,
+                    
+                    'top_match': top_match,
+                    
+                    'top_matches': top_matches  # Top 5 for inline display
 
                 }
 

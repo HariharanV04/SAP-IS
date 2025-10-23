@@ -297,96 +297,540 @@ def calculate_component_scores(extracted_terms):
 
 def process_markdown_for_iflow(markdown_file_path, output_dir=None, github_token=None):
     """
-    Process a markdown file to find SAP Integration Suite (iFlow) equivalents.
+    Process a markdown file to find SAP Integration Suite (iFlow) equivalents using RAG search.
+    
+    *** USES RAG SEARCH - No GitHub Token Needed ***
 
     Args:
         markdown_file_path (str): Path to the markdown file with MuleSoft documentation
         output_dir (str, optional): Directory to save output files. If None, uses the current directory.
-        github_token (str, optional): GitHub token for API access.
+        github_token (str, optional): DEPRECATED - Not used. Kept for backwards compatibility.
 
     Returns:
         dict: Dictionary with paths to generated files and other information
     """
-    logger.info(f"Processing markdown file: {markdown_file_path}")
+    logger.info(f"🔍 Processing markdown file with RAG search: {markdown_file_path}")
 
     try:
-        # Import the main processing function from the main module
-        # Use a safer import approach to avoid reloading issues
-        import sys
-        import importlib.util
-
-        # Get the path to the main.py file
-        # Try both possible locations for main.py
-        main_path_in_getiflow = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                "GetIflowEquivalent", "main.py")
-        main_path_in_app = os.path.join(os.path.dirname(os.path.abspath(__file__)), "main.py")
-
-        # Check which path exists
-        if os.path.exists(main_path_in_getiflow):
-            main_path = main_path_in_getiflow
-            logger.info(f"Found main.py in GetIflowEquivalent directory")
-        elif os.path.exists(main_path_in_app):
-            main_path = main_path_in_app
-            logger.info(f"Found main.py in app directory")
+        # Import RAG search module
+        from rag_similarity_search import get_rag_search
+        
+        # Read markdown file
+        with open(markdown_file_path, 'r', encoding='utf-8') as f:
+            markdown_content = f.read()
+        
+        logger.info(f"📄 Read {len(markdown_content)} characters from markdown file")
+        
+        # Initialize RAG search
+        rag_search = get_rag_search()
+        
+        # Search for similar iFlows using RAG
+        logger.info("🔍 Searching for similar iFlows using RAG...")
+        similar_iflows = rag_search.search_similar_flows(markdown_content, top_k=10)
+        
+        if not similar_iflows:
+            logger.warning("⚠️ No similar iFlows found")
+            similar_iflows = []
         else:
-            # Default to the app directory path for error reporting
-            main_path = main_path_in_app
-
-        # Check if the file exists
-        logger.info(f"Looking for main module at: {main_path}")
-        if not os.path.exists(main_path):
-            logger.error(f"Main module not found at: {main_path}")
-
-            # List files in the directory to help diagnose the issue
-            parent_dir = os.path.dirname(main_path)
-            if os.path.exists(parent_dir):
-                logger.info(f"Contents of {parent_dir}:")
-                for file in os.listdir(parent_dir):
-                    logger.info(f"  - {file}")
-            else:
-                logger.error(f"Parent directory does not exist: {parent_dir}")
-
-            return {
-                "status": "failed",
-                "message": f"Main module not found at: {main_path}"
-            }
-
-        # Import the module using importlib
-        spec = importlib.util.spec_from_file_location("iflow_main", main_path)
-        iflow_main = importlib.util.module_from_spec(spec)
-
-        # Add the directory containing the module to sys.path temporarily
-        # This helps with relative imports within the module
-        module_dir = os.path.dirname(main_path)
-        original_sys_path = sys.path.copy()
-        if module_dir not in sys.path:
-            sys.path.insert(0, module_dir)
-
-        try:
-            # Execute the module
-            spec.loader.exec_module(iflow_main)
-
-            # Call the main processing function
-            result = iflow_main.process_markdown_for_iflow(
-                markdown_file_path=markdown_file_path,
-                output_dir=output_dir,
-                github_token=github_token
-            )
-        finally:
-            # Restore the original sys.path
-            sys.path = original_sys_path
-
-        return result
+            logger.info(f"✅ Found {len(similar_iflows)} similar iFlows")
+        
+        # Generate match report
+        match_report = rag_search.generate_match_report(similar_iflows)
+        
+        # Set up output directory
+        if output_dir is None:
+            output_dir = os.path.dirname(markdown_file_path)
+        
+        os.makedirs(output_dir, exist_ok=True)
+        
+        # Generate report HTML
+        report_html_path = os.path.join(output_dir, "iflow_similarity_report.html")
+        _generate_rag_report_html(similar_iflows, match_report, report_html_path)
+        
+        # Generate summary JSON
+        summary_json_path = os.path.join(output_dir, "iflow_similarity_summary.json")
+        _generate_rag_summary_json(similar_iflows, match_report, summary_json_path)
+        
+        logger.info(f"✅ RAG search completed successfully!")
+        logger.info(f"   Report: {report_html_path}")
+        logger.info(f"   Summary: {summary_json_path}")
+        
+        # Get top 5 matches for frontend display
+        top_matches = similar_iflows[:5] if len(similar_iflows) > 0 else []
+        
+        return {
+            "status": "success",
+            "message": f"Found {len(similar_iflows)} similar iFlows using RAG search",
+            "files": {
+                "report": report_html_path,
+                "summary": summary_json_path
+            },
+            "iflow_count": len(similar_iflows),
+            "top_match": similar_iflows[0] if similar_iflows else None,
+            "top_matches": top_matches  # Top 5 for frontend preview
+        }
 
     except Exception as e:
-        logger.error(f"Error importing or calling main module: {str(e)}")
+        logger.error(f"❌ Error in RAG search: {str(e)}")
         import traceback
         traceback.print_exc()
 
         return {
             "status": "failed",
-            "message": f"Error processing markdown: {str(e)}"
+            "message": f"Error processing markdown with RAG: {str(e)}"
         }
+
+def _generate_rag_report_html(similar_iflows, match_report, output_path):
+    """Generate professional HTML report for RAG search results"""
+    
+    from datetime import datetime
+    
+    avg_sim = match_report.get('avg_similarity', 0) * 100 if match_report.get('avg_similarity') else 0
+    current_time = datetime.now().strftime("%B %d, %Y at %I:%M %p")
+    
+    # Medal emojis for top 3
+    def get_rank_badge(rank):
+        if rank == 1:
+            return '<span class="rank-badge gold">🥇 #1</span>'
+        elif rank == 2:
+            return '<span class="rank-badge silver">🥈 #2</span>'
+        elif rank == 3:
+            return '<span class="rank-badge bronze">🥉 #3</span>'
+        else:
+            return f'<span class="rank-badge default">#{rank}</span>'
+    
+    html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAP Integration Flow Similarity Report</title>
+    <style>
+        * {{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }}
+        
+        body {{
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }}
+        
+        .container {{
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }}
+        
+        .header {{
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }}
+        
+        .header h1 {{
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }}
+        
+        .header .subtitle {{
+            font-size: 1.1em;
+            opacity: 0.9;
+            margin-top: 10px;
+        }}
+        
+        .header .timestamp {{
+            font-size: 0.9em;
+            opacity: 0.8;
+            margin-top: 15px;
+            font-style: italic;
+        }}
+        
+        .summary {{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 30px 40px;
+            background: #f8fafc;
+            border-bottom: 3px solid #e2e8f0;
+        }}
+        
+        .summary-card {{
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.2s;
+        }}
+        
+        .summary-card:hover {{
+            transform: translateY(-5px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        }}
+        
+        .summary-card .value {{
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #1e3c72;
+            margin: 10px 0;
+        }}
+        
+        .summary-card .label {{
+            font-size: 0.9em;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }}
+        
+        .summary-card.high .value {{ color: #10b981; }}
+        .summary-card.medium .value {{ color: #f59e0b; }}
+        .summary-card.low .value {{ color: #6b7280; }}
+        
+        .content {{
+            padding: 40px;
+        }}
+        
+        .section-title {{
+            font-size: 1.8em;
+            color: #1e293b;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }}
+        
+        .iflow-table {{
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-bottom: 20px;
+        }}
+        
+        .iflow-table thead {{
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+        }}
+        
+        .iflow-table th {{
+            padding: 18px 15px;
+            text-align: left;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85em;
+            letter-spacing: 1px;
+        }}
+        
+        .iflow-table th:first-child {{ text-align: center; width: 80px; }}
+        .iflow-table th:nth-child(3) {{ text-align: center; width: 120px; }}
+        .iflow-table th:nth-child(4) {{ text-align: center; width: 150px; }}
+        
+        .iflow-table tbody tr {{
+            border-bottom: 1px solid #e2e8f0;
+            transition: all 0.2s;
+        }}
+        
+        .iflow-table tbody tr:hover {{
+            background: #f8fafc;
+            transform: scale(1.01);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }}
+        
+        .iflow-table td {{
+            padding: 20px 15px;
+            vertical-align: top;
+        }}
+        
+        .rank-badge {{
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 1.1em;
+        }}
+        
+        .rank-badge.gold {{
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.4);
+        }}
+        
+        .rank-badge.silver {{
+            background: linear-gradient(135deg, #d1d5db 0%, #9ca3af 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(156, 163, 175, 0.4);
+        }}
+        
+        .rank-badge.bronze {{
+            background: linear-gradient(135deg, #fb923c 0%, #f97316 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(251, 146, 60, 0.4);
+        }}
+        
+        .rank-badge.default {{
+            background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+            color: white;
+        }}
+        
+        .iflow-name {{
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }}
+        
+        .iflow-description {{
+            font-size: 0.9em;
+            color: #64748b;
+            line-height: 1.6;
+        }}
+        
+        .quality-badge {{
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9em;
+        }}
+        
+        .quality-badge.high {{
+            background: #d1fae5;
+            color: #065f46;
+            border: 2px solid #10b981;
+        }}
+        
+        .quality-badge.medium {{
+            background: #fef3c7;
+            color: #92400e;
+            border: 2px solid #f59e0b;
+        }}
+        
+        .quality-badge.low {{
+            background: #f3f4f6;
+            color: #374151;
+            border: 2px solid #9ca3af;
+        }}
+        
+        .score-container {{
+            text-align: center;
+        }}
+        
+        .score-value {{
+            font-size: 2em;
+            font-weight: bold;
+            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }}
+        
+        .progress-bar {{
+            width: 100%;
+            height: 12px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 8px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }}
+        
+        .progress-fill {{
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }}
+        
+        .progress-fill.high {{
+            background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+        }}
+        
+        .progress-fill.medium {{
+            background: linear-gradient(90deg, #f59e0b 0%, #d97706 100%);
+        }}
+        
+        .progress-fill.low {{
+            background: linear-gradient(90deg, #9ca3af 0%, #6b7280 100%);
+        }}
+        
+        .legend {{
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            padding: 30px;
+            background: #f8fafc;
+            border-radius: 12px;
+            margin-top: 30px;
+        }}
+        
+        .legend-item {{
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9em;
+            color: #64748b;
+        }}
+        
+        .legend-color {{
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+        }}
+        
+        .footer {{
+            text-align: center;
+            padding: 30px;
+            background: #1e293b;
+            color: white;
+            font-size: 0.9em;
+        }}
+        
+        @media print {{
+            body {{
+                background: white;
+                padding: 0;
+            }}
+            .container {{
+                box-shadow: none;
+            }}
+        }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 SAP Integration Flow Similarity Report</h1>
+            <div class="subtitle">RAG-Based Semantic Search Results</div>
+            <div class="timestamp">Generated on {current_time}</div>
+        </div>
+        
+        <div class="summary">
+            <div class="summary-card">
+                <div class="label">Total Matches</div>
+                <div class="value">{match_report.get('total_results', 0)}</div>
+            </div>
+            <div class="summary-card high">
+                <div class="label">High Quality</div>
+                <div class="value">{match_report.get('high_quality_matches', 0)}</div>
+                <div class="label" style="font-size: 0.75em; margin-top: 5px;">&gt;80% Similarity</div>
+            </div>
+            <div class="summary-card medium">
+                <div class="label">Medium Quality</div>
+                <div class="value">{match_report.get('medium_quality_matches', 0)}</div>
+                <div class="label" style="font-size: 0.75em; margin-top: 5px;">60-80% Similarity</div>
+            </div>
+            <div class="summary-card">
+                <div class="label">Average Score</div>
+                <div class="value">{avg_sim:.1f}%</div>
+            </div>
+        </div>
+        
+        <div class="content">
+            <h2 class="section-title">
+                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                Similar Integration Flows
+            </h2>
+            
+            <table class="iflow-table">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Integration Flow</th>
+                        <th>Quality</th>
+                        <th>Similarity Score</th>
+                    </tr>
+                </thead>
+                <tbody>
+    """
+    
+    for iflow in similar_iflows:
+        quality_class = iflow['quality'].lower()
+        score = iflow['similarity_score'] * 100
+        
+        html += f"""
+                    <tr>
+                        <td style="text-align: center;">
+                            {get_rank_badge(iflow['rank'])}
+                        </td>
+                        <td>
+                            <div class="iflow-name">{iflow['name']}</div>
+                            <div class="iflow-description">{iflow['description']}</div>
+                        </td>
+                        <td style="text-align: center;">
+                            <span class="quality-badge {quality_class}">
+                                {'✓ ' if quality_class == 'high' else ''}{iflow['quality']}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="score-container">
+                                <div class="score-value">{score:.1f}%</div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill {quality_class}" style="width: {score}%"></div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+        """
+    
+    html += f"""
+                </tbody>
+            </table>
+            
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background: linear-gradient(135deg, #10b981, #059669);"></div>
+                    <span>High Quality (&gt;80%)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: linear-gradient(135deg, #f59e0b, #d97706);"></div>
+                    <span>Medium Quality (60-80%)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: linear-gradient(135deg, #9ca3af, #6b7280);"></div>
+                    <span>Low Quality (&lt;60%)</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Generated using RAG (Retrieval Augmented Generation) with OpenAI text-embedding-ada-002</p>
+            <p style="margin-top: 10px; font-size: 0.85em; opacity: 0.8;">
+                Semantic search powered by Supabase vector database • {len(similar_iflows)} results shown
+            </p>
+        </div>
+    </div>
+</body>
+</html>
+    """
+    
+    with open(output_path, 'w', encoding='utf-8') as f:
+        f.write(html)
+
+def _generate_rag_summary_json(similar_iflows, match_report, output_path):
+    """Generate JSON summary for RAG search results"""
+    
+    summary = {
+        "search_method": "RAG (Retrieval Augmented Generation)",
+        "total_results": len(similar_iflows),
+        "match_report": match_report,
+        "similar_iflows": similar_iflows
+    }
+    
+    with open(output_path, 'w', encoding='utf-8') as f:
+        json.dump(summary, f, indent=2)
 
 if __name__ == "__main__":
     import sys

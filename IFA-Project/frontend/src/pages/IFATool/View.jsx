@@ -29,7 +29,7 @@ const JobsHistoryPanel = () => {
     const fetchJobs = async () => {
       try {
         setLoading(true)
-        const response = await fetch('/api/jobs?limit=20')
+        const response = await fetch('/api/jobs?limit=10')
         const data = await response.json()
 
         if (data.success) {
@@ -695,6 +695,7 @@ const View = () => {
 
         // If job is failed, stop polling
         // But if job is completed, only stop polling if deployment is also completed or failed
+        // NOTE: 'documentation_completed' means docs ready but iFlow NOT generated, keep polling
         if (data.status === "failed" ||
             (data.status === "completed" &&
              (data.deployment_status === "completed" || data.deployment_status === "failed"))) {
@@ -704,6 +705,8 @@ const View = () => {
             clearInterval(pollInterval)
             setPollInterval(null)
           }
+        } else if (data.status === "documentation_completed") {
+          console.log(`Job ${jobId} documentation completed. Ready for iFlow generation. Continuing polling.`)
         } else if (data.status === "completed" && !data.deployment_status) {
           console.log(`Job ${jobId} completed but no deployment status yet. Continuing polling for deployment updates.`)
         }
@@ -722,8 +725,10 @@ const View = () => {
             !hasNotifiedCompletion[jobId].status
           ) {
             if (data.status === "completed") {
-              toast.success("Documentation generation completed!")
-            } else {
+              toast.success("iFlow generation completed!")
+            } else if (data.status === "documentation_completed") {
+              toast.success("Documentation ready! Click 'Generate SAP API/iFlow' to continue.")
+            } else if (data.status === "failed") {
               toast.error(`Job failed: ${data.error || "Unknown error"}`)
             }
 

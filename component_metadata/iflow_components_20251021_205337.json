@@ -1,0 +1,117 @@
+{
+  "query": "Create a complete SAP iFlow integration package named 'SFTP_to_SAP_OData_Test' with the following requirements from the documentation:\n\n\n# Integration Flow: SFTP to SAP OData Synchronization\n\n## Overview\nThis integration retrieves XML files from an SFTP server and posts them to SAP via OData.\n\n## Integration Requirements\n\n### Source System\n- **Type**: SFTP Server\n- **Path**: /incoming/orders\n- **File Format**: XML\n- **Polling**: Every 5 minutes\n\n### Data Transformation\n- Extract order data from XML\n- Transform XML to JSON format\n- Add timestamp and tracking ID\n- Validate required fields\n\n### Target System\n- **Type**: SAP S/4HANA via OData\n- **Endpoint**: /sap/opu/odata/sap/API_SALES_ORDER_SRV\n- **Method**: POST\n- **Authentication**: Basic Auth\n\n### Processing Steps\n1. Poll SFTP for new XML files\n2. Extract and parse XML content\n3. Transform XML to JSON using Groovy script\n4. Modify content headers for SAP\n5. Send to SAP OData endpoint via HTTP\n6. Log success/failure\n\n## Error Handling\n- Retry failed OData calls 3 times\n- Log errors to monitoring system\n- Move failed files to error folder\n\n\nGenerate a production-ready iFlow with proper components and connections.",
+  "timestamp": "20251021_205337",
+  "total_components": 6,
+  "components": [
+    {
+      "component_id": 1,
+      "component_type": "ContentModifier",
+      "component_name": "ContentModifier",
+      "xml_element": "callActivity",
+      "keyword_matched": "ContentModifier",
+      "instance_number": 1,
+      "total_instances": 1,
+      "rag_queries": [],
+      "description": "ContentModifier component named 'ContentModifier'",
+      "source": "explicit",
+      "priority": "high",
+      "properties": {
+        "activityType": "Enricher",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::Enricher/version::1.6.1",
+        "componentVersion": "1.6"
+      }
+    },
+    {
+      "component_id": 2,
+      "component_type": "RequestReply",
+      "component_name": "RequestReply",
+      "xml_element": "serviceTask",
+      "keyword_matched": "RequestReply",
+      "instance_number": 1,
+      "total_instances": 1,
+      "rag_queries": [],
+      "description": "RequestReply component named 'RequestReply'",
+      "source": "explicit",
+      "priority": "high",
+      "properties": {
+        "activityType": "RequestReply",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::RequestReply/version::1.0.0",
+        "componentVersion": "1.0",
+        "adapter_type": "HTTP"
+      },
+      "adapter_type": "HTTP"
+    },
+    {
+      "component_id": 3,
+      "component_type": "GroovyScript",
+      "component_name": "GroovyScript",
+      "xml_element": "callActivity",
+      "keyword_matched": "GroovyScript",
+      "instance_number": 1,
+      "total_instances": 1,
+      "rag_queries": [],
+      "description": "GroovyScript component named 'GroovyScript'",
+      "source": "explicit",
+      "priority": "high",
+      "properties": {
+        "activityType": "Script",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::GroovyScript/version::1.1.2",
+        "componentVersion": "1.1"
+      }
+    },
+    {
+      "component_id": 4,
+      "component_type": "GroovyScript",
+      "component_name": "GroovyScript",
+      "xml_element": "callActivity",
+      "keyword_matched": "GroovyScript",
+      "instance_number": 1,
+      "total_instances": 1,
+      "rag_queries": [],
+      "description": "GroovyScript component named 'GroovyScript'",
+      "source": "explicit",
+      "priority": "high",
+      "properties": {
+        "activityType": "Script",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::GroovyScript/version::1.1.2",
+        "componentVersion": "1.1"
+      }
+    },
+    {
+      "component_id": 5,
+      "component_type": "StartEvent",
+      "component_name": "Start",
+      "xml_element": "startEvent",
+      "keyword_matched": "StartEvent",
+      "instance_number": 1,
+      "total_instances": 1,
+      "rag_queries": [],
+      "description": "StartEvent component named 'Start'",
+      "source": "implicit",
+      "priority": "medium",
+      "properties": {
+        "activityType": "startEvent",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::MessageStartEvent",
+        "componentVersion": "1.1"
+      }
+    },
+    {
+      "component_id": 6,
+      "component_type": "EndEvent",
+      "component_name": "End",
+      "xml_element": "endEvent",
+      "keyword_matched": "EndEvent",
+      "instance_number": 1,
+      "total_instances": 1,
+      "rag_queries": [],
+      "description": "EndEvent component named 'End'",
+      "source": "implicit",
+      "priority": "medium",
+      "properties": {
+        "activityType": "endEvent",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::MessageEndEvent/version::1.1.0",
+        "componentVersion": "1.1"
+      }
+    }
+  ]
+}

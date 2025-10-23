@@ -488,6 +488,132 @@ class PatternAnalysisTool(SAPiFlowTool):
             return f"Error analyzing patterns: {str(e)}"
 
 
+class SimilarIFlowSearchTool(SAPiFlowTool):
+    """Tool for finding similar iFlows to use as references for generation."""
+    
+    # Declare as class attribute to avoid Pydantic validation error
+    _similarity_search: Any = None
+
+    def __init__(self, graph_store):
+        super().__init__(
+            name="find_similar_iflows",
+            description=(
+                "Find similar iFlows in the knowledge graph that match a given requirement. "
+                "Use this tool to discover reference iFlows with similar components, patterns, "
+                "or architecture that can be used as templates for building new iFlows. "
+                "Returns similarity scores and detailed topology information."
+            ),
+            vector_store=None,
+            graph_store=graph_store
+        )
+        # Import similarity search module
+        from knowledge_graph.similarity_search import IFlowSimilaritySearch
+        # Use private attribute to avoid Pydantic validation
+        object.__setattr__(self, '_similarity_search', IFlowSimilaritySearch(graph_store))
+
+    async def _arun(self, requirement: str = None, query: str = None, max_results: int = 3) -> str:
+        """
+        Find similar iFlows based on requirement description.
+
+        Args:
+            requirement: Description of the iFlow requirement
+            query: Alternative to requirement parameter
+            max_results: Maximum number of similar iFlows to return (default: 3)
+
+        Returns:
+            Formatted string with similar iFlows and their details
+        """
+        try:
+            # Use requirement if provided, otherwise use query
+            search_query = requirement or query
+
+            if not search_query:
+                return "Please provide a requirement description to search for similar iFlows."
+
+            print(f"\n🔍 [SIMILARITY_SEARCH] Searching for iFlows similar to: '{search_query[:100]}...'")
+            print(f"📊 [SEARCH_PARAMS] Max results: {max_results}")
+
+            # Perform similarity search
+            similar_iflows = await self._similarity_search.get_reference_iflows_for_generation(
+                requirement=search_query,
+                max_references=max_results
+            )
+
+            if not similar_iflows:
+                print("❌ [SIMILARITY_RESULT] No similar iFlows found")
+                return "No similar iFlows found in the knowledge graph. This may indicate:\n" + \
+                       "- The requirement uses unfamiliar terminology\n" + \
+                       "- No iFlows with matching components exist\n" + \
+                       "- The knowledge graph needs more data"
+
+            print(f"✅ [SIMILARITY_RESULT] Found {len(similar_iflows)} similar iFlows")
+
+            # Format response
+            response = f"## Similar iFlows Found: {len(similar_iflows)}\n\n"
+
+            for i, iflow in enumerate(similar_iflows, 1):
+                score = iflow.get('similarity_score', 0)
+                name = iflow.get('name', 'Unknown')
+                package_id = iflow.get('package_id', 'Unknown')
+
+                print(f"📦 [{i}] {name} - Similarity: {score:.3f}")
+
+                response += f"### {i}. {name} (Similarity: {score:.1%})\n\n"
+                response += f"**Package ID**: {package_id}\n\n"
+
+                # Add topology information
+                topology = iflow.get('topology', {})
+                nodes = topology.get('nodes', [])
+                edges = topology.get('edges', [])
+
+                if nodes:
+                    response += f"**Components** ({len(nodes)}):\n"
+                    # Group components by type
+                    comp_types = {}
+                    for node in nodes:
+                        node_type = node.get('type', 'Unknown')
+                        if node_type not in comp_types:
+                            comp_types[node_type] = []
+                        comp_types[node_type].append(node.get('name', node.get('id', 'Unknown')))
+
+                    for comp_type, comp_names in sorted(comp_types.items()):
+                        response += f"- {comp_type}: {len(comp_names)} component(s)\n"
+
+                    response += "\n"
+
+                if edges:
+                    response += f"**Connections**: {len(edges)} flow connections\n\n"
+
+                # Add analysis if available
+                analysis = iflow.get('analysis', {})
+                if analysis and isinstance(analysis, dict):
+                    stats = analysis.get('statistics', {})
+                    if stats:
+                        response += "**Statistics**:\n"
+                        if 'total_components' in stats:
+                            response += f"- Total Components: {stats['total_components']}\n"
+                        if 'total_flows' in stats:
+                            response += f"- Total Flows: {stats['total_flows']}\n"
+                        if 'component_types' in stats and stats['component_types']:
+                            response += f"- Component Types: {list(stats['component_types'].keys())[:5]}\n"
+                        response += "\n"
+
+                response += "---\n\n"
+
+            # Add recommendation
+            response += "**Recommendation**: Use the highest-scoring iFlow as a primary reference template. " + \
+                       "Adapt its structure, components, and connections to match your specific requirement.\n"
+
+            return response
+
+        except Exception as e:
+            logger.error(f"Error in similarity search: {e}")
+            print(f"❌ [SIMILARITY_ERROR] Search failed: {e}")
+            import traceback
+            print(f"[TRACEBACK] {traceback.format_exc()}")
+            return f"Error searching for similar iFlows: {str(e)}"
+
+
 class IFlowComponentQueryTool(SAPiFlowTool):
     """Tool for querying iFlow components."""
     
@@ -1025,7 +1151,8 @@ class SAPiFlowAgent:
         self.tools = [
             GetIflowSkeletonTool(graph_store),
             ComponentAnalysisTool(graph_store),
-            VectorSearchTool(vector_store)
+            VectorSearchTool(vector_store),
+            SimilarIFlowSearchTool(graph_store)  # NEW: Similarity search for reference iFlows
         ]
         # Map tool names to instances for internal orchestration/fallbacks
         self.tools_map = {tool.name: tool for tool in self.tools}
@@ -3165,9 +3292,74 @@ def Message processData(Message message) {{
         )
         return xml_content
 
+    def _query_pattern_library(self, user_query: str) -> list:
+        """
+        Query Supabase pattern library for matching component patterns.
+        
+        Args:
+            user_query: User's natural language query
+            
+        Returns:
+            List of matching patterns with component types and confidence scores
+        """
+        try:
+            from supabase import create_client
+            from config import SUPABASE_URL, SUPABASE_KEY
+            
+            # Create Supabase client
+            supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+            
+            # Extract keywords from query
+            query_lower = user_query.lower()
+            keywords = []
+            
+            # Check for important patterns
+            pattern_keywords = [
+                'poll', 'polling', 'sftp', 'odata', 'soap', 'http', 'rest',
+                'transform', 'groovy', 'script', 'router', 'route', 'split',
+                'filter', 'map', 'modify', 'enrich', 'successfactors', 'timer',
+                'schedule', 'every', 'minutes', 'hours', 'mail', 'email'
+            ]
+            
+            for keyword in pattern_keywords:
+                if keyword in query_lower:
+                    keywords.append(keyword)
+            
+            if not keywords:
+                print(f"📚 [PATTERN_LIBRARY] No specific keywords found, skipping pattern lookup")
+                return []
+            
+            print(f"📚 [PATTERN_LIBRARY] Searching for patterns matching: {keywords[:5]}")
+            
+            # Query pattern library - get all patterns with decent confidence
+            response = supabase.table('component_pattern_library') \
+                .select('trigger_phrase, component_type, confidence_score, pattern_category, typical_requirements') \
+                .gte('confidence_score', 0.80) \
+                .order('confidence_score', desc=True) \
+                .limit(50) \
+                .execute()
+            
+            # Filter patterns that match any keyword
+            matching_patterns = []
+            for pattern in response.data:
+                trigger = pattern['trigger_phrase'].lower()
+                # Check if any keyword matches the trigger phrase
+                if any(kw in trigger for kw in keywords):
+                    matching_patterns.append(pattern)
+            
+            print(f"📚 [PATTERN_LIBRARY] Found {len(matching_patterns)} matching patterns")
+            
+            # Return top patterns sorted by confidence
+            return sorted(matching_patterns, key=lambda x: x['confidence_score'], reverse=True)[:15]
+            
+        except Exception as e:
+            print(f"⚠️ [PATTERN_LIBRARY] Error querying patterns: {str(e)}")
+            return []
+
     async def _understand_user_intent(self, query: str) -> Dict[str, Any]:
         """
         Use GenAI to understand user intent and create a strategic plan for iFlow generation.
+        Enhanced with pattern library hints for improved accuracy.
         
         Args:
             query: User's natural language query
@@ -3177,15 +3369,55 @@ def Message processData(Message message) {{
         """
         print(f"🧠 [INTENT_ANALYSIS] Analyzing user intent for: '{query}'")
         
+        # Query pattern library for hints
+        matching_patterns = self._query_pattern_library(query)
+        
         # ALWAYS use comprehensive intent understanding - NO pattern matching!
         # The agent must be 100% user-intent driven, not pattern-driven
-        print(f"🔍 [INTENT_ANALYSIS] Using comprehensive LLM-based intent understanding (user-intent driven)")
+        print(f"🔍 [INTENT_ANALYSIS] Using comprehensive LLM-based intent understanding (user-intent driven, pattern-augmented)")
+        
+        # Build pattern hints section if patterns found
+        pattern_hints_section = ""
+        if matching_patterns:
+            pattern_lines = []
+            for p in matching_patterns[:10]:  # Top 10 patterns
+                confidence_pct = int(p['confidence_score'] * 100)
+                req_info = ""
+                if p.get('typical_requirements'):
+                    # Extract key info from typical_requirements JSON
+                    reqs = p['typical_requirements']
+                    if isinstance(reqs, dict):
+                        if 'adapter_type' in reqs:
+                            req_info = f" [adapter: {reqs['adapter_type']}]"
+                        elif 'polling' in reqs and reqs['polling']:
+                            req_info = " [requires Timer]"
+                
+                pattern_lines.append(
+                    f"  • If query mentions '{p['trigger_phrase']}' → Usually indicates **{p['component_type']}**{req_info} (confidence: {confidence_pct}%)"
+                )
+            
+            pattern_hints_section = f"""
+
+🔍 **PATTERN LIBRARY HINTS** (from historical successful generations):
+{chr(10).join(pattern_lines)}
+
+⚠️ **CRITICAL REMINDERS FROM PAST LEARNINGS:**
+- "Poll SFTP" / "Retrieve from SFTP" = **SFTPAdapter + Timer** (2 components, not 1!)
+- "Every X minutes/hours" = **Timer component** (for scheduled polling)
+- "Send to OData" / "POST to OData" = **RequestReply with adapter_type:OData** (1 component, not 2!)
+- "Call SOAP service" = **RequestReply with adapter_type:SOAP** (1 component, not 2!)
+- "Transform XML to JSON" = **GroovyScript** (for custom transformations)
+- Always check for **source adapters** (SFTP, Mail, etc.) - they're often missed!
+
+These are HINTS to guide your analysis, but always prioritize the user's actual intent and explicit requests.
+"""
         
         # Create a comprehensive prompt for intent understanding
         intent_prompt = f"""
 You are an expert SAP Integration Suite architect. Analyze the following user query and understand their intent for creating an iFlow.
 
 User Query: "{query}"
+{pattern_hints_section}
 
 Please analyze and provide a structured response with:
 

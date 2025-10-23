@@ -1,0 +1,117 @@
+{
+  "query": "Create a complete SAP iFlow integration package named 'IFlow_30f0abe2' with the following requirements from the documentation:\n\n# Salesforce to SAP Customer Integration API\r\n\r\n## Table of Contents\r\n\r\n- [API Overview](#api-overview)\r\n- [Endpoints](#endpoints)\r\n- [Current Boomi Flow Logic](#current-boomi-flow-logic)\r\n  - [Process Flow Overview](#process-flow-overview)\r\n  - [Step-by-Step Flow Description](#step-by-step-flow-description)\r\n- [Boomi Transformations Explained](#boomi-transformations-explained)\r\n- [SAP Integration Suite Implementation](#sap-integration-suite-implementation)\r\n  - [Component Mapping](#component-mapping)\r\n  - [Integration Flow Visualization](#integration-flow-visualization)\r\n  - [Configuration Details](#configuration-details)\r\n- [Environment Configuration](#environment-configuration)\r\n- [API Reference](#api-reference)\r\n\r\n## API Overview\r\n\r\nThis integration enables bi-directional synchronization between Salesforce accounts and SAP customer master data. The API facilitates the creation of new customers in SAP when new accounts are created in Salesforce, and updates the Salesforce account with the generated SAP customer number for reference.\r\n\r\n**Business Purpose:**\r\n- Automatically create SAP customers when new Salesforce accounts are created\r\n- Maintain data consistency between Salesforce CRM and SAP ERP systems\r\n- Enable seamless order-to-cash processes by ensuring customer data exists in both systems\r\n- Provide audit trail with SAP customer numbers stored in Salesforce\r\n\r\n**Base URL/Endpoint Pattern:**\r\n- Salesforce REST API: `https://<instance>.salesforce.com/services/data/v<version>/`\r\n- SAP BAPI Endpoint: `https://<sap-host>:<port>/sap/opu/odata/iwbep/gwsample_basic/`\r\n\r\n**Authentication Mechanisms:**\r\n- Salesforce: OAuth 2.0 or Session ID authentication\r\n- SAP: Basic Authentication or Certificate-based authentication\r\n\r\n**Rate Limiting:**\r\n- Salesforce: Standard API limits apply based on license type\r\n- SAP: Depends on SAP system configuration and licensing\r\n\r\n**General Response Format:**\r\n- Salesforce: JSON format\r\n- SAP BAPI: XML format (converted to JSON by Boo\n\nGenerate a production-ready iFlow with proper:\n1. Start and End events\n2. Required adapters and connectors\n3. Content modifiers and processing steps\n4. Proper sequence flows\n5. Error handling\n6. SAP Integration Suite compliance\n",
+  "timestamp": "20251023_185542",
+  "total_components": 6,
+  "components": [
+    {
+      "component_id": 1,
+      "component_type": "ContentModifier",
+      "component_name": "ContentModifier",
+      "xml_element": "callActivity",
+      "keyword_matched": "ContentModifier",
+      "instance_number": 1,
+      "total_instances": 1,
+      "rag_queries": [],
+      "description": "ContentModifier component named 'ContentModifier'",
+      "source": "explicit",
+      "priority": "high",
+      "properties": {
+        "activityType": "Enricher",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::Enricher/version::1.6.1",
+        "componentVersion": "1.6"
+      }
+    },
+    {
+      "component_id": 2,
+      "component_type": "RequestReply",
+      "component_name": "RequestReply",
+      "xml_element": "serviceTask",
+      "keyword_matched": "RequestReply",
+      "instance_number": 1,
+      "total_instances": 1,
+      "rag_queries": [],
+      "description": "RequestReply component named 'RequestReply'",
+      "source": "explicit",
+      "priority": "high",
+      "properties": {
+        "activityType": "RequestReply",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::RequestReply/version::1.0.0",
+        "componentVersion": "1.0",
+        "adapter_type": "HTTP"
+      },
+      "adapter_type": "HTTP"
+    },
+    {
+      "component_id": 3,
+      "component_type": "Router",
+      "component_name": "Router",
+      "xml_element": "callActivity",
+      "keyword_matched": "Router",
+      "instance_number": 1,
+      "total_instances": 1,
+      "rag_queries": [],
+      "description": "Router component named 'Router'",
+      "source": "explicit",
+      "priority": "high",
+      "properties": {
+        "activityType": "ExclusiveGateway",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::ExclusiveGateway/version::1.1.2",
+        "componentVersion": "1.1"
+      }
+    },
+    {
+      "component_id": 4,
+      "component_type": "GroovyScript",
+      "component_name": "GroovyScript",
+      "xml_element": "callActivity",
+      "keyword_matched": "GroovyScript",
+      "instance_number": 1,
+      "total_instances": 2,
+      "rag_queries": [],
+      "description": "GroovyScript component named 'GroovyScript'",
+      "source": "explicit",
+      "priority": "high",
+      "properties": {
+        "activityType": "Script",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::GroovyScript/version::1.1.2",
+        "componentVersion": "1.1"
+      }
+    },
+    {
+      "component_id": 5,
+      "component_type": "StartEvent",
+      "component_name": "Start",
+      "xml_element": "startEvent",
+      "keyword_matched": "StartEvent",
+      "instance_number": 1,
+      "total_instances": 1,
+      "rag_queries": [],
+      "description": "StartEvent component named 'Start'",
+      "source": "implicit",
+      "priority": "medium",
+      "properties": {
+        "activityType": "startEvent",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::MessageStartEvent",
+        "componentVersion": "1.1"
+      }
+    },
+    {
+      "component_id": 6,
+      "component_type": "EndEvent",
+      "component_name": "End",
+      "xml_element": "endEvent",
+      "keyword_matched": "EndEvent",
+      "instance_number": 1,
+      "total_instances": 1,
+      "rag_queries": [],
+      "description": "EndEvent component named 'End'",
+      "source": "implicit",
+      "priority": "medium",
+      "properties": {
+        "activityType": "endEvent",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::MessageEndEvent/version::1.1.0",
+        "componentVersion": "1.1"
+      }
+    }
+  ]
+}

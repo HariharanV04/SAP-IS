@@ -350,30 +350,20 @@ Generate a production-ready iFlow with proper:
         
         # Format response to match IMigrate's expected format
         if generation_successful:
-            package_path = result.get('package_path', '')
-
+            # Use the package_path already extracted from package_info above (line 320)
+            # Don't overwrite it by getting from top-level result (where it doesn't exist)
+            # package_path already contains: package_info.get('package_path', result.get('package_path', ''))
+            
             logger.info("="*80)
             logger.info("✅ iFlow Generation SUCCESSFUL")
             logger.info(f"📦 Package: {package_path}")
             logger.info(f"📊 Metadata: {metadata_path}")
-            logger.info(f"🔧 Components: {len(result.get('components', []))}")
+            logger.info(f"🔧 Components: {len(components)}")
             logger.info("="*80)
 
-            # Callback to Main API to update job status
-            if job_id:
-                update_main_api_job_status(
-                    job_id=job_id,
-                    status='completed',
-                    updates={
-                        'processing_step': 'iflow_generated',
-                        'processing_message': f'iFlow generated successfully: {iflow_name}',
-                        'package_path': package_path,
-                        'metadata_path': str(metadata_path),
-                        'components': result.get('components', []),
-                        'total_components': len(result.get('components', []))
-                    }
-                )
-
+            # Note: Main API status update is handled by BoomiToIS-API after receiving this response
+            # Don't update Main API here to prevent premature status change in frontend
+            
             return jsonify({
                 'status': 'success',
                 'message': f'Generated iFlow: {package_path}',
@@ -382,8 +372,8 @@ Generate a production-ready iFlow with proper:
                     'debug': {}
                 },
                 'iflow_name': iflow_name,
-                'components': result.get('components', []),
-                'metadata': result.get('metadata', {}),
+                'components': components,  # Use extracted components variable
+                'metadata': package_info,  # Use extracted package_info
                 'metadata_path': str(metadata_path),
                 'generation_method': 'RAG Agent (Dynamic)',
                 'timestamp': datetime.now().isoformat()
@@ -392,17 +382,8 @@ Generate a production-ready iFlow with proper:
             error_msg = result.get('message', 'Failed to generate iFlow')
             logger.error(f"❌ iFlow Generation FAILED: {error_msg}")
 
-            # Callback to Main API to update job status to failed
-            if job_id:
-                update_main_api_job_status(
-                    job_id=job_id,
-                    status='failed',
-                    updates={
-                        'processing_step': 'iflow_generation_failed',
-                        'processing_message': error_msg
-                    }
-                )
-
+            # Note: Main API status update is handled by BoomiToIS-API after receiving this response
+            
             return jsonify({
                 'status': 'error',
                 'message': error_msg,

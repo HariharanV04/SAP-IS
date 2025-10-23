@@ -1,0 +1,117 @@
+{
+  "query": "Create a complete SAP iFlow integration package named 'IFlow_3af309ef' with the following requirements from the documentation:\n\n# Stripe Subscription to Salesforce Opportunity Integration\r\n\r\n## Table of Contents\r\n\r\n1. [API Overview](#api-overview)\r\n2. [Endpoints](#endpoints)\r\n3. [Current Boomi Flow Logic](#current-boomi-flow-logic)\r\n   - [Process Flow Overview](#process-flow-overview)\r\n   - [Step-by-Step Flow Description](#step-by-step-flow-description)\r\n4. [Boomi Transformations Explained](#boomi-transformations-explained)\r\n5. [SAP Integration Suite Implementation](#sap-integration-suite-implementation)\r\n   - [Component Mapping](#component-mapping)\r\n   - [Integration Flow Visualization](#integration-flow-visualization)\r\n   - [Configuration Details](#configuration-details)\r\n6. [Environment Configuration](#environment-configuration)\r\n7. [API Reference](#api-reference)\r\n\r\n## API Overview\r\n\r\nThis integration creates Salesforce opportunities from Stripe subscription events, enabling automated opportunity creation when customers complete subscription purchases. The integration listens for Stripe webhook events and transforms subscription data into Salesforce opportunity records.\r\n\r\n**Business Purpose:** Automate the creation of sales opportunities in Salesforce when customers subscribe to products through Stripe, ensuring seamless lead-to-opportunity conversion and accurate sales tracking.\r\n\r\n**Key Features:**\r\n- Real-time webhook processing from Stripe\r\n- Dynamic property calculation for opportunity fields\r\n- Automatic Salesforce opportunity creation\r\n- Comprehensive error handling and logging\r\n\r\n**Integration Pattern:** Event-driven integration using webhook listener pattern with real-time data transformation and external system synchronization.\r\n\r\n## Endpoints\r\n\r\n### Stripe Webhook Endpoint\r\n\r\n**HTTP Method:** POST\r\n**Endpoint Pattern:** `/webhook/stripe/subscription`\r\n**Purpose:** Receives Stripe subscription completion events\r\n\r\n**Request Parameters:**\r\n- **Headers:**\r\n  - `Content-Type: application/json`\r\n  - `Stripe-Signature: [webhook signature for verification]`\r\n\r\n**Request Body Structu\n\nGenerate a production-ready iFlow with proper:\n1. Start and End events\n2. Required adapters and connectors\n3. Content modifiers and processing steps\n4. Proper sequence flows\n5. Error handling\n6. SAP Integration Suite compliance\n",
+  "timestamp": "20251022_113459",
+  "total_components": 6,
+  "components": [
+    {
+      "component_id": 1,
+      "component_type": "ContentModifier",
+      "component_name": "ContentModifier",
+      "xml_element": "callActivity",
+      "keyword_matched": "ContentModifier",
+      "instance_number": 1,
+      "total_instances": 1,
+      "rag_queries": [],
+      "description": "ContentModifier component named 'ContentModifier'",
+      "source": "explicit",
+      "priority": "high",
+      "properties": {
+        "activityType": "Enricher",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::Enricher/version::1.6.1",
+        "componentVersion": "1.6"
+      }
+    },
+    {
+      "component_id": 2,
+      "component_type": "RequestReply",
+      "component_name": "RequestReply",
+      "xml_element": "serviceTask",
+      "keyword_matched": "RequestReply",
+      "instance_number": 1,
+      "total_instances": 1,
+      "rag_queries": [],
+      "description": "RequestReply component named 'RequestReply'",
+      "source": "explicit",
+      "priority": "high",
+      "properties": {
+        "activityType": "RequestReply",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::RequestReply/version::1.0.0",
+        "componentVersion": "1.0",
+        "adapter_type": "HTTP"
+      },
+      "adapter_type": "HTTP"
+    },
+    {
+      "component_id": 3,
+      "component_type": "Router",
+      "component_name": "Router",
+      "xml_element": "callActivity",
+      "keyword_matched": "Router",
+      "instance_number": 1,
+      "total_instances": 1,
+      "rag_queries": [],
+      "description": "Router component named 'Router'",
+      "source": "explicit",
+      "priority": "high",
+      "properties": {
+        "activityType": "ExclusiveGateway",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::ExclusiveGateway/version::1.1.2",
+        "componentVersion": "1.1"
+      }
+    },
+    {
+      "component_id": 4,
+      "component_type": "GroovyScript",
+      "component_name": "GroovyScript",
+      "xml_element": "callActivity",
+      "keyword_matched": "GroovyScript",
+      "instance_number": 1,
+      "total_instances": 2,
+      "rag_queries": [],
+      "description": "GroovyScript component named 'GroovyScript'",
+      "source": "explicit",
+      "priority": "high",
+      "properties": {
+        "activityType": "Script",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::GroovyScript/version::1.1.2",
+        "componentVersion": "1.1"
+      }
+    },
+    {
+      "component_id": 5,
+      "component_type": "StartEvent",
+      "component_name": "Start",
+      "xml_element": "startEvent",
+      "keyword_matched": "StartEvent",
+      "instance_number": 1,
+      "total_instances": 1,
+      "rag_queries": [],
+      "description": "StartEvent component named 'Start'",
+      "source": "implicit",
+      "priority": "medium",
+      "properties": {
+        "activityType": "startEvent",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::MessageStartEvent",
+        "componentVersion": "1.1"
+      }
+    },
+    {
+      "component_id": 6,
+      "component_type": "EndEvent",
+      "component_name": "End",
+      "xml_element": "endEvent",
+      "keyword_matched": "EndEvent",
+      "instance_number": 1,
+      "total_instances": 1,
+      "rag_queries": [],
+      "description": "EndEvent component named 'End'",
+      "source": "implicit",
+      "priority": "medium",
+      "properties": {
+        "activityType": "endEvent",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::MessageEndEvent/version::1.1.0",
+        "componentVersion": "1.1"
+      }
+    }
+  ]
+}

@@ -1,0 +1,117 @@
+{
+  "query": "Create a complete SAP iFlow integration package named 'IFlow_a93feac2' with the following requirements from the documentation:\n\n# Create Salesforce Opportunities from Stripe Subscriptions Integration\r\n\r\n## Table of Contents\r\n\r\n1. [API Overview](#api-overview)\r\n2. [Endpoints](#endpoints)\r\n   - [Stripe Webhook Endpoint](#stripe-webhook-endpoint)\r\n   - [Salesforce Opportunity Creation Endpoint](#salesforce-opportunity-creation-endpoint)\r\n3. [Current Boomi Flow Logic](#current-boomi-flow-logic)\r\n   - [Process Flow Overview](#process-flow-overview)\r\n   - [Step-by-Step Flow Description](#step-by-step-flow-description)\r\n4. [Boomi Transformations Explained](#boomi-transformations-explained)\r\n   - [Subscription Completed JSON to SF Opportunity CREATE Request XML](#subscription-completed-json-to-sf-opportunity-create-request-xml)\r\n   - [Field Mappings](#field-mappings)\r\n   - [Transformation Functions](#transformation-functions)\r\n5. [SAP Integration Suite Implementation](#sap-integration-suite-implementation)\r\n   - [Component Mapping](#component-mapping)\r\n   - [Integration Flow Visualization](#integration-flow-visualization)\r\n   - [Configuration Details](#configuration-details)\r\n6. [Environment Configuration](#environment-configuration)\r\n7. [API Reference](#api-reference)\r\n   - [Stripe Subscription Events](#stripe-subscription-events)\r\n   - [Salesforce Opportunity API](#salesforce-opportunity-api)\r\n\r\n## API Overview\r\n\r\nThis integration provides a real-time synchronization mechanism between Stripe subscription events and Salesforce opportunity creation. The integration is designed to automatically create Salesforce opportunities when specific Stripe subscription events occur, ensuring seamless data flow between the payment processing system and CRM.\r\n\r\n**Key Capabilities:**\r\n- Real-time webhook processing from Stripe subscription events\r\n- Dynamic property calculation and data enrichment\r\n- Automated Salesforce opportunity creation with proper field mapping\r\n- Error handling and logging for subscription processing failures\r\n\r\n**Base URL Pattern:**\r\n- Stripe Webhook Listener: `https://[boomi-runtime]/ws/\n\nGenerate a production-ready iFlow with proper:\n1. Start and End events\n2. Required adapters and connectors\n3. Content modifiers and processing steps\n4. Proper sequence flows\n5. Error handling\n6. SAP Integration Suite compliance\n",
+  "timestamp": "20251023_182548",
+  "total_components": 6,
+  "components": [
+    {
+      "component_id": 1,
+      "component_type": "ContentModifier",
+      "component_name": "ContentModifier",
+      "xml_element": "callActivity",
+      "keyword_matched": "ContentModifier",
+      "instance_number": 1,
+      "total_instances": 1,
+      "rag_queries": [],
+      "description": "ContentModifier component named 'ContentModifier'",
+      "source": "explicit",
+      "priority": "high",
+      "properties": {
+        "activityType": "Enricher",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::Enricher/version::1.6.1",
+        "componentVersion": "1.6"
+      }
+    },
+    {
+      "component_id": 2,
+      "component_type": "RequestReply",
+      "component_name": "RequestReply",
+      "xml_element": "serviceTask",
+      "keyword_matched": "RequestReply",
+      "instance_number": 1,
+      "total_instances": 1,
+      "rag_queries": [],
+      "description": "RequestReply component named 'RequestReply'",
+      "source": "explicit",
+      "priority": "high",
+      "properties": {
+        "activityType": "RequestReply",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::RequestReply/version::1.0.0",
+        "componentVersion": "1.0",
+        "adapter_type": "HTTP"
+      },
+      "adapter_type": "HTTP"
+    },
+    {
+      "component_id": 3,
+      "component_type": "Router",
+      "component_name": "Router",
+      "xml_element": "callActivity",
+      "keyword_matched": "Router",
+      "instance_number": 1,
+      "total_instances": 1,
+      "rag_queries": [],
+      "description": "Router component named 'Router'",
+      "source": "explicit",
+      "priority": "high",
+      "properties": {
+        "activityType": "ExclusiveGateway",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::ExclusiveGateway/version::1.1.2",
+        "componentVersion": "1.1"
+      }
+    },
+    {
+      "component_id": 4,
+      "component_type": "GroovyScript",
+      "component_name": "GroovyScript",
+      "xml_element": "callActivity",
+      "keyword_matched": "GroovyScript",
+      "instance_number": 1,
+      "total_instances": 2,
+      "rag_queries": [],
+      "description": "GroovyScript component named 'GroovyScript'",
+      "source": "explicit",
+      "priority": "high",
+      "properties": {
+        "activityType": "Script",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::GroovyScript/version::1.1.2",
+        "componentVersion": "1.1"
+      }
+    },
+    {
+      "component_id": 5,
+      "component_type": "StartEvent",
+      "component_name": "Start",
+      "xml_element": "startEvent",
+      "keyword_matched": "StartEvent",
+      "instance_number": 1,
+      "total_instances": 1,
+      "rag_queries": [],
+      "description": "StartEvent component named 'Start'",
+      "source": "implicit",
+      "priority": "medium",
+      "properties": {
+        "activityType": "startEvent",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::MessageStartEvent",
+        "componentVersion": "1.1"
+      }
+    },
+    {
+      "component_id": 6,
+      "component_type": "EndEvent",
+      "component_name": "End",
+      "xml_element": "endEvent",
+      "keyword_matched": "EndEvent",
+      "instance_number": 1,
+      "total_instances": 1,
+      "rag_queries": [],
+      "description": "EndEvent component named 'End'",
+      "source": "implicit",
+      "priority": "medium",
+      "properties": {
+        "activityType": "endEvent",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::MessageEndEvent/version::1.1.0",
+        "componentVersion": "1.1"
+      }
+    }
+  ]
+}

@@ -499,6 +499,7 @@ async function tryMarkdownApproachWithProvider(jobId, provider, platform = 'boom
     const response = await apiInstance.post(`/generate-iflow`, {
         markdown: markdownContent,
         iflow_name: `IFlow_${jobId.substring(0, 8)}`,
+        job_id: jobId,  // ← CRITICAL: Send job_id for status updates
         provider: provider,
         platform: platform
     }, {
@@ -903,6 +904,47 @@ export const deployLatestIflow = async (packageId, platform = 'mulesoft') => {
         } else {
             console.error("Error message:", error.message)
         }
+        throw error
+    }
+}
+
+// Submit migration feedback
+export const submitFeedback = async (feedbackData) => {
+    try {
+        console.log("📝 Submitting migration feedback...")
+        
+        const response = await api.post('/feedback/submit', feedbackData)
+        
+        console.log("✅ Feedback submitted successfully:", response.data)
+        return response.data
+    } catch (error) {
+        console.error("❌ Error submitting feedback:", error)
+        if (error.response) {
+            console.error("Response error data:", error.response.data)
+            console.error("Response error status:", error.response.status)
+        }
+        throw error
+    }
+}
+
+// Get feedback analytics for a platform
+export const getFeedbackAnalytics = async (platform) => {
+    try {
+        const response = await api.get(`/feedback/analytics/${platform}`)
+        return response.data
+    } catch (error) {
+        console.error("Error getting feedback analytics:", error)
+        throw error
+    }
+}
+
+// Get learned patterns
+export const getLearnedPatterns = async (platform = 'boomi') => {
+    try {
+        const response = await api.get(`/feedback/learned-patterns?platform=${platform}`)
+        return response.data
+    } catch (error) {
+        console.error("Error getting learned patterns:", error)
         throw error
     }
 }

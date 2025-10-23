@@ -33,13 +33,25 @@ class DirectIflowDeployment:
             base_url (str): Base URL of the SAP Integration Suite tenant
         """
         # Load environment variables if not provided
-        load_dotenv()
+        # Load environment-specific .env file (same logic as app.py)
+        env = os.getenv('FLASK_ENV', 'development')
+        env_file = f".env.{env}"
+        env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), env_file)
         
-        # Use WORKING ITR Internal credentials (from working script)
-        self.client_id = client_id or "sb-5e4b1b9b-d22f-427d-a6ae-f33c83513c0f!b124895|it!b410334"
-        self.client_secret = client_secret or "5813ca83-4ba6-4231-96e1-1a48a80eafec$kmhNJINpEbcsXgBQJn9vvaAHGgMegiM_-FB7EC_SF9w="
-        self.token_url = token_url or "https://itr-internal-2hco92jx.authentication.us10.hana.ondemand.com/oauth/token"
-        self.base_url = base_url or "https://itr-internal-2hco92jx.it-cpi034.cfapps.us10-002.hana.ondemand.com"
+        if os.path.exists(env_path):
+            load_dotenv(env_path)
+            logger.info(f"Loaded environment from: {env_file}")
+        else:
+            env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
+            if os.path.exists(env_path):
+                load_dotenv(env_path)
+                logger.info(f"Loaded environment from: .env (fallback)")
+        
+        # Read from environment variables OR use provided parameters
+        self.client_id = client_id or os.getenv('SAP_BTP_CLIENT_ID')
+        self.client_secret = client_secret or os.getenv('SAP_BTP_CLIENT_SECRET')
+        self.token_url = token_url or os.getenv('SAP_BTP_OAUTH_URL')
+        self.base_url = base_url or os.getenv('SAP_BTP_TENANT_URL')
         
         # Validate required parameters
         if not all([self.client_id, self.client_secret, self.token_url, self.base_url]):
@@ -171,7 +183,8 @@ class DirectIflowDeployment:
             return {"status": "error", "message": error_msg}
 
 # Function to deploy an iFlow directly
-def deploy_iflow(iflow_path, iflow_id=None, iflow_name=None, package_id="ConversionPackages"):
+def deploy_iflow(iflow_path, iflow_id=None, iflow_name=None, package_id="ConversionPackages", 
+                 client_id=None, client_secret=None, token_url=None, base_url=None):
     """
     Deploy an iFlow to SAP Integration Suite
     
@@ -180,11 +193,20 @@ def deploy_iflow(iflow_path, iflow_id=None, iflow_name=None, package_id="Convers
         iflow_id (str, optional): Technical ID for the iFlow. If None, derived from filename
         iflow_name (str, optional): Display name for the iFlow. If None, derived from filename
         package_id (str, optional): ID of the package where the iFlow will be deployed
+        client_id (str, optional): OAuth client ID
+        client_secret (str, optional): OAuth client secret
+        token_url (str, optional): OAuth token URL
+        base_url (str, optional): SAP tenant base URL
         
     Returns:
         dict: Deployment result with status and message
     """
-    deployment = DirectIflowDeployment()
+    deployment = DirectIflowDeployment(
+        client_id=client_id,
+        client_secret=client_secret,
+        token_url=token_url,
+        base_url=base_url
+    )
     return deployment.deploy_iflow(iflow_path, iflow_id, iflow_name, package_id)
 
 # Test function
