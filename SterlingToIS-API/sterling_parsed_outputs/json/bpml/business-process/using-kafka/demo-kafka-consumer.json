@@ -1,0 +1,64 @@
+{
+  "id": "demo-kafka-consumer",
+  "name": "Demo_Kafka_Consumer",
+  "type": "sterling.process",
+  "subtype": "bpml",
+  "description": "Sterling B2B Business Process: Demo_Kafka_Consumer",
+  "file_path": "sterling-b2b-samples\\business-process\\using-kafka\\demo-kafka-consumer.bpml",
+  "file_name": "demo-kafka-consumer.bpml",
+  "rules": [],
+  "operations": [
+    {
+      "name": "Kafka Client Begin Session Service",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "Action": "get",
+        "BootStrapServers": "localhost:29092",
+        "KafkaClientAdapter": "KafkaClientAdapter",
+        "SecurityAction": "PLAINTEXT",
+        "GroupId": "demo-sfg-consumer-0001",
+        ".": {
+          "from": "PrimaryDocument"
+        }
+      }
+    },
+    {
+      "name": "Kafka Client Consumer Service",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "SessionID": {
+          "from": "//KafkaBeginSessionServiceResults/SessionID/text()"
+        },
+        "KafkaClientAdapter": {
+          "from": "//KafkaBeginSessionServiceResults/KafkaClientAdapter/text()"
+        },
+        "Topic": "sb2b-kfk-inbound"
+      }
+    },
+    {
+      "name": "Kafka Client End Session Service",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "SessionID": {
+          "from": "//KafkaBeginSessionServiceResults/SessionID/text()"
+        },
+        "KafkaClientAdapter": {
+          "from": "//KafkaBeginSessionServiceResults/KafkaClientAdapter/text()"
+        },
+        "Action": "get"
+      }
+    }
+  ],
+  "assignments": [],
+  "sequences": [
+    {
+      "name": "",
+      "type": "sequential_flow"
+    }
+  ],
+  "patterns": [],
+  "raw_content": "<process name=\"Demo_Kafka_Consumer\">\n  <sequence>\n    <operation name=\"Kafka Client Begin Session Service\">\n      <participant name='KafkaBeginSessionService'/>\n      <output message=\"xout\">\n        <assign to='Action'>get</assign>\n        <assign to='BootStrapServers'>localhost:29092</assign>\n        <assign to='KafkaClientAdapter'>KafkaClientAdapter</assign>\n        <assign to='SecurityAction'>PLAINTEXT</assign>\n        <assign to='GroupId'>demo-sfg-consumer-0001</assign>\n        <assign to='.' from='PrimaryDocument'/>\n      </output>\n      <input message=\"xin\">\n        <assign to=\"KafkaBeginSessionServiceResults\" from=\"*\"/>\n      </input>\n    </operation>\n    <operation name=\"Kafka Client Consumer Service\">\n      <participant name=\"KafkaConsumerService\"/>\n      <output message=\"xout\">\n        <assign to=\"SessionID\" from=\"//KafkaBeginSessionServiceResults/SessionID/text()\"/>\n        <assign to=\"KafkaClientAdapter\" from=\"//KafkaBeginSessionServiceResults/KafkaClientAdapter/text()\"/>\n        <assign to='Topic'>sb2b-kfk-inbound</assign>\n      </output>\n      <input message=\"xin\">\n        <assign to=\".\" from=\"*\"/>\n      </input>\n    </operation>\n    <operation name=\"Kafka Client End Session Service\">\n      <participant name='KafkaEndSessionService'/>\n      <output message=\"xout\">\n        <assign to=\"SessionID\" from=\"//KafkaBeginSessionServiceResults/SessionID/text()\"/>\n        <assign to=\"KafkaClientAdapter\" from=\"//KafkaBeginSessionServiceResults/KafkaClientAdapter/text()\"/>\n        <assign to='Action'>get</assign>\n      </output>\n      <input message=\"xin\">\n        <assign to=\".\" from=\"*\"/>\n      </input>\n    </operation>\n  </sequence>\n</process>"
+}

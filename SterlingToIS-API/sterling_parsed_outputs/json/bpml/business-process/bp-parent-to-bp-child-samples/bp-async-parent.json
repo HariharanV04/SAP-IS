@@ -1,0 +1,31 @@
+{
+  "id": "bp-async-parent",
+  "name": "DEMO_Async_ParentBP",
+  "type": "sterling.process",
+  "subtype": "bpml",
+  "description": "Sterling B2B Business Process: DEMO_Async_ParentBP",
+  "file_path": "sterling-b2b-samples\\business-process\\bp-parent-to-bp-child-samples\\bp-async-parent.bpml",
+  "file_name": "bp-async-parent.bpml",
+  "rules": [],
+  "operations": [
+    {
+      "name": "CallSubProcessService",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "INVOKE_MODE": "ASYNC",
+        "WFD_NAME": "DEMO_AsyncChildBP",
+        "NOTIFY_PARENT_ON_ERROR": "ALL"
+      }
+    }
+  ],
+  "assignments": [],
+  "sequences": [
+    {
+      "name": "",
+      "type": "sequential_flow"
+    }
+  ],
+  "patterns": [],
+  "raw_content": "<process name=\"DEMO_Async_ParentBP\">\n    <sequence>\n        <assign to=\"LocalVar1\">Hello</assign>\n        <assign to=\"LocalVar2\">Hello World</assign>\n        <assign to=\"This/MyParentVar1\">Hello World 2</assign>\n\n        <assign to=\"message_to_child\" from=\"//This\" /> \n        <operation name=\"CallSubProcessService\">\n            <participant name=\"InvokeSubProcessService\"/>\n            <output message=\"InvokeSubProcessServiceTypeInputMessage\">\n                <assign to=\"INVOKE_MODE\">ASYNC</assign>\n                <assign to=\"WFD_NAME\">DEMO_AsyncChildBP</assign>\n                <assign to=\"NOTIFY_PARENT_ON_ERROR\">ALL</assign>\n            </output>\n            <input message=\"inmsg\">\n                <assign to=\".\" from=\"*\"/>\n            </input>\n        </operation>\n    </sequence>\n</process>\n"
+}

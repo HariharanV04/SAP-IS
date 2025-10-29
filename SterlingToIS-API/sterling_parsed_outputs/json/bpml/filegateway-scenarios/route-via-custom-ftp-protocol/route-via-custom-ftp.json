@@ -1,0 +1,158 @@
+{
+  "id": "route-via-custom-ftp",
+  "name": "Demo_BP_RouteViaCustomFTP",
+  "type": "sterling.process",
+  "subtype": "bpml",
+  "description": "Sterling B2B Business Process: Demo_BP_RouteViaCustomFTP",
+  "file_path": "sterling-b2b-samples\\filegateway-scenarios\\route-via-custom-ftp-protocol\\route-via-custom-ftp.bpml",
+  "file_name": "route-via-custom-ftp.bpml",
+  "rules": [
+    {
+      "name": "renameFile?",
+      "condition": "",
+      "type": "business_rule"
+    },
+    {
+      "name": "changeDirectory?",
+      "condition": "",
+      "type": "business_rule"
+    }
+  ],
+  "operations": [
+    {
+      "name": "Obscure Password",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "*"
+        }
+      }
+    },
+    {
+      "name": "FTP BEGIN SESSION SERVICE",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "FTPClientAdapter": "FTPClientAdapter",
+        "RemoteHost": {
+          "from": "/ProcessData/customftp_RemoteHost/text()"
+        },
+        "RemotePort": {
+          "from": "/ProcessData/customftp_RemotePort/text()"
+        },
+        "RemoteUserId": {
+          "from": "/ProcessData/customftp_RemoteUserId/text()"
+        },
+        "RemotePasswd": {
+          "from": "revealObscured(/ProcessData/Demo_Remote_FTP)"
+        },
+        "UsingRevealedPasswd": "true",
+        "ConnectionRetries": {
+          "from": "/ProcessData/customftp_NoOfRetries/text()"
+        },
+        "RetryDelay": {
+          "from": "/ProcessData/customftp_RetriesInterval/text()"
+        },
+        "ResponseTimeout": {
+          "from": "/ProcessData/ResponseTimeout/text()"
+        },
+        "ClearControlChannel": {
+          "from": "/ProcessData/ClearControlChannel/text()"
+        },
+        ".": {
+          "from": "*"
+        }
+      }
+    },
+    {
+      "name": "changeDir",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "SessionToken": {
+          "from": "/ProcessData/FtpBeginSessionServiceResults/SessionToken/text()"
+        },
+        "Directory": {
+          "from": "/ProcessData/FtpBeginSessionServiceResults/TPProfile/Directory/text()"
+        }
+      }
+    },
+    {
+      "name": "FTP PUT SERVICE",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "RepresentationType": "BINARY",
+        "SessionToken": {
+          "from": "/ProcessData/FtpBeginSessionServiceResults/SessionToken/text()"
+        },
+        ".": {
+          "from": "*"
+        }
+      }
+    },
+    {
+      "name": "moveFile",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "RemoteFromFileName": {
+          "from": "string(RemoteFileName)"
+        },
+        "RemoteToFileName": {
+          "from": "substring-after(string(RemoteFileName),string(TempPrefix))"
+        },
+        "SessionToken": {
+          "from": "/ProcessData/FtpBeginSessionServiceResults/SessionToken/text()"
+        }
+      }
+    },
+    {
+      "name": "FTP END SESSION SERVICE",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "SessionToken": {
+          "from": "/ProcessData/FtpBeginSessionServiceResults/SessionToken/text()"
+        }
+      }
+    },
+    {
+      "name": "FTP END SESSION SERVICE",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "SessionToken": {
+          "from": "/ProcessData/FtpBeginSessionServiceResults/SessionToken/text()"
+        }
+      }
+    },
+    {
+      "name": "generateException",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "exceptionCode": "Error, FTP PUT",
+        ".": {
+          "from": "*"
+        }
+      }
+    }
+  ],
+  "assignments": [],
+  "sequences": [
+    {
+      "name": "",
+      "type": "sequential_flow"
+    },
+    {
+      "name": "onFault Sequence",
+      "type": "sequential_flow"
+    }
+  ],
+  "patterns": [
+    "conditional_logic"
+  ],
+  "raw_content": "<process name=\"Demo_BP_RouteViaCustomFTP\">\n    <rule name=\"renameFile?\">\n        <condition>string(/ProcessData/customftp_FtpRename) = 'yes'</condition>\n    </rule>\n    <rule name=\"changeDirectory?\">\n        <condition>normalize-space(/ProcessData/FtpBeginSessionServiceResults/TPProfile/Directory/text()) != ''</condition>\n    </rule>\n    \n    <sequence>\n<!-- Get obscured password -->\n    <operation name=\"Obscure Password\">\n      <participant name=\"FTPClientObscureParameter\"/>\n      <output message=\"outmsg\">\n        <assign to=\".\" from=\"*\"></assign>\n      </output>\n      <input message=\"inmsg\">\n        <assign to=\".\" from=\"*\"></assign>\n      </input>\n    </operation>\n\n        <assign name=\"Temp File Prefix\" to=\"TempPrefix\">TEMP</assign>\n        <assign to=\"TempRemotePasswd\" from=\"/ProcessData/customftp_RemotePasswd/text()\"></assign>  \n        <assign to=\"TempRev2\" from=\"revealObscured(/ProcessData/customftp_RemotePasswd)\"></assign>     \n        <choice name=\"Check to rename file\">\n            <select>\n                <case ref=\"renameFile?\" activity=\"renameFile\"/>\n            </select>\n            <assign name=\"renameFile\" to=\"RemoteFileName\" from=\"concat(string(TempPrefix),string(RemoteFileName))\"/>\n        </choice>\n        <operation name=\"FTP BEGIN SESSION SERVICE\">\n            <participant name=\"FTPClientBeginSession\"/>\n            <output message=\"BeginSessionRequest\">\n                <assign to=\"FTPClientAdapter\">FTPClientAdapter</assign>\n                <assign to=\"RemoteHost\"   from=\"/ProcessData/customftp_RemoteHost/text()\"></assign> \n                <assign to=\"RemotePort\"   from=\"/ProcessData/customftp_RemotePort/text()\"></assign>\n                <assign to=\"RemoteUserId\" from=\"/ProcessData/customftp_RemoteUserId/text()\"></assign> \n                <assign to=\"RemotePasswd\" from=\"revealObscured(/ProcessData/Demo_Remote_FTP)\"></assign>   \n                <assign to=\"UsingRevealedPasswd\">true</assign>\n                <assign to=\"ConnectionRetries\" from=\"/ProcessData/customftp_NoOfRetries/text()\"/>\n                <assign to=\"RetryDelay\" from=\"/ProcessData/customftp_RetriesInterval/text()\"/>\n                <assign to=\"ResponseTimeout\" from=\"/ProcessData/ResponseTimeout/text()\"/>\n\t\t<assign to=\"ClearControlChannel\" from=\"/ProcessData/ClearControlChannel/text()\"/>\n                <assign to=\".\" from=\"*\"/>\n            </output>\n            <input message=\"inmsg\">\n                <assign to=\"FtpBeginSessionServiceResults\" from=\"*\"/>\n            </input>\n        </operation>\n        <choice name=\"Check to change directory\">\n            <select>\n                <case ref=\"changeDirectory?\" activity=\"changeDir\"/>\n            </select>\n            <operation name=\"changeDir\">\n                <participant name=\"FTPClientCd\"/> \n                <output message=\"CdRequest\"> \n                    <assign to=\"SessionToken\" from=\"/ProcessData/FtpBeginSessionServiceResults/SessionToken/text()\"/> \n                    <assign to=\"Directory\" from=\"/ProcessData/FtpBeginSessionServiceResults/TPProfile/Directory/text()\"/> \n                </output> \n                <input message=\"inmsg\"> \n                    <assign to=\"FTPClientCdResults\" from=\"*\"></assign> \n                </input> \n            </operation>\n        </choice>\n        <operation name=\"FTP PUT SERVICE\">\n            <participant name=\"FTPClientPut\"/>\n            <output message=\"PutRequest\">\n                <assign to=\"RepresentationType\">BINARY</assign>\n                <assign to=\"SessionToken\" from=\"/ProcessData/FtpBeginSessionServiceResults/SessionToken/text()\"/>\n                <assign to=\".\" from=\"*\"/>\n            </output>\n            <input message=\"inmsg\">\n                <assign to=\"PutResult\" from=\"*\"/>\n            </input>\n        </operation>\n        <choice name=\"Check to move file\">\n            <select>\n                <case ref=\"renameFile?\" activity=\"moveFile\"/>\n            </select>\n            <operation name=\"moveFile\">\n                <participant name=\"FTPClientMove\"/>\n                <output message=\"FTPClientMoveServiceTypeInputMessage\">\n                    <assign to=\"RemoteFromFileName\" from=\"string(RemoteFileName)\"/>\n                    <assign to=\"RemoteToFileName\" from=\"substring-after(string(RemoteFileName),string(TempPrefix))\"/>\n                    <assign to=\"SessionToken\" from=\"/ProcessData/FtpBeginSessionServiceResults/SessionToken/text()\"/>\n                </output>\n                <input message=\"inmsg\">\n                    <assign to=\"FTPClientMoveServiceResults\" from=\"*\"/>\n                </input>\n            </operation>\n        </choice>\n        <operation name=\"FTP END SESSION SERVICE\">\n            <participant name=\"FTPClientEndSession\"/>\n            <output message=\"EndSessionRequest\">\n                <assign to=\"SessionToken\" from=\"/ProcessData/FtpBeginSessionServiceResults/SessionToken/text()\"/>\n            </output>\n            <input message=\"inmsg\">\n                <assign to=\"FtpEndSessionResults\" from=\"*\"/>\n "
+}

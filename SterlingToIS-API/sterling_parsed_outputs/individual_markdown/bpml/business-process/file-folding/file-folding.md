@@ -1,0 +1,45 @@
+# Demo_BP_LineFolding
+
+**Type**: sterling.process
+**File**: file-folding.bpml
+
+## Description
+
+Sterling B2B Business Process: Demo_BP_LineFolding
+
+## Operations
+
+### 1. FileFolding
+- **Participant**: 
+- **Type**: service
+- **Configuration**:
+  - `srcLocationMode`: inline
+  - `javaSrc`: import java.io.BufferedReader; 
+import java.io.InputStreamReader; 
+import java.io.PrintStream; 
+import com.sterlingcommerce.woodstock.workflow.WorkFlowContext; 
+import com.sterlingcommerce.woodstock.workflow.WorkFlowException; 
+import com.sterlingcommerce.woodstock.workflow.Document; 
+ 
+String strFoldLen = wfc.getParm("LineFoldLength"); 
+int foldLen = new Integer(strFoldLen).intValue(); 
+
+Document srcDoc = wfc.getPrimaryDocument(); 
+Document foldDoc = wfc.newDocument(); 
+ 
+BufferedReader reader = new BufferedReader(new InputStreamReader(srcDoc.getInputStream())); 
+PrintStream writer = new PrintStream(foldDoc.getOutputStream()); 
+ 
+String line = ""; 
+while ((line = reader.readLine()) != null) { 
+    String foldStr = line.replaceAll("(.{" + foldLen + "})", "$1\n"); 
+    writer.println(foldStr); 
+} 
+ 
+writer.close(); 
+reader.close(); 
+ 
+wfc.putPrimaryDocument(foldDoc); 
+return "OK"; 
+  - `.`: {'from': '*'}
+

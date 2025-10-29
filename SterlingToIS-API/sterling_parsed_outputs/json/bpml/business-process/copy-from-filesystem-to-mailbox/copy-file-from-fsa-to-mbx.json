@@ -1,0 +1,49 @@
+{
+  "id": "copy-file-from-fsa-to-mbx",
+  "name": "Demo_BP_CopyFileFromFSA2MBX",
+  "type": "sterling.process",
+  "subtype": "bpml",
+  "description": "Sterling B2B Business Process: Demo_BP_CopyFileFromFSA2MBX",
+  "file_path": "sterling-b2b-samples\\business-process\\copy-from-filesystem-to-mailbox\\copy-file-from-fsa-to-mbx.bpml",
+  "file_name": "copy-file-from-fsa-to-mbx.bpml",
+  "rules": [],
+  "operations": [
+    {
+      "name": "File System Adapter",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "*"
+        },
+        "Action": "FS_COLLECT",
+        "collectionFolder": "C:\\Temp\\",
+        "collectMultiple": "false",
+        "deleteAfterCollect": "false",
+        "filter": "*.txt"
+      }
+    },
+    {
+      "name": "Mailbox Add Service",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "*"
+        },
+        "MailboxPath": {
+          "from": "/Inbox"
+        }
+      }
+    }
+  ],
+  "assignments": [],
+  "sequences": [
+    {
+      "name": "Sequence Start",
+      "type": "sequential_flow"
+    }
+  ],
+  "patterns": [],
+  "raw_content": "<process name=\"Demo_BP_CopyFileFromFSA2MBX\">\n  <sequence name=\"Sequence Start\">\n    <operation name=\"File System Adapter\">\n      <participant name=\"Generic_FSA_Adapter\"/>\n      <output message=\"FileSystemInputMessage\">\n        <assign to=\".\" from=\"*\"></assign>\n        <assign to=\"Action\">FS_COLLECT</assign>\n        <assign to=\"collectionFolder\">C:\\Temp\\</assign>\n        <assign to=\"collectMultiple\">false</assign>\n        <assign to=\"deleteAfterCollect\">false</assign>\n        <assign to=\"filter\">*.txt</assign>\n      </output>\n      <input message=\"inmsg\">\n        <assign to=\".\" from=\"*\"></assign>\n      </input>\n    </operation>\n\n    <operation name=\"Mailbox Add Service\">\n      <participant name=\"MailboxAdd\"/>\n      <output message=\"MailboxAddServiceTypeInputMessage\">\n        <assign to=\".\" from=\"*\"></assign>\n        <assign to=\"MailboxPath\" from=\"/Inbox\"></assign>\n      </output>\n      <input message=\"inmsg\">\n        <assign to=\".\" from=\"*\"></assign>\n      </input>\n    </operation>\n\n  </sequence>\n</process>"
+}

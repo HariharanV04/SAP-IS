@@ -1,0 +1,79 @@
+{
+  "id": "route-via-filesystem",
+  "name": "Demo_BP_RouteViaFileSystem",
+  "type": "sterling.process",
+  "subtype": "bpml",
+  "description": "Sterling B2B Business Process: Demo_BP_RouteViaFileSystem",
+  "file_path": "sterling-b2b-samples\\filegateway-scenarios\\route-via-file-system-adapter\\route-via-filesystem.bpml",
+  "file_name": "route-via-filesystem.bpml",
+  "rules": [],
+  "operations": [
+    {
+      "name": "File System Adapter",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "extractionFolder": {
+          "from": "fsa_RemoteFileSystem/text()"
+        },
+        "assignFilename": "true",
+        "assignedFilename": {
+          "from": "DestinationMessageName/text()"
+        },
+        "Action": "FS_EXTRACT",
+        ".": {
+          "from": "*"
+        }
+      }
+    },
+    {
+      "name": "FileGatewayRouteEventService",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "RouteMetadata"
+        },
+        "EventCode": "CUST_0003",
+        "ExceptionLevel": "Normal",
+        "EventAttributes/ProducerName": {
+          "from": "ProducerName/text()"
+        },
+        "EventAttributes/ConsumerFilename": {
+          "from": "DestinationMessageName/text()"
+        }
+      }
+    },
+    {
+      "name": "FileGatewayRouteEventService",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "RouteMetadata"
+        },
+        "EventCode": "CUST_0053",
+        "ExceptionLevel": "Normal",
+        "EventAttributes/ProducerName": {
+          "from": "ProducerName/text()"
+        },
+        "EventAttributes/ConsumerFilename": {
+          "from": "DestinationMessageName/text()"
+        }
+      }
+    }
+  ],
+  "assignments": [],
+  "sequences": [
+    {
+      "name": "",
+      "type": "sequential_flow"
+    },
+    {
+      "name": "onFault Sequence",
+      "type": "sequential_flow"
+    }
+  ],
+  "patterns": [],
+  "raw_content": "<process name=\"Demo_BP_RouteViaFileSystem\">\n    <sequence>\n\t\n        <operation name=\"File System Adapter\">\n            <participant name=\"Generic_FSA_Adapter\"/>\n                <output message=\"FileSystemInputMessage\">\n                    <assign to=\"extractionFolder\" from=\"fsa_RemoteFileSystem/text()\"/>\n                    <assign to=\"assignFilename\">true</assign>\n                    <assign to=\"assignedFilename\" from=\"DestinationMessageName/text()\"/>\n                    <assign to=\"Action\">FS_EXTRACT</assign>\n                    <assign to=\".\" from=\"*\"></assign>\n                </output>\n                <input message=\"inmsg\">\n                    <assign to=\".\" from=\"*\"></assign>\n                </input>\n        </operation>\n\t  \n        <operation name=\"FileGatewayRouteEventService\">\n            <participant name=\"FileGatewayRouteEventService\"/>\n            <output message=\"output\">\n                <assign to=\".\" from=\"RouteEntityKey\"/>\n                <assign to=\".\" from=\"RouteEntityType\"/>\n                <assign to=\".\" from=\"RouteDataflowId\"/>\n                <assign to=\".\" from=\"RouteMetadata\"/>\n                <assign to=\"EventCode\">CUST_0003</assign>\n                <assign to=\"ExceptionLevel\">Normal</assign>\n                <assign to=\"EventAttributes/ProducerName\" from=\"ProducerName/text()\" append=\"true\"/>\n                <assign to=\"EventAttributes/ConsumerFilename\" from=\"DestinationMessageName/text()\"/>\n            </output>\n            <input message=\"input\">\n                <assign to=\".\" from=\"*\"/>\n            </input>\n        </operation>\n \n\t\t<onFault>\n            <sequence name=\"onFault Sequence\">\n\t\t\t    <operation name=\"FileGatewayRouteEventService\">\n                      <participant name=\"FileGatewayRouteEventService\"/>\n                      <output message=\"output\">\n                          <assign to=\".\" from=\"RouteEntityKey\"/>\n                          <assign to=\".\" from=\"RouteEntityType\"/>\n                          <assign to=\".\" from=\"RouteDataflowId\"/>\n                          <assign to=\".\" from=\"RouteMetadata\"/>\n                          <assign to=\"EventCode\">CUST_0053</assign>\n                          <assign to=\"ExceptionLevel\">Normal</assign>\n                          <assign to=\"EventAttributes/ProducerName\" from=\"ProducerName/text()\" append=\"true\"/>\n                          <assign to=\"EventAttributes/ConsumerFilename\" from=\"DestinationMessageName/text()\"/>\n                      </output>\n                      <input message=\"input\">\n                          <assign to=\".\" from=\"*\"/>\n                      </input>\n                </operation>\n                \n            </sequence>\n        </onFault>\n    </sequence>\n</process>"
+}

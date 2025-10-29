@@ -1,0 +1,90 @@
+{
+  "id": "create-user-restapi-json",
+  "name": "create-user-restapi-json",
+  "type": "sterling.process",
+  "subtype": "bpml",
+  "description": "Sterling B2B Business Process: create-user-restapi-json",
+  "file_path": "sterling-b2b-samples\\business-process\\restapiclient-samples\\create-user-restapi-json.bpml",
+  "file_name": "create-user-restapi-json.bpml",
+  "rules": [],
+  "operations": [
+    {
+      "name": "AssignService",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "DOMToDoc(/ProcessData/Partner,'PrimaryDocument')"
+        },
+        "This/server": "http://127.0.0.1:5078",
+        "This/url": {
+          "from": "concat(This/server/text(),'/B2BAPIs/svc/tradingpartners/')"
+        },
+        "This/auth": "admin:passw0rd",
+        "This/emailAddress": "kk@ibm.com",
+        "Partner/username": "demopartner01",
+        "Partner/partnerName": "demopartner01",
+        "Partner/givenName": "demo",
+        "Partner/surname": "demopartner01",
+        "Partner/authenticationType": "Local",
+        "Partner/community": "Demo_Community",
+        "Partner/emailAddress": "kk@ibm.com",
+        "Partner/password": "passw0rd",
+        "Partner/postalCode": "12345-678",
+        "Partner/isInitiatingConsumer": "True",
+        "Partner/isInitiatingProducer": "True",
+        "Partner/isListeningConsumer": "False",
+        "Partner/isListeningProducer": "False",
+        "Partner/doesUseSSH": "true",
+        "Partner/phone": "555-5555"
+      }
+    },
+    {
+      "name": "Convert to Json",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "*"
+        },
+        "InputType": "XML",
+        "OutputPath": "output.json"
+      }
+    },
+    {
+      "name": "Create Partner",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "url": {
+          "from": "This/url/text()"
+        },
+        "restoperation": "POST",
+        "auth": {
+          "from": "This/auth/text()"
+        },
+        "Authorization": "Basic",
+        "Content-type": "Application/json",
+        "Accept": "Application/json",
+        "isProxy": "false",
+        "jsoninput1": "false",
+        ".": {
+          "from": "*"
+        }
+      }
+    }
+  ],
+  "assignments": [],
+  "sequences": [
+    {
+      "name": "",
+      "type": "sequential_flow"
+    },
+    {
+      "name": "",
+      "type": "sequential_flow"
+    }
+  ],
+  "patterns": [],
+  "raw_content": "<process name=\"create-user-restapi-json\">\n    <sequence>\n\n\n        <operation name=\"AssignService\">\n            <participant name=\"AssignService\"/>\n            <output message=\"AssignOutputMessage\">\n                <assign to=\".\" from=\"*\"/>\n                <assign to=\"This/server\">http://127.0.0.1:5078</assign>\n                <assign to=\"This/url\" from=\"concat(This/server/text(),&apos;/B2BAPIs/svc/tradingpartners/&apos;)\"></assign>\n                <assign to=\"This/auth\">admin:passw0rd</assign>\n                <assign to=\"This/emailAddress\">kk@ibm.com</assign>\n                <assign to=\"Partner/username\">demopartner01</assign>\n                <assign to=\"Partner/partnerName\">demopartner01</assign>\n                <assign to=\"Partner/givenName\">demo</assign>\n                <assign to=\"Partner/surname\">demopartner01</assign>\n                <assign to=\"Partner/authenticationType\">Local</assign>\n                <assign to=\"Partner/community\">Demo_Community</assign>\n                <assign to=\"Partner/emailAddress\">kk@ibm.com</assign>\n                <assign to=\"Partner/password\">passw0rd</assign>\n                <assign to=\"Partner/postalCode\">12345-678</assign>\n                <assign to=\"Partner/isInitiatingConsumer\">True</assign>\n                <assign to=\"Partner/isInitiatingProducer\">True</assign>\n                <assign to=\"Partner/isListeningConsumer\">False</assign>\n                <assign to=\"Partner/isListeningProducer\">False</assign>\n                <assign to=\"Partner/doesUseSSH\">true</assign>\n                <assign to=\"Partner/phone\">555-5555</assign>\n                <assign to=\".\" from=\"DOMToDoc(/ProcessData/Partner,&apos;PrimaryDocument&apos;)\"></assign>\n            </output>\n            <input message=\"AssignInputMessage\">\n                <assign to=\".\" from=\"*\"/>\n            </input>\n        </operation>\n\n        <operation name=\"Convert to Json\">\n            <participant name=\"xmljsontransformer\"/>\n            <output message=\"xout\">\n                <assign to=\".\" from=\"PrimaryDocument/@SCIObjectID\"></assign>\n                <assign to=\"InputType\">XML</assign>\n                <assign to=\"OutputPath\">output.json</assign>\n                <assign to=\".\" from=\"*\" />\n            </output>\n            <input message=\"xin\">\n                <assign to=\".\" from=\"*\" />\n            </input>\n        </operation>\n\n\n        <operation name=\"Create Partner\">\n            <participant name=\"RESTAPIClient\"/>\n            <output message=\"xout\">\n                <assign to=\"url\" from=\"This/url/text()\"></assign>\n                <assign to=\"restoperation\">POST</assign>\n                <assign to=\"auth\" from=\"This/auth/text()\"></assign>\n                <assign to=\"Authorization\">Basic</assign>\n                <assign to=\"Content-type\">Application/json</assign>\n                <assign to=\"Accept\">Application/json</assign>\n                <assign to=\"isProxy\">false</assign>\n                <assign to=\"jsoninput1\">false</assign>\n                <assign to=\".\" from=\"*\" />\n            </output>\n            <input message=\"xin\">\n                <assign to=\"HTTPResponse\" from=\"*\" />\n            </input>\n        </operation>\n\n        <onFault>\n            <sequence>\n                <assign to=\"status\">FAIL</assign>\n            </sequence>\n        </onFault>\n    </sequence>\n</process>\n"
+}

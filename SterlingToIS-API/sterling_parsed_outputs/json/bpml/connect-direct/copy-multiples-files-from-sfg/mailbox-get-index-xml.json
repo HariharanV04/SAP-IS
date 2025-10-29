@@ -1,0 +1,45 @@
+{
+  "id": "mailbox-get-index-xml",
+  "name": "MAILBOX_GET_INDEX_XML",
+  "type": "sterling.process",
+  "subtype": "bpml",
+  "description": "Sterling B2B Business Process: MAILBOX_GET_INDEX_XML",
+  "file_path": "sterling-b2b-samples\\connect-direct\\copy-multiples-files-from-sfg\\mailbox-get-index-xml.bpml",
+  "file_name": "mailbox-get-index-xml.bpml",
+  "rules": [],
+  "operations": [
+    {
+      "name": "Mailbox Query Service",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "*"
+        },
+        "MailboxPath": "/Inbox",
+        "MessageExtractable": "YES",
+        "MessageNamePattern": "*",
+        "OrderBy": "MessageId"
+      }
+    },
+    {
+      "name": "CD Server BP Response Service",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "*"
+        }
+      }
+    }
+  ],
+  "assignments": [],
+  "sequences": [
+    {
+      "name": "CDServerSnodeCallbackBP",
+      "type": "sequential_flow"
+    }
+  ],
+  "patterns": [],
+  "raw_content": "<process name=\"MAILBOX_GET_INDEX_XML\">\n <sequence name=\"CDServerSnodeCallbackBP\">\n    <operation name=\"Mailbox Query Service\">\n        <participant name=\"MailboxQuery\"/>\n        <output message=\"MailboxQueryServiceTypeInputMessage\">\n        <assign to=\".\" from=\"*\"></assign>\n        <assign to=\"MailboxPath\">/Inbox</assign>\n        <assign to=\"MessageExtractable\">YES</assign>\n        <assign to=\"MessageNamePattern\">*</assign>\n        <assign to=\"OrderBy\">MessageId</assign>\n        </output>\n        <input message=\"inmsg\">\n        <assign to=\"PullList\" from=\"Message/MessageName\"></assign>\n        </input>\n    </operation>\n    <assign to=\".\" from=\"DOMToDoc(/ProcessData/PullList, 'PrimaryDocument', 'no', 'PullList')\"></assign>\n    <assign to=\"RemoteFileName\">PullFileList</assign>\n    <operation name=\"CD Server BP Response Service\">\n        <participant name=\"CDServerBPResponse\"/>\n        <output message=\"CDServerBPResponseServiceTypeInputMessage\">\n        <assign to=\".\" from=\"*\"></assign>\n        </output>\n        <input message=\"inmsg\">\n        <assign to=\".\" from=\"*\"></assign>\n        </input>\n    </operation>\n </sequence>\n</process>"
+}

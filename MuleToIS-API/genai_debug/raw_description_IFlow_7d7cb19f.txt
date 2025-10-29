@@ -1,1 +1,0 @@
-This iFlow retrieves detailed product information via a GET /products endpoint. It validates product identifiers against a predefined list, logs request status, builds an OData query with appropriate filters and field selections, fetches product details from a HANA database, and transforms the response to handle both successful retrievals and product-not-found scenarios.

@@ -1,0 +1,68 @@
+{
+  "id": "fgcustomlayer-translation",
+  "name": "FGCustomLayer_Translation",
+  "type": "sterling.process",
+  "subtype": "bpml",
+  "description": "Sterling B2B Business Process: FGCustomLayer_Translation",
+  "file_path": "sterling-b2b-samples\\filegateway-scenarios\\custom-layer-translation\\fgcustomlayer-translation.bpml",
+  "file_name": "fgcustomlayer-translation.bpml",
+  "rules": [],
+  "operations": [
+    {
+      "name": "Translation",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "*"
+        },
+        "map_name": {
+          "from": "/ProcessData/Map_Name/text()"
+        }
+      }
+    },
+    {
+      "name": "FileGatewayRouteEventServiceType",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "RouteDataflowId"
+        },
+        "EventCode": "CUST_0002",
+        "ExceptionLevel": "Normal",
+        "EventAttributes/Map_Name": {
+          "from": "/ProcessData/Map_Name/text()"
+        }
+      }
+    },
+    {
+      "name": "FileGatewayRouteEventServiceType",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "RouteDataflowId"
+        },
+        "EventCode": "CUST_0052",
+        "ExceptionLevel": "Normal",
+        "EventAttributes/Map_Name": {
+          "from": "/ProcessData/Map_Name/text()"
+        }
+      }
+    }
+  ],
+  "assignments": [],
+  "sequences": [
+    {
+      "name": "mainStart",
+      "type": "sequential_flow"
+    },
+    {
+      "name": "End Session",
+      "type": "sequential_flow"
+    }
+  ],
+  "patterns": [],
+  "raw_content": "<process name=\"FGCustomLayer_Translation\">\n <sequence name=\"mainStart\">\n    <operation name=\"Translation\">\n      <participant name=\"Translation\"/>\n      <output message=\"TranslationTypeInputMessage\">\n        <assign to=\".\" from=\"*\"></assign>\n        <assign to=\"map_name\" from=\"/ProcessData/Map_Name/text()\"/>\n      </output>\n     <input message=\"inmsg\">\n        <assign to=\".\" from=\"*\"></assign>\n      </input>\n    </operation>\n\n    <operation name=\"FileGatewayRouteEventServiceType\">\n      <participant name=\"FileGatewayRouteEventService\"/>\n      <output message=\"FileGatewayRouteEventServiceTypeInputMessage\">\n        <assign to=\".\" from=\"*\"></assign>\n        <assign to=\".\" from=\"RouteEntityType\"></assign>\n        <assign to=\".\" from=\"RouteEntityKey\"></assign>\n        <assign to=\".\" from=\"RouteMetaData\"></assign>\n        <assign to=\".\" from=\"RouteDataflowId\"></assign>\n        <assign to=\"EventCode\">CUST_0002</assign>\n        <assign to=\"ExceptionLevel\">Normal</assign>\n        <assign to=\"EventAttributes/Map_Name\" from=\"/ProcessData/Map_Name/text()\" append=\"true\"/>\n      </output>\n      <input message=\"inmsg\">\n        <assign to=\"RouteEventResults\" from=\"*\"></assign>\n      </input>\n    </operation>\n\n    <onFault>\n      <sequence name=\"End Session\">\n        <operation name=\"FileGatewayRouteEventServiceType\">\n          <participant name=\"FileGatewayRouteEventService\"/>\n          <output message=\"FileGatewayRouteEventServiceTypeInputMessage\">\n            <assign to=\".\" from=\"*\"></assign>\n            <assign to=\".\" from=\"RouteEntityType\"></assign>\n            <assign to=\".\" from=\"RouteEntityKey\"></assign>\n            <assign to=\".\" from=\"RouteMetaData\"></assign>\n            <assign to=\".\" from=\"RouteDataflowId\"></assign>\n            <assign to=\"EventCode\">CUST_0052</assign>\n            <assign to=\"ExceptionLevel\">Normal</assign>\n            <assign to=\"EventAttributes/Map_Name\" from=\"/ProcessData/Map_Name/text()\" append=\"true\"/>\n          </output>\n          <input message=\"inmsg\">\n            <assign to=\"End Session\" from=\"*\"></assign>\n          </input>\n        </operation>\n\n      </sequence>\n    </onFault>\n </sequence>\n</process>\n"
+}

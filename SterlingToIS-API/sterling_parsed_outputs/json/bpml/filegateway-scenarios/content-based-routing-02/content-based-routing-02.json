@@ -1,0 +1,20 @@
+{
+  "id": "content-based-routing-02",
+  "name": "Demo_BP_Content_Based_Routing_XML",
+  "type": "sterling.process",
+  "subtype": "bpml",
+  "description": "Sterling B2B Business Process: Demo_BP_Content_Based_Routing_XML",
+  "file_path": "sterling-b2b-samples\\filegateway-scenarios\\content-based-routing-02\\content-based-routing-02.bpml",
+  "file_name": "content-based-routing-02.bpml",
+  "rules": [],
+  "operations": [],
+  "assignments": [],
+  "sequences": [
+    {
+      "name": "",
+      "type": "sequential_flow"
+    }
+  ],
+  "patterns": [],
+  "raw_content": "<process name = \"Demo_BP_Content_Based_Routing_XML\">\n  <sequence>\n    <assign to=\".\" from=\"DocToDOM(PrimaryDocument)\"/> \n    <assign to=\"ConsumerName\" from=\"/ProcessData/Customer/Name/text()\"></assign>\n  </sequence>\n</process>"
+}

@@ -1,0 +1,198 @@
+{
+  "id": "sftp-get-multiple-files",
+  "name": "Demo_BP_SFTPGetMultipleFiles",
+  "type": "sterling.process",
+  "subtype": "bpml",
+  "description": "Sterling B2B Business Process: Demo_BP_SFTPGetMultipleFiles",
+  "file_path": "sterling-b2b-samples\\business-process\\sftp-get-multiple-files\\sftp-get-multiple-files.bpml",
+  "file_name": "sftp-get-multiple-files.bpml",
+  "rules": [
+    {
+      "name": "FileCounter",
+      "condition": "",
+      "type": "business_rule"
+    },
+    {
+      "name": "DELETE_FILES?",
+      "condition": "",
+      "type": "business_rule"
+    },
+    {
+      "name": "MOVE_FILES?",
+      "condition": "",
+      "type": "business_rule"
+    }
+  ],
+  "operations": [
+    {
+      "name": "AssignService",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "SFTP_CLIENT_ADAPTER": "SFTPClientAdapter",
+        "SSH_PROFILEID": "2356001890249e5e3node1",
+        "REMOTE_DIRECTORY": "/home/sistema_sftp",
+        "REMOTE_FILENAME": "*.txt",
+        "MAILBOX_PATH": "/Parceiro_SFTP/Inbox"
+      }
+    },
+    {
+      "name": "SFTP Client Begin Session Service",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "*"
+        },
+        "SFTPClientAdapter": {
+          "from": "//SFTP_CLIENT_ADAPTER/text()"
+        },
+        "ProfileId": {
+          "from": "/ProcessData/SSH_PROFILEID/text()"
+        }
+      }
+    },
+    {
+      "name": "SFTP CD SERVICE",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "Directory": {
+          "from": "//REMOTE_DIRECTORY/text()"
+        },
+        "SessionToken": {
+          "from": "/ProcessData/SFTPClientBeginSessionServiceResults/SessionToken/text()"
+        }
+      }
+    },
+    {
+      "name": "SFTP Client LIST Service",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "*"
+        },
+        "RemoteFileName": {
+          "from": "//REMOTE_FILENAME/text()"
+        },
+        "SessionToken": {
+          "from": "/ProcessData/SFTPClientBeginSessionServiceResults/SessionToken/text()"
+        }
+      }
+    },
+    {
+      "name": "SFTP Client GET Service",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "*"
+        },
+        "RemoteFileName": {
+          "from": "/ProcessData/SFTPClientListResults/Files/File[1]/Name/text()"
+        },
+        "SessionToken": {
+          "from": "/ProcessData/SFTPClientBeginSessionServiceResults/SessionToken/text()"
+        }
+      }
+    },
+    {
+      "name": "Mailbox Add Service",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "DocumentId": {
+          "from": "/ProcessData/DocumentList/DocumentId[1]/text()"
+        },
+        "Extractable": "YES",
+        "MailboxPath": {
+          "from": "//MAILBOX_PATH/text()"
+        },
+        ".": {
+          "from": "*"
+        }
+      }
+    },
+    {
+      "name": "SFTP Client MOVE Service",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "*"
+        },
+        "RemoteFileName": {
+          "from": "/ProcessData/SFTPClientListResults/Files/File[1]/Name/text()"
+        },
+        "SessionToken": {
+          "from": "/ProcessData/SFTPClientBeginSessionServiceResults/SessionToken/text()"
+        }
+      }
+    },
+    {
+      "name": "SFTP Client DELETE Service",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "*"
+        },
+        "RemoteFileName": {
+          "from": "/ProcessData/SFTPClientListResults/Files/File[1]/Name/text()"
+        },
+        "SessionToken": {
+          "from": "/ProcessData/SFTPClientBeginSessionServiceResults/SessionToken/text()"
+        }
+      }
+    },
+    {
+      "name": "Release Service",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "TARGET": "/ProcessData/DocumentList/DocumentId[1] | /ProcessData/SFTPClientListResults/Files/File[1] | /ProcessData/MailboxAdd",
+        ".": {
+          "from": "*"
+        }
+      }
+    },
+    {
+      "name": "SFTP Client End Session Service",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "*"
+        },
+        "SessionToken": {
+          "from": "/ProcessData/SFTPClientBeginSessionServiceResults/SessionToken/text()"
+        }
+      }
+    }
+  ],
+  "assignments": [],
+  "sequences": [
+    {
+      "name": "",
+      "type": "sequential_flow"
+    },
+    {
+      "name": "proceed",
+      "type": "sequential_flow"
+    },
+    {
+      "name": "MOVE_FILE_YES",
+      "type": "sequential_flow"
+    },
+    {
+      "name": "DELETE_FILE_YES",
+      "type": "sequential_flow"
+    }
+  ],
+  "patterns": [
+    "batch_processing",
+    "conditional_logic"
+  ],
+  "raw_content": "<process name=\"Demo_BP_SFTPGetMultipleFiles\">\n  <rule name=\"FileCounter\">\n    <condition>/ProcessData/FileCounter/text()>0</condition>\n  </rule>\n  <rule name=\"DELETE_FILES?\">\n    <condition>/ProcessData/DELETE_FILES/text()=&apos;YES&apos;</condition>\n  </rule>\n  <rule name=\"MOVE_FILES?\">\n    <condition>/ProcessData/MOVE_FILES/text()=&apos;YES&apos;</condition>\n  </rule>\n\n  <sequence>\n    <operation name=\"AssignService\">\n      <participant name=\"AssignService\"/>\n      <output message=\"AssignOutputMessage\">\n        <assign to=\"SFTP_CLIENT_ADAPTER\">SFTPClientAdapter</assign>\n        <assign to=\"SSH_PROFILEID\">2356001890249e5e3node1</assign>\n        <!-- \n        <assign to=\"KnownHostKeyId\">442297176384f4ba2node1</assign>\n        <assign to=\"REMOTE_HOST\">localhost</assign>\n        <assign to=\"REMOTE_PORT\">22</assign>\n        <assign to=\"REMOTE_USER\">Demo_Remote_SFTP</assign>\n        <assign to=\"REMOTE_PASSWORD\">passw0rd</assign>\n        --> \n        <assign to=\"REMOTE_DIRECTORY\">/home/sistema_sftp</assign>\n        <assign to=\"REMOTE_FILENAME\">*.txt</assign>\n        <assign to=\"MAILBOX_PATH\">/Parceiro_SFTP/Inbox</assign>\n        <!-- <assign to=\"DELETE_FILES\">YES</assign> -->\n        <!-- <assign to=\"MOVE_FILES\">YES</assign> -->\n      </output>\n      <input message=\"AssignInputMessage\">\n        <assign to=\".\" from=\"*\"/>\n      </input>\n    </operation>\n\n    <operation name=\"SFTP Client Begin Session Service\">\n      <participant name=\"SFTPClientBeginSession\"/>\n      <output message=\"SFTPClientBeginSessionServiceTypeInputMessage\">\n        <assign to=\".\" from=\"*\"/>\n        <assign to=\"SFTPClientAdapter\" from=\"//SFTP_CLIENT_ADAPTER/text()\"></assign>\n        <assign to=\"ProfileId\" from=\"/ProcessData/SSH_PROFILEID/text()\"></assign>\n        <!-- \n        <assign to=\"KnownHostKeyId\" from=\"//KnownHostKeyId/text()\"></assign>\n        <assign to=\"RemoteHost\" from=\"//RemoteHost/text()\"></assign>\n        <assign to=\"UsingRevealedPasswd\">True</assign>\n        <assign to=\"RemotePasswd\" from=\"//RemotePasswd/text()\"></assign>\n        <assign to=\"RemoteUserId\" from=\"//RemoteUserId/text()\"></assign>\n        <assign to=\"RemotePort\" from=\"//RemotePort/text()\"></assign>\n        -->\n      </output>\n      <input message=\"inmsg\">\n        <assign to=\"SFTPClientBeginSessionServiceResults\" from=\"*\"></assign>\n      </input>\n    </operation>\n\n    <operation name=\"SFTP CD SERVICE\">\n      <participant name=\"SFTPClientCd\"/>\n      <output message=\"CdRequest\">\n        <assign to=\"Directory\" from=\"//REMOTE_DIRECTORY/text()\"></assign>\n        <assign to=\"SessionToken\" from=\"/ProcessData/SFTPClientBeginSessionServiceResults/SessionToken/text()\"/>\n      </output>\n      <input message=\"inmsg\">\n        <assign to=\"SFTPClientCdResults\" from=\"*\"></assign>\n      </input>\n    </operation>\n\n    <operation name=\"SFTP Client LIST Service\">\n      <participant name=\"SFTPClientList\"/>\n      <output message=\"SFTPClientListServiceTypeInputMessage\">\n        <assign to=\".\" from=\"*\"/>\n        <assign to=\"RemoteFileName\" from=\"//REMOTE_FILENAME/text()\"></assign>\n        <assign to=\"SessionToken\" from=\"/ProcessData/SFTPClientBeginSessionServiceResults/SessionToken/text()\"/>\n      </output>\n      <input message=\"inmsg\">\n        <assign to=\"SFTPClientListResults\" from=\"*\"/>\n      </input>\n    </operation>\n\n    <assign name=\"Assign\" to=\"FileCounter\" from=\"count(/ProcessData/SFTPClientListResults/Files/File)\"></assign>\n\n    <choice name=\"forEachFile\">\n      <select>\n        <case ref=\"FileCounter\" activity=\"proceed\"/>\n      </select>\n\n      <sequence name=\"proceed\">\n\n        <operation name=\"SFTP Client GET Service\">\n          <participant name=\"SFTPClientGet\"/>\n          <output message=\"SFTPClientGetServiceTypeInputMessage\">\n            <assign to=\".\" from=\"*\"/>\n            <assign to=\"RemoteFileName\" from=\"/ProcessData/SFTPClientListResults/Files/File[1]/Name/text()\"/>\n            <assign to=\"SessionToken\" from=\"/ProcessData/SFTPClientBeginSessionServiceResults/SessionToken/text()\"/>\n          </output>\n          <input message=\"inmsg\">\n            <assign to=\".\" from=\"*\"/>\n          </input>\n        </operation>\n\n        <operation name=\"Mailbox Add Service\">\n          <participant name=\"MailboxAdd\"/>\n          <output message=\"MailboxAddServiceTypeInputMessage\">\n            <assign to=\"DocumentId\" from=\"/ProcessData/DocumentList/DocumentId[1]/text()\"></assign>\n            <assign to=\"Extractable\">YES</assign>\n            <assign to=\"MailboxPath\" from=\"//MAILBOX_PATH/text()\"></assign>\n            <assign to=\".\" from=\"*\"></assign>\n          </output>\n          <input message=\"inmsg\">\n            <assign to=\"MailboxAdd\" from=\"*\"></assign>\n          </input>\n        </operation>\n\n\n        <choice name=\"MOVE_FILE\">\n          <select>\n            <case ref=\"MOVE_FILES?\" activity=\"MOVE_FILE_YES\"/>\n          </select>\n\n          <sequence name=\"MOVE_FILE_YES\">\n\n            <operation name=\"SFTP Client MOVE Service\">\n              <participant name=\"SFTPClientMove\"/>\n           "
+}

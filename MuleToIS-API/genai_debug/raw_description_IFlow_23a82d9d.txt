@@ -1,1 +1,0 @@
-This iFlow retrieves detailed product information via an OData service. It validates the product identifier against a configured list, calls the SAP HANA OData service to fetch product details if valid, and formats the response accordingly. For invalid product IDs, it generates a standardized error response with appropriate error codes and messages.

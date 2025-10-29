@@ -1,0 +1,126 @@
+{
+  "id": "collect-file-on-cd",
+  "name": "ColetaArquivoViaCD",
+  "type": "sterling.process",
+  "subtype": "bpml",
+  "description": "Sterling B2B Business Process: ColetaArquivoViaCD",
+  "file_path": "sterling-b2b-samples\\business-process\\generate-load-on-connect-direct\\collect-file-on-cd.bpml",
+  "file_name": "collect-file-on-cd.bpml",
+  "rules": [
+    {
+      "name": "FileCounterMaiorQueZero",
+      "condition": "",
+      "type": "business_rule"
+    },
+    {
+      "name": "MailboxPathNotEmpty",
+      "condition": "",
+      "type": "business_rule"
+    }
+  ],
+  "operations": [
+    {
+      "name": "InformacoesConexao",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "*"
+        },
+        "This/LocalCDNodeName": "SINODE01",
+        "This/LocalUserId": "demo_connectdirect",
+        "This/RemoteCDNodeName": "CDNODE01",
+        "This/RemotePasswd": "passw0rd",
+        "This/RemoteUserId": "Administrator",
+        "This/LocalPasswd": "passw0rd",
+        "This/RemoteFileName": "C:\\MyTempDir\\myfile.dat",
+        "This/MessageName": "myfile.dat"
+      }
+    },
+    {
+      "name": "CD Server Begin Session Service",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "*"
+        },
+        "LocalCDNodeName": {
+          "from": "/ProcessData/This/LocalCDNodeName/text()"
+        },
+        "LocalUserId": {
+          "from": "/ProcessData/This/LocalUserId/text()"
+        },
+        "LocalPasswd": {
+          "from": "/ProcessData/This/LocalPasswd/text()"
+        },
+        "RemoteCDNodeName": {
+          "from": "/ProcessData/This/RemoteCDNodeName/text()"
+        },
+        "RemoteUserId": {
+          "from": "/ProcessData/This/RemoteUserId/text()"
+        },
+        "RemotePasswd": {
+          "from": "/ProcessData/This/RemotePasswd/text()"
+        },
+        "UsingObscuredPasswd": "NO"
+      }
+    },
+    {
+      "name": "CD Server CopyFrom Service",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "*"
+        },
+        "RemoteFileName": {
+          "from": "/ProcessData/This/RemoteFileName/text()"
+        },
+        "SessionToken": {
+          "from": "//BeginSessionResults/SessionToken/node()"
+        }
+      }
+    },
+    {
+      "name": "CD Server End Session Service",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "*"
+        },
+        "SessionToken": {
+          "from": "//BeginSessionResults/SessionToken/node()"
+        }
+      }
+    },
+    {
+      "name": "Release Service",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "*"
+        },
+        "TARGET": "PrimaryDocument"
+      }
+    }
+  ],
+  "assignments": [],
+  "sequences": [
+    {
+      "name": "",
+      "type": "sequential_flow"
+    },
+    {
+      "name": "GetFilesStart",
+      "type": "sequential_flow"
+    }
+  ],
+  "patterns": [
+    "batch_processing",
+    "conditional_logic"
+  ],
+  "raw_content": "<process name = \"ColetaArquivoViaCD\"> \n  <rule name=\"FileCounterMaiorQueZero\">\n    <condition>number(/ProcessData/This/Counter) &gt; 0</condition>\n  </rule>\n\n  <rule name=\"MailboxPathNotEmpty\">\n    <condition>string-length(/ProcessData/This/MailboxPath/text()) &gt; 0</condition>\n  </rule>\n\n  <sequence>\n    <assign to=\"This/Counter\">10</assign>\n    <operation name=\"InformacoesConexao\">\n      <participant name=\"AssignService\"/>\n      <output message=\"AssignServiceTypeInputMessage\">\n        <assign to=\".\" from=\"*\"></assign>\n        <assign to=\"This/LocalCDNodeName\">SINODE01</assign>\n        <assign to=\"This/LocalUserId\">demo_connectdirect</assign>\n        <assign to=\"This/RemoteCDNodeName\">CDNODE01</assign>\n        <assign to=\"This/RemotePasswd\">passw0rd</assign>\n        <assign to=\"This/RemoteUserId\">Administrator</assign>\n        <assign to=\"This/LocalPasswd\">passw0rd</assign>\n        <assign to=\"This/RemoteFileName\">C:\\MyTempDir\\myfile.dat</assign>\n        <assign to=\"This/MessageName\">myfile.dat</assign>\n      </output>\n      <input message=\"inmsg\">\n        <assign to=\".\" from=\"*\"></assign>\n      </input>\n    </operation>\n\n    <choice name=\"ForEachFile\">\n      <select>\n        <case ref=\"FileCounterMaiorQueZero\" activity=\"GetFilesStart\"/>\n      </select>\n\n      <sequence name=\"GetFilesStart\">\n        <operation name=\"CD Server Begin Session Service\">\n          <participant name=\"CDServerBeginSession\"/>\n          <output message=\"CDServerBeginSessionServiceTypeInputMessage\">\n            <assign to=\".\" from=\"*\"></assign>\n            <assign to=\"LocalCDNodeName\" from=\"/ProcessData/This/LocalCDNodeName/text()\"></assign>\n            <assign to=\"LocalUserId\" from=\"/ProcessData/This/LocalUserId/text()\"></assign>\n            <assign to=\"LocalPasswd\" from=\"/ProcessData/This/LocalPasswd/text()\"></assign>\n            <assign to=\"RemoteCDNodeName\" from=\"/ProcessData/This/RemoteCDNodeName/text()\"></assign>\n            <assign to=\"RemoteUserId\" from=\"/ProcessData/This/RemoteUserId/text()\"></assign>\n            <assign to=\"RemotePasswd\" from=\"/ProcessData/This/RemotePasswd/text()\"></assign>\n            <assign to=\"UsingObscuredPasswd\">NO</assign>\n          </output>\n          <input message=\"inmsg\">\n            <assign to=\"BeginSessionResults\" from=\"*\"></assign>\n          </input>\n        </operation>\n\n        <operation name=\"CD Server CopyFrom Service\">\n          <participant name=\"CDServerCopyFrom\"/>\n          <output message=\"CDServerCopyFromServiceTypeInputMessage\">\n            <assign to=\".\" from=\"*\"></assign>\n            <assign to=\"RemoteFileName\" from=\"/ProcessData/This/RemoteFileName/text()\"></assign>\n            <assign to=\"SessionToken\" from=\"//BeginSessionResults/SessionToken/node()\"></assign>\n          </output>\n          <input message=\"inmsg\">\n            <assign to=\".\" from=\"*\"></assign>\n          </input>\n        </operation>\n\n        <operation name=\"CD Server End Session Service\">\n          <participant name=\"CDServerEndSession\"/>\n          <output message=\"CDServerEndSessionServiceTypeInputMessage\">\n            <assign to=\".\" from=\"*\"></assign>\n            <assign to=\"SessionToken\" from=\"//BeginSessionResults/SessionToken/node()\"></assign>\n          </output>\n          <input message=\"inmsg\">\n            <assign to=\".\" from=\"*\"></assign>\n          </input>\n        </operation>\n\n        <assign name=\"Assign\" to=\"This/Counter\" from=\"number(/ProcessData/This/Counter)-1\"></assign>\n        <operation name=\"Release Service\">\n          <participant name=\"ReleaseService\"/>\n          <output message=\"ReleaseServiceTypeInputMessage\">\n            <assign to=\".\" from=\"*\"></assign>\n            <assign to=\"TARGET\">PrimaryDocument</assign>\n          </output>\n          <input message=\"inmsg\">\n            <assign to=\".\" from=\"*\"></assign>\n          </input>\n        </operation>\n\n        <repeat name=\"Repeat\" ref=\"ForEachFile\"/>\n\n      </sequence>\n    </choice>\n  </sequence>\n</process>\n"
+}

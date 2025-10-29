@@ -1,0 +1,159 @@
+{
+  "id": "sfg-advanced-search-web",
+  "name": "SFGAdvancedSearchWeb",
+  "type": "sterling.process",
+  "subtype": "bpml",
+  "description": "Sterling B2B Business Process: SFGAdvancedSearchWeb",
+  "file_path": "sterling-b2b-samples\\filegateway-scenarios\\filegateway-advanced-search-for-partners\\sfg-advanced-search-web.bpml",
+  "file_name": "sfg-advanced-search-web.bpml",
+  "rules": [
+    {
+      "name": "partner_name",
+      "condition": "",
+      "type": "business_rule"
+    },
+    {
+      "name": "partner_code",
+      "condition": "",
+      "type": "business_rule"
+    },
+    {
+      "name": "login_id",
+      "condition": "",
+      "type": "business_rule"
+    },
+    {
+      "name": "first_name",
+      "condition": "",
+      "type": "business_rule"
+    },
+    {
+      "name": "last_name",
+      "condition": "",
+      "type": "business_rule"
+    },
+    {
+      "name": "first_name_last_name",
+      "condition": "",
+      "type": "business_rule"
+    },
+    {
+      "name": "no_parameters",
+      "condition": "",
+      "type": "business_rule"
+    },
+    {
+      "name": "is_new_page",
+      "condition": "",
+      "type": "business_rule"
+    },
+    {
+      "name": "has_results",
+      "condition": "",
+      "type": "business_rule"
+    }
+  ],
+  "operations": [
+    {
+      "name": "Lightweight JDBC Adapter",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "*"
+        },
+        "pool": "db2Pool",
+        "query_type": "SELECT",
+        "result_name": "Result1",
+        "row_name": "Row1",
+        "sql": {
+          "from": "/ProcessData/This/sql/text()"
+        }
+      }
+    },
+    {
+      "name": "XSLT Service",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "input_pd_xpath": "/ProcessData/ResponseData",
+        "xml_input_from": "ProcData",
+        "xml_input_validation": "NO",
+        "xslt_name": "SFGAdvancedSearch",
+        ".": {
+          "from": "*"
+        }
+      }
+    },
+    {
+      "name": "HttpRespond",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "doc-has-headers": "false",
+        ".": {
+          "from": "*"
+        }
+      }
+    }
+  ],
+  "assignments": [],
+  "sequences": [
+    {
+      "name": "",
+      "type": "sequential_flow"
+    },
+    {
+      "name": "PartnerName",
+      "type": "sequential_flow"
+    },
+    {
+      "name": "PartnerCode",
+      "type": "sequential_flow"
+    },
+    {
+      "name": "LoginID",
+      "type": "sequential_flow"
+    },
+    {
+      "name": "FirstNameLastName",
+      "type": "sequential_flow"
+    },
+    {
+      "name": "FirstName",
+      "type": "sequential_flow"
+    },
+    {
+      "name": "LastName",
+      "type": "sequential_flow"
+    },
+    {
+      "name": "NoParams",
+      "type": "sequential_flow"
+    },
+    {
+      "name": "QueryData",
+      "type": "sequential_flow"
+    },
+    {
+      "name": "NewPage",
+      "type": "sequential_flow"
+    },
+    {
+      "name": "OutputNewPage",
+      "type": "sequential_flow"
+    },
+    {
+      "name": "OutputData",
+      "type": "sequential_flow"
+    },
+    {
+      "name": "OutputNoResults",
+      "type": "sequential_flow"
+    }
+  ],
+  "patterns": [
+    "conditional_logic"
+  ],
+  "raw_content": "<process name = \"SFGAdvancedSearchWeb\"> \n\n    <rule name=\"partner_name\">\n        <condition>string-length(/ProcessData/partnerName) &gt; 0</condition>\n    </rule>\n\n    <rule name=\"partner_code\">\n        <condition>string-length(/ProcessData/partnerCode) &gt; 0</condition>\n    </rule>\n\n    <rule name=\"login_id\">\n        <condition>string-length(/ProcessData/loginId) &gt; 0</condition>\n    </rule>\n\n    <rule name=\"first_name\">\n        <condition>string-length(/ProcessData/firstName) &gt; 0</condition>\n    </rule>\n\n    <rule name=\"last_name\">\n        <condition>string-length(/ProcessData/lastName) &gt; 0</condition>\n    </rule>\n\n    <rule name=\"first_name_last_name\">\n        <condition>string-length(/ProcessData/firstName) &gt; 0 and string-length(/ProcessData/lastName) &gt; 0</condition>\n    </rule>\n\n    <rule name=\"no_parameters\">\n        <condition>string-length(/ProcessData/partnerName) = 0 and\n        string-length(/ProcessData/partnerCode) = 0 and\n        string-length(/ProcessData/loginId) = 0 and\n        string-length(/ProcessData/firstName) = 0 and\n        string-length(/ProcessData/lastName) = 0</condition>\n    </rule>\n\n    <rule name=\"is_new_page\">\n        <condition>string(/ProcessData/ResponseData/newpage) = \"Is New Page\"</condition>\n    </rule>\n\n    <rule name=\"has_results\">\n        <condition>count(/ProcessData/Result1/Row1) &gt; 0</condition>\n    </rule>\n\n\n    <sequence>\n    <choice>\n        <select>\n            <case ref=\"partner_name\" activity=\"PartnerName\" />\n            <case ref=\"partner_code\" activity=\"PartnerCode\" />\n            <case ref=\"login_id\" activity=\"LoginID\" />\n            <case ref=\"first_name_last_name\" activity=\"FirstNameLastName\" />\n            <case ref=\"first_name\" activity=\"FirstName\" />\n            <case ref=\"last_name\" activity=\"LastName\" />\n            <case ref=\"no_parameters\" activity=\"NoParams\" />\n        </select>\n        \n<!-- \n    select O.ORGANIZATION_NAME,O.ORGANIZATION_KEY,U.LOGINID,P.FIRST_NAME,P.LAST_NAME\n    from YFS_ORGANIZATION as O, YFS_USER as U, YFS_PERSON_INFO as P\n    where \n        O.ORGANIZATION_KEY = U.ORGANIZATION_KEY and U.BILLINGADDRESS_KEY = P.PERSON_INFO_KEY and\n-->\n\n        <sequence name=\"PartnerName\">\n            <assign to=\"This/sql\" from=\"concat(&quot;select O.ORGANIZATION_NAME,TRIM(O.ORGANIZATION_KEY) as OKEY,TRIM(U.LOGINID) as LOGIN,P.FIRST_NAME,P.LAST_NAME from YFS_ORGANIZATION O, YFS_USER U, YFS_PERSON_INFO P where O.ORGANIZATION_KEY = U.ORGANIZATION_KEY and U.BILLINGADDRESS_KEY = P.PERSON_INFO_KEY and O.ORGANIZATION_NAME=&apos;&quot;,/ProcessData/partnerName/text(),&quot;&apos;&quot;)\"></assign>\n        </sequence>\n\n        <sequence name=\"PartnerCode\">\n            <assign to=\"This/sql\" from=\"concat(&quot;select O.ORGANIZATION_NAME,TRIM(O.ORGANIZATION_KEY) as OKEY,TRIM(U.LOGINID) as LOGIN,P.FIRST_NAME,P.LAST_NAME from YFS_ORGANIZATION O, YFS_USER U, YFS_PERSON_INFO P where O.ORGANIZATION_KEY = U.ORGANIZATION_KEY and U.BILLINGADDRESS_KEY = P.PERSON_INFO_KEY and O.ORGANIZATION_KEY=&apos;&quot;,/ProcessData/partnerCode/text(),&quot;&apos;&quot;)\"></assign>\n        </sequence>\n\n        <sequence name=\"LoginID\">\n            <assign to=\"This/sql\" from=\"concat(&quot;select O.ORGANIZATION_NAME,TRIM(O.ORGANIZATION_KEY) as OKEY,TRIM(U.LOGINID) as LOGIN,P.FIRST_NAME,P.LAST_NAME from YFS_ORGANIZATION O, YFS_USER U, YFS_PERSON_INFO P where O.ORGANIZATION_KEY = U.ORGANIZATION_KEY and U.BILLINGADDRESS_KEY = P.PERSON_INFO_KEY and U.LOGINID=&apos;&quot;,/ProcessData/loginId/text(),&quot;&apos;&quot;)\"></assign>\n        </sequence>\n\n        <sequence name=\"FirstNameLastName\">\n            <assign to=\"This/sql\" from=\"concat(&quot;select O.ORGANIZATION_NAME,TRIM(O.ORGANIZATION_KEY) as OKEY,TRIM(U.LOGINID) as LOGIN,P.FIRST_NAME,P.LAST_NAME from YFS_ORGANIZATION O, YFS_USER U, YFS_PERSON_INFO P where O.ORGANIZATION_KEY = U.ORGANIZATION_KEY and U.BILLINGADDRESS_KEY = P.PERSON_INFO_KEY and P.FIRST_NAME like &apos;%&quot;,/ProcessData/firstName/text(),&quot;%&apos; and LOWER(P.LAST_NAME) like LOWER(&apos;%&quot;,/ProcessData/lastName/text(),&quot;%&apos;)&quot;)\"></assign>\n        </sequence>\n\n        <sequence name=\"FirstName\">\n            <assign to=\"This/sql\" from=\"concat(&quot;select O.ORGANIZATION_NAME,TRIM(O.ORGANIZATION_KEY) as OKEY,TRIM(U.LOGINID) as LOGIN,P.FIRST_NAME,P.LAST_NAME from YFS_ORGANIZATION O, YFS_USER U, YFS_PERSON_INFO P where O.ORGANIZATION_KEY = U.ORGANIZATION_KEY and U.BILLINGADDRESS_KEY = P.PERSON_INFO_KEY and LOWER(P.FIRST_NAME) like LOWER(&apos;%&quot;,/ProcessData/firstName/text(),&quot;%&apos;)&quot;)\"></assign>\n        </sequence>\n\n        <sequence name=\"LastName\">\n            <assign to=\"This/sql\" from=\"concat(&quot;select O.ORGANIZATION_NAME,TRIM(O.ORGANIZATION_KEY) as OKEY,TRIM(U.LOGINID) as LOGIN,P.FIRST_NAME,P.LAST_NAME from YFS_ORGANIZATION O, YFS_USER U, YFS_PERSON_INFO P where O.ORGANIZATION_KEY = U.ORGANIZATION_KEY and U.BILLINGADDRESS_KEY = P.PERSON_INFO_KEY and LOWER(P.LAST_NAME) like LOWER(&apos;%&quot;,/ProcessDa"
+}

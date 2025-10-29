@@ -1,0 +1,100 @@
+{
+  "id": "generate-files",
+  "name": "GenerateFiles",
+  "type": "sterling.process",
+  "subtype": "bpml",
+  "description": "Sterling B2B Business Process: GenerateFiles",
+  "file_path": "sterling-b2b-samples\\business-process\\generate-files\\generate-files.bpml",
+  "file_name": "generate-files.bpml",
+  "rules": [
+    {
+      "name": "This/FileCounter",
+      "condition": "",
+      "type": "business_rule"
+    }
+  ],
+  "operations": [
+    {
+      "name": "Get_Current_Time",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "action": {
+          "from": "'current_time'"
+        },
+        "format": "'D'yyyyMMdd.'S'HHmm"
+      }
+    },
+    {
+      "name": "Document Keyword Replace",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "literal_bufferSize": "102400",
+        "literal_mode": "true",
+        "literal_readAheadSize": "8192",
+        "keyword1": {
+          "from": "string('<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>')"
+        },
+        "keywordtype1": "string",
+        "replace1": {
+          "from": "string('')"
+        },
+        "keyword2": {
+          "from": "string('<ProcessData/>')"
+        },
+        "keywordtype2": "string",
+        "replace2": {
+          "from": "string('')"
+        },
+        "keyword3": "X",
+        "keywordtype3": "string",
+        "replace3": {
+          "from": "string('')"
+        },
+        ".": {
+          "from": "*"
+        }
+      }
+    },
+    {
+      "name": "Get Document Information Service",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "*"
+        }
+      }
+    },
+    {
+      "name": "Mailbox Add Service",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "*"
+        },
+        "MailboxPath": {
+          "from": "/ProcessData/This/MailboxPath"
+        }
+      }
+    }
+  ],
+  "assignments": [],
+  "sequences": [
+    {
+      "name": "main",
+      "type": "sequential_flow"
+    },
+    {
+      "name": "proceed",
+      "type": "sequential_flow"
+    }
+  ],
+  "patterns": [
+    "batch_processing",
+    "conditional_logic"
+  ],
+  "raw_content": "<process name=\"GenerateFiles\">\n    <rule name=\"This/FileCounter\">\n        <condition>/ProcessData/This/FileCounter/text()>0</condition>\n    </rule>\n\n    <sequence name=\"main\">,\n        <assign name=\"Assign\" to=\"This/FileCounter\">10</assign>\n        <assign name=\"Assign\" to=\"This/FilenamePrefix\">ABCD123.12345678</assign>\n        <assign name=\"Assign\" to=\"This/MailboxPath\">10</assign>\n\n        <assign to=\"/ProcessData/EmptyDummy\">DSDOWLEHDOSDLSHWODLWHDOLWEHNDOLSHEWNDO\nDKSJDJSDADWEWEWEWQJLKDJLSDKSJDJSDADWEWEWEWQJLKDJLSDKSJDJSDADWEWEWEWQJLKDJLSDKSJDJSDADWEWEWEWQJLKDJLS</assign>\n\n        <operation name=\"Get_Current_Time\">\n            <participant name=\"TimestampUtilService\" />\n            <output message=\"xout\">\n                <assign to=\"action\" from=\"'current_time'\" />\n                <assign to=\"format\">'D'yyyyMMdd.'S'HHmm</assign>\n            </output>\n            <input message=\"xin\">\n            <assign to=\"This/TimeStamp\" from=\"*\" />\n            </input>\n        </operation>\n\n\n        <assign name=\"Assign\" to=\".\" from=\"DOMToDoc(/ProcessData/EmptyDummy, &apos;PrimaryDocument&apos;)\"></assign>\n\n        <operation name=\"Document Keyword Replace\">\n            <participant name=\"DocKeywordReplace\" />\n            <output message=\"DocKeywordReplaceInputMessage\">\n                <assign to=\"literal_bufferSize\">102400</assign>\n                <assign to=\"literal_mode\">true</assign>\n                <assign to=\"literal_readAheadSize\">8192</assign>\n                <assign to=\"keyword1\"\n                    from=\"string(&apos;&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot;?&gt;&apos;)\">\n                </assign>\n                <assign to=\"keywordtype1\">string</assign>\n                <assign to=\"replace1\" from=\"string(&apos;&apos;)\"></assign>\n                <assign to=\"keyword2\" from=\"string(&apos;&lt;ProcessData/&gt;&apos;)\"></assign>\n                <assign to=\"keywordtype2\">string</assign>\n                <assign to=\"replace2\" from=\"string(&apos;&apos;)\"></assign>\n                <assign to=\"keyword3\">X</assign>\n                <assign to=\"keywordtype3\">string</assign>\n                <assign to=\"replace3\" from=\"string(&apos;&apos;)\"></assign>\n                <assign to=\".\" from=\"*\"></assign>\n            </output>\n            <input message=\"inmsg\">\n            <assign to=\".\" from=\"*\"></assign>\n            </input>\n        </operation>\n\n        <operation name=\"Get Document Information Service\">\n            <participant name=\"GetDocumentInfoService\" />\n            <output message=\"GetDocumentInfoServiceTypeInputMessage\">\n                <assign to=\".\" from=\"*\"></assign>\n            </output>\n            <input message=\"inmsg\">\n            <assign to=\"TestInfo\" from=\"*\"></assign>\n            </input>\n        </operation>\n\n\n\n        <choice name=\"forEachFile\">\n            <select>\n                <case ref=\"This/FileCounter\" activity=\"proceed\" />\n            </select>\n\n            <sequence name=\"proceed\">\n                <assign name=\"Assign\" to=\"MessageName\" from=\"concat(This/FilenamePrefix, This/TimeStamp/time/text(), '.' ,This/FileCounter/text())\"></assign>\n\n                <operation name=\"Mailbox Add Service\">\n                    <participant name=\"MailboxAdd\" />\n                    <output message=\"MailboxAddServiceTypeInputMessage\">\n                        <assign to=\".\" from=\"*\"></assign>\n                        <assign to=\"MailboxPath\" from=\"/ProcessData/This/MailboxPath\"></assign>\n                    </output>\n                    <input message=\"inmsg\">\n                    <assign to=\".\" from=\"*\"></assign>\n                    </input>\n                </operation>\n\n                <assign name=\"Assign\" to=\"This/FileCounter\" from=\"number(/ProcessData/This/FileCounter/text())-1\">\n                </assign>\n\n                <repeat name=\"endLoop\" ref=\"forEachFile\" />\n            </sequence>\n        </choice>\n    </sequence>\n</process>"
+}

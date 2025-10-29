@@ -1,0 +1,41 @@
+{
+  "id": "bp-send-smtp-mail",
+  "name": "Demo_BP_test_smtp",
+  "type": "sterling.process",
+  "subtype": "bpml",
+  "description": "Sterling B2B Business Process: Demo_BP_test_smtp",
+  "file_path": "sterling-b2b-samples\\business-process\\send-smtp-email\\bp-send-smtp-mail.bpml",
+  "file_name": "bp-send-smtp-mail.bpml",
+  "rules": [],
+  "operations": [
+    {
+      "name": "Send",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "*"
+        },
+        "xport-smtp-mailhost": {
+          "from": "//mailhost/text()"
+        },
+        "xport-smtp-mailport": "25",
+        "xport-smtp-mailfrom": "a@company.com",
+        "xport-smtp-mailto": "b@company.com",
+        "xport-smtp-mailCC": "c@company.com",
+        "xport-smtp-mailsubject": {
+          "from": "//MAIL_SUBJECT/text()"
+        }
+      }
+    }
+  ],
+  "assignments": [],
+  "sequences": [
+    {
+      "name": "email",
+      "type": "sequential_flow"
+    }
+  ],
+  "patterns": [],
+  "raw_content": "<process name=\"Demo_BP_test_smtp\">\n  <sequence name=\"email\">\n    <assign to=\"mailhost\" from=\"sci-get-property('sandbox.cfg','SI_ADMIN_SMTP_HOST')\"></assign>\n    <assign to=\"MAIL_SUBJECT\">Test 2023-07-31</assign>\n    <assign to=\".\" from=\"DOMToDoc(MAIL_SUBJECT,'PrimaryDocument')\"></assign>\n    <operation name=\"Send\">\n      <participant name=\"SMTP_SEND_ADAPTER\"/>\n      <output message=\"Xout\">\n        <assign to=\".\" from=\"*\"></assign>\n            <assign to=\"xport-smtp-mailhost\" from=\"//mailhost/text()\"></assign>\n            <assign to=\"xport-smtp-mailport\">25</assign>\n            <assign to=\"xport-smtp-mailfrom\">a@company.com</assign>\n            <assign to=\"xport-smtp-mailto\">b@company.com</assign>\n            <assign to=\"xport-smtp-mailCC\">c@company.com</assign>\n            <assign to=\"xport-smtp-mailsubject\" from=\"//MAIL_SUBJECT/text()\"></assign>\n            <assign to=\".\" from=\"*\"></assign>\n      </output>\n      <input message=\"Xin\">\n        <assign to=\".\" from=\"*\"></assign>\n      </input>\n    </operation>\n  </sequence> \n</process>\n"
+}

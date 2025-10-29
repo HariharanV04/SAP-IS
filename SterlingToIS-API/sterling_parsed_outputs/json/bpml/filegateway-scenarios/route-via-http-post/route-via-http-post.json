@@ -1,0 +1,76 @@
+{
+  "id": "route-via-http-post",
+  "name": "Demo_BP_RouteViaHttpPost",
+  "type": "sterling.process",
+  "subtype": "bpml",
+  "description": "Sterling B2B Business Process: Demo_BP_RouteViaHttpPost",
+  "file_path": "sterling-b2b-samples\\filegateway-scenarios\\route-via-http-post\\route-via-http-post.bpml",
+  "file_name": "route-via-http-post.bpml",
+  "rules": [],
+  "operations": [
+    {
+      "name": "HTTP Client Begin Session Service",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "HTTPClientAdapter": "HTTPClientAdapter",
+        "RemoteHost": {
+          "from": "customhttp_RemoteHost/text()"
+        },
+        "RemotePort": {
+          "from": "customhttp_RemotePort/text()"
+        },
+        "SSL": "Must",
+        "CACertificateId": {
+          "from": "customhttp_CertID/text()"
+        },
+        "CipherStrength": "All",
+        ".": {
+          "from": "*"
+        }
+      }
+    },
+    {
+      "name": "HTTP Client POST Service",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "RawRequest": "false",
+        "RawResponse": "false",
+        "ResponseTimeout": "1500",
+        "SessionToken": {
+          "from": "//SessionToken/text()"
+        },
+        "ShowResponseCode": "true",
+        "URI": {
+          "from": "customhttp_URI/text()"
+        },
+        ".": {
+          "from": "*"
+        }
+      }
+    },
+    {
+      "name": "HTTP Client End Session Service",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "SessionToken": {
+          "from": "//SessionToken/text()"
+        },
+        ".": {
+          "from": "*"
+        }
+      }
+    }
+  ],
+  "assignments": [],
+  "sequences": [
+    {
+      "name": "HTTPSStart",
+      "type": "sequential_flow"
+    }
+  ],
+  "patterns": [],
+  "raw_content": "<process name=\"Demo_BP_RouteViaHttpPost\">\n  <sequence name=\"HTTPSStart\">\n    <operation name=\"HTTP Client Begin Session Service\">\n      <participant name=\"HTTPClientBeginSession\"/>\n      <output message=\"HTTPClientBeginSessionServiceTypeInputMessage\">\n        <assign to=\"HTTPClientAdapter\">HTTPClientAdapter</assign>\n        <assign to=\"RemoteHost\" from=\"customhttp_RemoteHost/text()\"></assign>\n        <assign to=\"RemotePort\" from=\"customhttp_RemotePort/text()\"></assign>\n        <assign to=\"SSL\">Must</assign>\n        <assign to=\"CACertificateId\" from=\"customhttp_CertID/text()\"></assign>\n        <assign to=\"CipherStrength\">All</assign>\n        <assign to=\".\" from=\"*\"></assign>\n      </output>\n      <input message=\"inmsg\">\n        <assign to=\".\" from=\"*\"></assign>\n      </input>\n    </operation>\n\n    <operation name=\"HTTP Client POST Service\">\n      <participant name=\"HTTPClientPost\"/>\n      <output message=\"HTTPClientPostServiceTypeInputMessage\">\n        <assign to=\"RawRequest\">false</assign>\n        <assign to=\"RawResponse\">false</assign>\n        <assign to=\"ResponseTimeout\">1500</assign>\n        <assign to=\"SessionToken\" from=\"//SessionToken/text()\"></assign>\n        <assign to=\"ShowResponseCode\">true</assign>\n        <assign to=\"URI\" from=\"customhttp_URI/text()\"></assign>\n        <assign to=\".\" from=\"*\"></assign>\n      </output>\n      <input message=\"inmsg\">\n        <assign to=\".\" from=\"*\"></assign>\n      </input>\n    </operation>\n\n    <operation name=\"HTTP Client End Session Service\">\n      <participant name=\"HTTPClientEndSession\"/>\n      <output message=\"HTTPClientEndSessionServiceTypeInputMessage\">\n        <assign to=\"SessionToken\" from=\"//SessionToken/text()\"></assign>\n        <assign to=\".\" from=\"*\"></assign>\n      </output>\n      <input message=\"inmsg\">\n        <assign to=\".\" from=\"*\"></assign>\n      </input>\n    </operation>\n\n  </sequence>\n</process>\n"
+}

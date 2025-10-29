@@ -1,0 +1,68 @@
+{
+  "id": "http-post-to-mailbox",
+  "name": "HttpPostToMailbox",
+  "type": "sterling.process",
+  "subtype": "bpml",
+  "description": "Sterling B2B Business Process: HttpPostToMailbox",
+  "file_path": "sterling-b2b-samples\\business-process\\http-post-to-mailbox\\http-post-to-mailbox.bpml",
+  "file_name": "http-post-to-mailbox.bpml",
+  "rules": [],
+  "operations": [
+    {
+      "name": "AssignService",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "MAILBOX_PATH": "/Sistema_ftp/Inbox"
+      }
+    },
+    {
+      "name": "set user token",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "USER_TOKEN": "admin",
+        ".": {
+          "from": "*"
+        }
+      }
+    },
+    {
+      "name": "Mailbox Add Service",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "*"
+        },
+        "Extractable": "Yes",
+        "DocumentId": {
+          "from": "/PrimaryDocument/@SCIObjectID"
+        },
+        "MailboxPath": {
+          "from": "//MAILBOX_PATH/text()"
+        }
+      }
+    },
+    {
+      "name": "HttpRespond",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "doc-has-headers": "false",
+        ".": {
+          "from": "*"
+        }
+      }
+    }
+  ],
+  "assignments": [],
+  "sequences": [
+    {
+      "name": "",
+      "type": "sequential_flow"
+    }
+  ],
+  "patterns": [],
+  "raw_content": "<process name = \"HttpPostToMailbox\">\n  <sequence>\n\n    <operation name=\"AssignService\">\n      <participant name=\"AssignService\"/>\n      <output message=\"AssignOutputMessage\">\n        <assign to=\"MAILBOX_PATH\">/Sistema_ftp/Inbox</assign>\n      </output>\n      <input message=\"AssignInputMessage\">\n        <assign to=\".\" from=\"*\"/>\n      </input>\n    </operation>\n\n    <operation name=\"set user token\">\n      <participant name=\"SetUserToken\"/>\n      <output message=\"SetUserTokenMessage\">\n        <assign to=\"USER_TOKEN\">admin</assign>\n        <assign to=\".\" from=\"*\"/>\n      </output>\n      <input message=\"inmsg\">\n        <assign to=\".\" from=\"*\"/>\n      </input>\n    </operation>\n\n    <operation name=\"Mailbox Add Service\">\n      <participant name=\"MailboxAdd\"/>\n      <output message=\"MailboxAddServiceTypeInputMessage\">\n        <assign to=\".\" from=\"*\"></assign>\n        <assign to=\"Extractable\">Yes</assign>\n        <assign to=\"DocumentId\" from=\"/PrimaryDocument/@SCIObjectID\"/>\n        <assign to=\"MailboxPath\" from=\"//MAILBOX_PATH/text()\"/>\n      </output>\n      <input message=\"inmsg\">\n        <assign to=\"MailboxAddResult\" from=\"*\"></assign>\n      </input>\n    </operation>\n\n    <operation name=\"HttpRespond\">\n      <participant name=\"HttpRespond\"/>\n      <output message=\"HttpRespondInputMessage\">\n        <assign to=\"doc-has-headers\">false</assign>        <!-- Implying non-raw mode by default. -->\n        <assign to=\".\" from=\"*\"></assign>\n      </output>\n      <input message=\"inmsg\">\n        <assign to=\".\" from=\"*\"></assign>\n      </input>\n    </operation>\n  </sequence>\n</process>"
+}

@@ -1,0 +1,75 @@
+{
+  "id": "mailbox-delete-file-runtask",
+  "name": "MAILBOX_DELETE_FILE_RUNTASK",
+  "type": "sterling.process",
+  "subtype": "bpml",
+  "description": "Sterling B2B Business Process: MAILBOX_DELETE_FILE_RUNTASK",
+  "file_path": "sterling-b2b-samples\\connect-direct\\copy-multiples-files-from-sfg\\mailbox-delete-file-runtask.bpml",
+  "file_name": "mailbox-delete-file-runtask.bpml",
+  "rules": [
+    {
+      "name": "DelMsgCntGreaterZero",
+      "condition": "",
+      "type": "business_rule"
+    }
+  ],
+  "operations": [
+    {
+      "name": "Mailbox Delete Service",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "*"
+        },
+        "MailboxPath": {
+          "from": "string(/ProcessData/This/MailboxPath)"
+        },
+        "MessageNamePattern": {
+          "from": "string(/ProcessData/This/MessageNamePattern)"
+        },
+        "MailboxSelection": "choose",
+        "MessageExtractable": "ALL"
+      }
+    },
+    {
+      "name": "CD Server BP Response Service",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "*"
+        }
+      }
+    },
+    {
+      "name": "CD Server BP Response Service",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "*"
+        }
+      }
+    }
+  ],
+  "assignments": [],
+  "sequences": [
+    {
+      "name": "CDServerSnodeCallbackBP",
+      "type": "sequential_flow"
+    },
+    {
+      "name": "message_not_deleted",
+      "type": "sequential_flow"
+    },
+    {
+      "name": "On Fault Sequence Start",
+      "type": "sequential_flow"
+    }
+  ],
+  "patterns": [
+    "conditional_logic"
+  ],
+  "raw_content": "<process name=\"MAILBOX_DELETE_FILE_RUNTASK\">\n<rule name=\"DelMsgCntGreaterZero\">\n  <condition>count(/ProcessData/DeleteResults/Message/MessageId)&gt;0</condition>\n </rule>\n\n <sequence name=\"CDServerSnodeCallbackBP\">\n   <assign to=\"This/ReturnCode\">0</assign>\n   <assign to=\"This/MessageNamePattern\" from=\"substring-before(substring-after(/ProcessData/CDServerNodeData/Forwarding/Sysopts/text(),'filename='),';')\"/>\n\t <assign to=\"This/MailboxPath\" from=\"if(contains(/ProcessData/CDServerNodeData/Forwarding/Sysopts/text(),'mailbox='),\n                                      substring-before(substring-after(/ProcessData/CDServerNodeData/Forwarding/Sysopts/text(),'mailbox='),';'),\n                                      '/Inbox')\"></assign>\n   \n\n    <operation name=\"Mailbox Delete Service\">\n    <participant name=\"MailboxDelete\"/>\n    <output message=\"DeleteRequest\">\n      <assign to=\".\" from=\"*\"></assign>\n      <assign to=\"MailboxPath\" from=\"string(/ProcessData/This/MailboxPath)\"/>\n      <assign to=\"MessageNamePattern\" from=\"string(/ProcessData/This/MessageNamePattern)\"/>\n      <assign to=\"MailboxSelection\">choose</assign>\n      <assign to=\"MessageExtractable\">ALL</assign>\n    </output>\n    <input message=\"inmsg\">\n      <assign to=\"DeleteResults\" from=\"*\"></assign>\n    </input>\n    </operation>\n\n    <choice name=\"MessagenNotDeleted\">\n    <select>\n      <case ref=\"DelMsgCntGreaterZero\" negative=\"true\" activity=\"message_not_deleted\"/>\n    </select>\n    <sequence name=\"message_not_deleted\">\n      <assign name=\"Assign\" to=\"CDServerNodeData/CallbackReturnCount\">8</assign>\n    </sequence>\n    </choice>\t\n\n\n     <!-- Return (0) as failure success to caller  -->\n     <assign to=\"CDServerNodeData/CallbackReturnCount\" from=\"/ProcessData/This/ReturnCode/text()\"></assign>\n\n    <operation name=\"CD Server BP Response Service\">\n        <participant name=\"CDServerBPResponse\"/>\n        <output message=\"CDServerBPResponseServiceTypeInputMessage\">\n        <assign to=\".\" from=\"*\"></assign>\n        </output>\n        <input message=\"inmsg\">\n        <assign to=\".\" from=\"*\"></assign>\n        </input>\n    </operation>\n\n    <onFault>\n     <sequence name=\"On Fault Sequence Start\">\n        <!-- Return (8) as failure status to caller  -->\n       <assign to=\"CDServerNodeData/CallbackReturnCount\">8</assign>\n\n       <operation name=\"CD Server BP Response Service\">\n         <participant name=\"CDServerBPResponse\"/>\n         <output message=\"CDServerBPResponseServiceTypeInputMessage\">\n           <assign to=\".\" from=\"*\"></assign>\n         </output>\n         <input message=\"inmsg\">\n           <assign to=\"OnFaultCDServerBPResponseResults\" from=\"*\"></assign>\n         </input>\n       </operation>\n     </sequence>\n   </onFault>\n </sequence>\n</process>"
+}

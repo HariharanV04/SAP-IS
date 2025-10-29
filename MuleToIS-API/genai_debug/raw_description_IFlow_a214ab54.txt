@@ -1,1 +1,0 @@
-This iFlow retrieves product details from SAP HANA using OData based on a product identifier. It validates the product ID, queries the Products entity with specific filters and field selection, then formats the response data. Error handling returns a structured JSON response when products aren't found.

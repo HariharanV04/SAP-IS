@@ -1,0 +1,40 @@
+{
+  "id": "xml-attributes-elements",
+  "name": "Demo_XML_Attributes_Elements",
+  "type": "sterling.process",
+  "subtype": "bpml",
+  "description": "Sterling B2B Business Process: Demo_XML_Attributes_Elements",
+  "file_path": "sterling-b2b-samples\\business-process\\working-xml\\xml-attributes-elements.bpml",
+  "file_name": "xml-attributes-elements.bpml",
+  "rules": [],
+  "operations": [
+    {
+      "name": "AssignService",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "*"
+        },
+        "LDAPAdapter/request/@scope": "subtree",
+        "LDAPAdapter/request/@operation": "Read",
+        "LDAPAdapter/request/@baseDN": "ou=Group,dc=test,dc=net",
+        "LDAPAdapter/request/param.1": "(objectClass=groupOfNames)",
+        "LDAPAdapter/request/param.1/@usage": "Search",
+        "LDAPAdapter/request/param.2/@name": "cn",
+        "LDAPAdapter/request/param.2/@usage": "Input",
+        "LDAPAdapter/request/param.3/@name": "member",
+        "LDAPAdapter/request/param.3/@usage": "Input"
+      }
+    }
+  ],
+  "assignments": [],
+  "sequences": [
+    {
+      "name": "",
+      "type": "sequential_flow"
+    }
+  ],
+  "patterns": [],
+  "raw_content": "<process name=\"Demo_XML_Attributes_Elements\">\n    <sequence>\n        <operation name=\"AssignService\">\n            <participant name=\"AssignService\"/>\n            <output message=\"AssignOutputMessage\">\n                <assign to=\".\" from=\"*\"/>\n                <assign to=\"LDAPAdapter/request/@scope\">subtree</assign>\n                <assign to=\"LDAPAdapter/request/@operation\">Read</assign>\n                <assign to=\"LDAPAdapter/request/@baseDN\">ou=Group,dc=test,dc=net</assign>\n                <assign to=\"LDAPAdapter/request/param.1\">(objectClass=groupOfNames)</assign>\n                <assign to=\"LDAPAdapter/request/param.1/@usage\">Search</assign>\n                <assign to=\"LDAPAdapter/request/param.2/@name\">cn</assign>\n                <assign to=\"LDAPAdapter/request/param.2/@usage\">Input</assign>\n                <assign to=\"LDAPAdapter/request/param.3/@name\">member</assign>\n                <assign to=\"LDAPAdapter/request/param.3/@usage\">Input</assign>\n            </output>\n            <input message=\"AssignInputMessage\">\n                <assign to=\".\" from=\"*\"/>\n            </input>\n        </operation>\n        <assign to=\".\" from=\"DOMToDoc(/ProcessData/LDAPAdapter, 'PrimaryDocument', 'no', 'LDAPAdapter')\"></assign>\n        \n    </sequence>\n</process>"
+}

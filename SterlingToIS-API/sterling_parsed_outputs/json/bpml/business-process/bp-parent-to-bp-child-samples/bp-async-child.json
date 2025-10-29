@@ -1,0 +1,20 @@
+{
+  "id": "bp-async-child",
+  "name": "DEMO_AsyncChildBP",
+  "type": "sterling.process",
+  "subtype": "bpml",
+  "description": "Sterling B2B Business Process: DEMO_AsyncChildBP",
+  "file_path": "sterling-b2b-samples\\business-process\\bp-parent-to-bp-child-samples\\bp-async-child.bpml",
+  "file_name": "bp-async-child.bpml",
+  "rules": [],
+  "operations": [],
+  "assignments": [],
+  "sequences": [
+    {
+      "name": "",
+      "type": "sequential_flow"
+    }
+  ],
+  "patterns": [],
+  "raw_content": "<process name=\"DEMO_AsyncChildBP\">\n    <sequence>\n        <assign to=\"This/MyVar1\">Teste 01</assign>\n    </sequence>\n</process>\n"
+}

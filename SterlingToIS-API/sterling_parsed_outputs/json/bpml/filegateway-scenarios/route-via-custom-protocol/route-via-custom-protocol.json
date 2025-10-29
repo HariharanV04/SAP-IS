@@ -1,0 +1,88 @@
+{
+  "id": "route-via-custom-protocol",
+  "name": "Demo_BP_RouteViaCustomProtocol",
+  "type": "sterling.process",
+  "subtype": "bpml",
+  "description": "Sterling B2B Business Process: Demo_BP_RouteViaCustomProtocol",
+  "file_path": "sterling-b2b-samples\\filegateway-scenarios\\route-via-custom-protocol\\route-via-custom-protocol.bpml",
+  "file_name": "route-via-custom-protocol.bpml",
+  "rules": [],
+  "operations": [
+    {
+      "name": "Get_Current_Time",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "action": {
+          "from": "'current_time'"
+        },
+        "format": "yyyy-MM-dd.HH-mm-ss-SSS"
+      }
+    },
+    {
+      "name": "File System Adapter",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "extractionFolder": "/home/siuser/CustomProtocol",
+        "assignFilename": "true",
+        "assignedFilename": {
+          "from": "DestinationMessageName/text()"
+        },
+        "Action": "FS_EXTRACT",
+        ".": {
+          "from": "*"
+        }
+      }
+    },
+    {
+      "name": "FileGatewayRouteEventService",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "RouteMetadata"
+        },
+        "EventCode": "CUST_0003",
+        "ExceptionLevel": "Normal",
+        "EventAttributes/ProducerName": {
+          "from": "ProducerName/text()"
+        },
+        "EventAttributes/ConsumerFilename": {
+          "from": "DestinationMessageName/text()"
+        }
+      }
+    },
+    {
+      "name": "FileGatewayRouteEventService",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "RouteMetadata"
+        },
+        "EventCode": "CUST_0053",
+        "ExceptionLevel": "Normal",
+        "EventAttributes/ProducerName": {
+          "from": "ProducerName/text()"
+        },
+        "EventAttributes/ConsumerFilename": {
+          "from": "DestinationMessageName/text()"
+        }
+      }
+    }
+  ],
+  "assignments": [],
+  "sequences": [
+    {
+      "name": "",
+      "type": "sequential_flow"
+    },
+    {
+      "name": "onFault Sequence",
+      "type": "sequential_flow"
+    }
+  ],
+  "patterns": [],
+  "raw_content": "<process name=\"Demo_BP_RouteViaCustomProtocol\">\n  <sequence>\n        <assign name=\"Assign\" to=\"This/Env\">PRD</assign>\n        <assign name=\"Assign\" to=\"This/Prefix\">ABC</assign>\n        <assign name=\"Assign\" to=\"This/Suffix\">XYZ</assign>\n        <!-- DestinationMessageName-->\n\n        <operation name=\"Get_Current_Time\">\n            <participant name=\"TimestampUtilService\"/>\n            <output message=\"xout\">\n                <assign to=\"action\" from=\"'current_time'\"/>\n                <assign to=\"format\">yyyy-MM-dd.HH-mm-ss-SSS</assign>\n            </output>\n            <input message=\"xin\">\n                <assign to=\"This/TimeStamp\" from=\"*\"/>\n            </input>\n        </operation>\n\n        <assign name=\"Assign\" to=\"This/Filename\" from=\"concat(This/Env, '.', This/Prefix, '.', This/TimeStamp/time/text(), '.txt')\"></assign>\n        <assign name=\"Assign\" to=\"DestinationMessageName\" from=\"This/Filename/text()\"></assign>\n\n        <operation name=\"File System Adapter\">\n            <participant name=\"Generic_FSA_Adapter\"/>\n                <output message=\"FileSystemInputMessage\">\n                    <assign to=\"extractionFolder\">/home/siuser/CustomProtocol</assign>\n                    <assign to=\"assignFilename\">true</assign>\n                    <assign to=\"assignedFilename\" from=\"DestinationMessageName/text()\"/>\n                    <assign to=\"Action\">FS_EXTRACT</assign>\n                    <assign to=\".\" from=\"*\"></assign>\n                </output>\n                <input message=\"inmsg\">\n                    <assign to=\".\" from=\"*\"></assign>\n                </input>\n        </operation>\n\t  \n        <operation name=\"FileGatewayRouteEventService\">\n            <participant name=\"FileGatewayRouteEventService\"/>\n            <output message=\"output\">\n                <assign to=\".\" from=\"RouteEntityKey\"/>\n                <assign to=\".\" from=\"RouteEntityType\"/>\n                <assign to=\".\" from=\"RouteDataflowId\"/>\n                <assign to=\".\" from=\"RouteMetadata\"/>\n                <assign to=\"EventCode\">CUST_0003</assign>\n                <assign to=\"ExceptionLevel\">Normal</assign>\n                <assign to=\"EventAttributes/ProducerName\" from=\"ProducerName/text()\" append=\"true\"/>\n                <assign to=\"EventAttributes/ConsumerFilename\" from=\"DestinationMessageName/text()\"/>\n            </output>\n            <input message=\"input\">\n                <assign to=\".\" from=\"*\"/>\n            </input>\n        </operation>\n \n\t\t<onFault>\n            <sequence name=\"onFault Sequence\">\n\t\t\t    <operation name=\"FileGatewayRouteEventService\">\n                      <participant name=\"FileGatewayRouteEventService\"/>\n                      <output message=\"output\">\n                          <assign to=\".\" from=\"RouteEntityKey\"/>\n                          <assign to=\".\" from=\"RouteEntityType\"/>\n                          <assign to=\".\" from=\"RouteDataflowId\"/>\n                          <assign to=\".\" from=\"RouteMetadata\"/>\n                          <assign to=\"EventCode\">CUST_0053</assign>\n                          <assign to=\"ExceptionLevel\">Normal</assign>\n                          <assign to=\"EventAttributes/ProducerName\" from=\"ProducerName/text()\" append=\"true\"/>\n                          <assign to=\"EventAttributes/ConsumerFilename\" from=\"DestinationMessageName/text()\"/>\n                      </output>\n                      <input message=\"input\">\n                          <assign to=\".\" from=\"*\"/>\n                      </input>\n                </operation>\n                \n            </sequence>\n        </onFault>\n    </sequence>\n</process>"
+}

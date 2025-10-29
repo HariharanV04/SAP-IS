@@ -1,0 +1,33 @@
+{
+  "id": "demo-rename-regex-java-task",
+  "name": "Demo_BP_RenameRegexJavaTask",
+  "type": "sterling.process",
+  "subtype": "bpml",
+  "description": "Sterling B2B Business Process: Demo_BP_RenameRegexJavaTask",
+  "file_path": "sterling-b2b-samples\\business-process\\rename-with-regex-java-task\\demo-rename-regex-java-task.bpml",
+  "file_name": "demo-rename-regex-java-task.bpml",
+  "rules": [],
+  "operations": [
+    {
+      "name": "RegexMapTest",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "srcLocationMode": "inline",
+        "javaSrc": "\n  import java.util.regex.Matcher;\n  import java.util.regex.Pattern;\n\n\tString fileName = (String)wfc.getWFContent(\"fileName\");\n\tString matchPattern = (String)wfc.getWFContent(\"matchPattern\");\n\tString replacePattern = (String)wfc.getWFContent(\"replacePattern\");\n\n  Pattern p1 = Pattern.compile(matchPattern);\n  Matcher m1 = p1.matcher(fileName);\n\n  if (m1.find( )) {\n    String output = m1.replaceFirst(replacePattern);\n    wfc.addWFContent(\"resultFilename\", output);\n  } else {\n    wfc.addWFContent(\"resultFilename\", fileName);\n    wfc.addWFContent(\"nomatch\", \"true\");\n  }\n\n\treturn \"OK\";",
+        ".": {
+          "from": "*"
+        }
+      }
+    }
+  ],
+  "assignments": [],
+  "sequences": [
+    {
+      "name": "",
+      "type": "sequential_flow"
+    }
+  ],
+  "patterns": [],
+  "raw_content": "<process name=\"Demo_BP_RenameRegexJavaTask\">\n<sequence>\n<assign to=\"fileName\">XYZ_AB_0193_20012021_001594.TXT</assign>\n<assign to=\"matchPattern\">XYZ_(.+)_(\\d{4})_(\\d{2})(\\d{2})(\\d{4})_(\\d{3})(\\d{3}).TXT</assign>\n<assign to=\"replacePattern\">CB_$5$4$3_$7.TXT</assign>\n\n<operation name=\"RegexMapTest\">\n\t<participant name=\"JavaTask\"/>\n\t<output message=\"Xout\" >\n\t<assign to=\"srcLocationMode\">inline</assign>\n\t<assign to=\"javaSrc\">\n  import java.util.regex.Matcher;\n  import java.util.regex.Pattern;\n\n\tString fileName = (String)wfc.getWFContent(\"fileName\");\n\tString matchPattern = (String)wfc.getWFContent(\"matchPattern\");\n\tString replacePattern = (String)wfc.getWFContent(\"replacePattern\");\n\n  Pattern p1 = Pattern.compile(matchPattern);\n  Matcher m1 = p1.matcher(fileName);\n\n  if (m1.find( )) {\n    String output = m1.replaceFirst(replacePattern);\n    wfc.addWFContent(\"resultFilename\", output);\n  } else {\n    wfc.addWFContent(\"resultFilename\", fileName);\n    wfc.addWFContent(\"nomatch\", \"true\");\n  }\n\n\treturn \"OK\";</assign>\n\t<assign to=\".\" from=\"*\"></assign>\n\t</output>\n\t<input message=\"Xin\" >\n\t<assign to=\".\" from=\"*\"></assign>\n\t</input>\n</operation>\n</sequence>\n</process>\n"
+}

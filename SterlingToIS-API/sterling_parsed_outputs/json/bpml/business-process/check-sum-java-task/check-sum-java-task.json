@@ -1,0 +1,33 @@
+{
+  "id": "check-sum-java-task",
+  "name": "JavaTaskCheckSum",
+  "type": "sterling.process",
+  "subtype": "bpml",
+  "description": "Sterling B2B Business Process: JavaTaskCheckSum",
+  "file_path": "sterling-b2b-samples\\business-process\\check-sum-java-task\\check-sum-java-task.bpml",
+  "file_name": "check-sum-java-task.bpml",
+  "rules": [],
+  "operations": [
+    {
+      "name": "JavaTaskSample",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "srcLocationMode": "inline",
+        "javaSrc": "\nimport com.sterlingcommerce.woodstock.workflow.Document;\nimport com.sterlingcommerce.woodstock.workflow.WFCBase;\nimport java.io.InputStream;\nimport java.io.IOException;\nimport java.security.NoSuchAlgorithmException;\nimport org.apache.commons.codec.digest.DigestUtils;\n\nString digest = null;\nDocument document = new Document();\nDocument srcDoc = wfc.getPrimaryDocument();\nInputStream is = srcDoc.getInputStream();\n\ntry {\n  digest = DigestUtils.md5Hex(is);\n  wfc.setBasicStatus(WFCBase.SUCCESS);\n  wfc.addWFContent(\"CheckSum\", digest.toString());\n} catch (Exception ex) {\n  wfc.setBasicStatus(WFCBase.ERROR);\n  wfc.addWFContent(\"CheckSumError\", ex.getMessage());\n}\nreturn \"000\";\n\t\t\t\t",
+        ".": {
+          "from": "*"
+        }
+      }
+    }
+  ],
+  "assignments": [],
+  "sequences": [
+    {
+      "name": "",
+      "type": "sequential_flow"
+    }
+  ],
+  "patterns": [],
+  "raw_content": "<process name=\"JavaTaskCheckSum\">\n\t<sequence>\n\t\t<operation name=\"JavaTaskSample\">\n\t\t\t<participant name=\"JavaTask\"/>\n\t\t\t<output message=\"Xout\">\n\t\t\t\t<assign to=\"srcLocationMode\">inline</assign>\n\t\t\t\t<assign to=\"javaSrc\">\nimport com.sterlingcommerce.woodstock.workflow.Document;\nimport com.sterlingcommerce.woodstock.workflow.WFCBase;\nimport java.io.InputStream;\nimport java.io.IOException;\nimport java.security.NoSuchAlgorithmException;\nimport org.apache.commons.codec.digest.DigestUtils;\n\nString digest = null;\nDocument document = new Document();\nDocument srcDoc = wfc.getPrimaryDocument();\nInputStream is = srcDoc.getInputStream();\n\ntry {\n  digest = DigestUtils.md5Hex(is);\n  wfc.setBasicStatus(WFCBase.SUCCESS);\n  wfc.addWFContent(\"CheckSum\", digest.toString());\n} catch (Exception ex) {\n  wfc.setBasicStatus(WFCBase.ERROR);\n  wfc.addWFContent(\"CheckSumError\", ex.getMessage());\n}\nreturn \"000\";\n\t\t\t\t</assign>\n\t\t\t\t<assign to=\".\" from=\"*\"></assign>\n\t\t\t</output>\n\t\t\t<input message=\"Xin\">\n\t\t\t\t<assign to=\".\" from=\"*\"></assign>\n\t\t\t</input>\n\t\t</operation>\n\t</sequence>\n</process>"
+}

@@ -1,0 +1,33 @@
+{
+  "id": "convert-json2xml-file",
+  "name": "Demo_BP_Convert_Json2Xml_input",
+  "type": "sterling.process",
+  "subtype": "bpml",
+  "description": "Sterling B2B Business Process: Demo_BP_Convert_Json2Xml_input",
+  "file_path": "sterling-b2b-samples\\business-process\\bp-xml-json-transformation\\convert-json2xml-file.bpml",
+  "file_name": "convert-json2xml-file.bpml",
+  "rules": [],
+  "operations": [
+    {
+      "name": "Request",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "*"
+        },
+        "InputType": "JSON",
+        "OutputPath": "output.xml"
+      }
+    }
+  ],
+  "assignments": [],
+  "sequences": [
+    {
+      "name": "",
+      "type": "sequential_flow"
+    }
+  ],
+  "patterns": [],
+  "raw_content": "<process name=\"Demo_BP_Convert_Json2Xml_input\">\n<sequence>\n<operation name=\"Request\">\n<participant name='xmljsontransformer'/>\n<output message='xout'>\n<assign to='.' from='PrimaryDocument/@SCIObjectID'></assign>\n<assign to='InputType'>JSON</assign>\n<assign to='OutputPath'>output.xml</assign>\n<assign to='.' from='*' />\n</output>\n<input message=\"xin\">\n<assign to='.' from='*' />\n</input>\n</operation>\n</sequence>\n</process>"
+}

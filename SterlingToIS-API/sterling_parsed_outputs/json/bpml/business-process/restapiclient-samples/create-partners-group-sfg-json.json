@@ -1,0 +1,39 @@
+{
+  "id": "create-partners-group-sfg-json",
+  "name": "REST_CreatePartnerGroups",
+  "type": "sterling.process",
+  "subtype": "bpml",
+  "description": "Sterling B2B Business Process: REST_CreatePartnerGroups",
+  "file_path": "sterling-b2b-samples\\business-process\\restapiclient-samples\\create-partners-group-sfg-json.bpml",
+  "file_name": "create-partners-group-sfg-json.bpml",
+  "rules": [],
+  "operations": [
+    {
+      "name": "Request",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "url": "http:/127.0.0.1:5078/B2BAPIs/svc/partnergroups/",
+        "restoperation": "POST",
+        "auth": "admin:passw0rd",
+        "Authorization": "Basic",
+        "Content-type": "Application/json",
+        "Accept": "Application/json",
+        "isProxy": "false",
+        "jsoninput1": "\"groupName\": \"GrupoTest02\", \"groupMembers\": \"Sistema_100,Sistema_110\"",
+        ".": {
+          "from": "*"
+        }
+      }
+    }
+  ],
+  "assignments": [],
+  "sequences": [
+    {
+      "name": "",
+      "type": "sequential_flow"
+    }
+  ],
+  "patterns": [],
+  "raw_content": "<process name=\"REST_CreatePartnerGroups\">\n  <sequence>\n    <operation name=\"Request\">\n      <participant name='RESTAPIClient'/>\n      <output message='xout'>\n        <assign to=\"url\">http:/127.0.0.1:5078/B2BAPIs/svc/partnergroups/</assign>\n        <assign to=\"restoperation\">POST</assign>\n        <assign to='auth'>admin:passw0rd</assign>\n        <assign to='Authorization'>Basic</assign>\n        <assign to=\"Content-type\">Application/json</assign>\n        <assign to=\"Accept\">Application/json</assign>\n        <assign to=\"isProxy\">false</assign>\n        <assign to='jsoninput1'>\"groupName\": \"GrupoTest02\", \"groupMembers\": \"Sistema_100,Sistema_110\"</assign>\n        <assign to=\".\" from=\"*\" />\n      </output>\n      <input message=\"xin\">\n        <assign to=\".\" from=\"*\" />\n      </input>\n    </operation>\n  </sequence>\n</process>\n"
+}

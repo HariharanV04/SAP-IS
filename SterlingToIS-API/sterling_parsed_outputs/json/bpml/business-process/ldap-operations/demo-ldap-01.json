@@ -1,0 +1,31 @@
+{
+  "id": "demo-ldap-01",
+  "name": "Demo_LDAPAdapter",
+  "type": "sterling.process",
+  "subtype": "bpml",
+  "description": "Sterling B2B Business Process: Demo_LDAPAdapter",
+  "file_path": "sterling-b2b-samples\\business-process\\ldap-operations\\demo-ldap-01.bpml",
+  "file_name": "demo-ldap-01.bpml",
+  "rules": [],
+  "operations": [
+    {
+      "name": "LDAP",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "*"
+        }
+      }
+    }
+  ],
+  "assignments": [],
+  "sequences": [
+    {
+      "name": "",
+      "type": "sequential_flow"
+    }
+  ],
+  "patterns": [],
+  "raw_content": "<process name=\"Demo_LDAPAdapter\">\n    <sequence>\n\n        <operation name=\"LDAP\">\n            <participant name=\"LDAPAdapter\"/>\n            <output message=\"LDAPInputMessage\">\n                <assign to=\".\" from=\"*\"></assign>\n            </output>\n            <input message=\"inmsg\">\n                <assign to=\".\" from=\"*\"></assign>\n            </input>\n        </operation>\n\n    </sequence>\n</process>"
+}

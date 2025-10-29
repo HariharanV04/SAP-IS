@@ -1,1 +1,0 @@
-Product Retrieval iFlow that validates product IDs against a predefined list, fetches product details from an OData service if valid, and returns formatted JSON responses. The flow includes validation logic, conditional routing, error handling for invalid product IDs, and proper HTTP response formatting with appropriate status codes.

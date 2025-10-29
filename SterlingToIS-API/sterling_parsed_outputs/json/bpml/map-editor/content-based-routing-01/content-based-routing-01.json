@@ -1,0 +1,35 @@
+{
+  "id": "content-based-routing-01",
+  "name": "Demo_BP_Content_Based_Routing",
+  "type": "sterling.process",
+  "subtype": "bpml",
+  "description": "Sterling B2B Business Process: Demo_BP_Content_Based_Routing",
+  "file_path": "sterling-b2b-samples\\map-editor\\content-based-routing-01\\content-based-routing-01.bpml",
+  "file_name": "content-based-routing-01.bpml",
+  "rules": [],
+  "operations": [
+    {
+      "name": "Translation",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "map_name": {
+          "from": "'Demo_Map_Content_Based_Routing'"
+        },
+        "validate_input": "NO",
+        ".": {
+          "from": "*"
+        }
+      }
+    }
+  ],
+  "assignments": [],
+  "sequences": [
+    {
+      "name": "",
+      "type": "sequential_flow"
+    }
+  ],
+  "patterns": [],
+  "raw_content": "<process name=\"Demo_BP_Content_Based_Routing\">\n  <sequence>\n    <assign name=\"Assign\" to=\"OriginalDocument\" from=\"PrimaryDocument/@SCIObjectID\"></assign>\n\n    <operation name=\"Translation\">\n      <participant name=\"Translation\"/>\n      <output message=\"TranslationTypeInputMessage\">\n        <assign to=\"map_name\" from=\"'Demo_Map_Content_Based_Routing'\"/>\n        <assign to=\"validate_input\">NO</assign>\n        <assign to=\".\" from=\"*\"></assign>\n      </output>\n      <input message=\"inmsg\">\n        <assign to=\".\" from=\"*\"></assign>\n      </input>\n    </operation>\n    \n    <assign name=\"Assign\" to=\"PrimaryDocument\" from=\"OriginalDocument/@SCIObjectID\"></assign>\n  </sequence>\n</process>"
+}

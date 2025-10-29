@@ -1,6 +1,0 @@
-%dw 2.0
-
-type auto_40b7e877_054a_4557_a980_6f561d30ca8e_Output_Payload = {|
-  Payments: Array<{|    PaymentPurpose?: String,     PayeeCheckReference?: {|      PayeeCheckMode: String,       PayeeCheckStubInformation?: String,       PayeeCheckMemo?: String    |},     PaymentMechanism?: String,     CreationDateTime: String,     PaymentTransferType?: String,     PayeeBankReference?: {|      BankName: String,       RoutingNumber: String    |},     PaymentId: String,     PaymentDefinition?: {|      PaymentAmount: {        Currency: String,         MaxAmount: String,         _?: Any      }    |},     PaymentType: String,     PayeeAccountReference?: {|      PayeeAccountType?: String,       PayeeAccountDetails?: String,       PayeeAccountNumber: String    |},     PayeeReference?: {|      PayeeAddress?: {|        AddressLine2?: String,         AddressLine1: String,         State: String,         PostalCode: String,         Country: String,         City: String,         AddressType?: String      |},       PayeeName: String    |},     PaymentMode: String  |}>
-|}
-

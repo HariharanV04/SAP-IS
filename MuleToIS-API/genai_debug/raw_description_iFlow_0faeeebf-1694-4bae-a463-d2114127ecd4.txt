@@ -1,1 +1,0 @@
-This iFlow retrieves product details from an OData service based on a product identifier. It validates the product ID, checks if it exists in a predefined list, and returns either the product details or an error message. The flow includes validation scripts, content enrichers, and an OData connector to fetch data from the ESPM cloud service.

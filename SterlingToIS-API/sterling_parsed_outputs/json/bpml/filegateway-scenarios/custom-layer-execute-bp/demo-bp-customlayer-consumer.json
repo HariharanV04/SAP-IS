@@ -1,0 +1,31 @@
+{
+  "id": "demo-bp-customlayer-consumer",
+  "name": "Demo_BP_CustomLayer_Consumer",
+  "type": "sterling.process",
+  "subtype": "bpml",
+  "description": "Sterling B2B Business Process: Demo_BP_CustomLayer_Consumer",
+  "file_path": "sterling-b2b-samples\\filegateway-scenarios\\custom-layer-execute-bp\\demo-bp-customlayer-consumer.bpml",
+  "file_name": "demo-bp-customlayer-consumer.bpml",
+  "rules": [],
+  "operations": [
+    {
+      "name": "Get Document Information Service",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "*"
+        }
+      }
+    }
+  ],
+  "assignments": [],
+  "sequences": [
+    {
+      "name": "",
+      "type": "sequential_flow"
+    }
+  ],
+  "patterns": [],
+  "raw_content": "<process name=\"Demo_BP_CustomLayer_Consumer\">\n  <sequence>\n    <operation name=\"Get Document Information Service\">\n      <participant name=\"GetDocumentInfoService\"/>\n      <output message=\"GetDocumentInfoServiceTypeInputMessage\">\n        <assign to=\".\" from=\"*\"></assign>\n      </output>\n      <input message=\"inmsg\">\n        <assign to=\".\" from=\"*\"></assign>\n      </input>\n    </operation>\n\n  </sequence>\n</process>\n"
+}

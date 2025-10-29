@@ -1,4 +1,0 @@
-tls:
-  keySecret: integration@keystore
-  keyStoreSecret: integration@keystore
-  

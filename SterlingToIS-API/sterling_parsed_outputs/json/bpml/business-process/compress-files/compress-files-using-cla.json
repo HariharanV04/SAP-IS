@@ -1,0 +1,46 @@
+{
+  "id": "compress-files-using-cla",
+  "name": "Demo_BP_CompressFilesUsingCLA",
+  "type": "sterling.process",
+  "subtype": "bpml",
+  "description": "Sterling B2B Business Process: Demo_BP_CompressFilesUsingCLA",
+  "file_path": "sterling-b2b-samples\\business-process\\compress-files\\compress-files-using-cla.bpml",
+  "file_name": "compress-files-using-cla.bpml",
+  "rules": [],
+  "operations": [
+    {
+      "name": "Command Line Adapter",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "*"
+        },
+        "cmdLine": "/usr/bin/zip ZippedFiles.zip testdata1.csv testadata.csv",
+        "workingDir": "/tmp/files2compress",
+        "useOutput": "YES"
+      }
+    },
+    {
+      "name": "SetContentType",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "*"
+        },
+        "DocumentContentType": "application",
+        "DocumentContentSubType": "x-compressed"
+      }
+    }
+  ],
+  "assignments": [],
+  "sequences": [
+    {
+      "name": "",
+      "type": "sequential_flow"
+    }
+  ],
+  "patterns": [],
+  "raw_content": "<process name=\"Demo_BP_CompressFilesUsingCLA\">\n\n  <sequence>\n    <operation name=\"Command Line Adapter\">\n      <participant name=\"SysInfo\"/>\n      <output message=\"CmdLineInputMessage\">\n        <assign to=\".\" from=\"*\"></assign>\n        <assign to=\"cmdLine\">/usr/bin/zip ZippedFiles.zip testdata1.csv testadata.csv</assign>\n        <assign to=\"workingDir\">/tmp/files2compress</assign>\n        <assign to=\"useOutput\">YES</assign>\n      </output>\n      <input message=\"inmsg\">\n        <assign to=\".\" from=\"*\"></assign>\n      </input>\n    </operation>\n\n    <operation name=\"SetContentType\">\n      <participant name=\"GetDocumentInfoService\"/>\n      <output message=\"xout\">\n        <assign to=\".\" from=\"*\"/>\n        <assign to=\"DocumentContentType\">application</assign>\n        <assign to=\"DocumentContentSubType\">x-compressed</assign>\n      </output>\n      <input message=\"xin\">\n        <assign to=\".\" from=\"*\"/>\n      </input>\n    </operation>\n\n  </sequence>\n\n</process>"
+}

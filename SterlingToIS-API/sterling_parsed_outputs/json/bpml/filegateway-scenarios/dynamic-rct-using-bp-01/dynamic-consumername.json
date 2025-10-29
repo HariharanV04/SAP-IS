@@ -1,0 +1,20 @@
+{
+  "id": "dynamic-consumername",
+  "name": "Demo_BP_Dynamic_ConsumerName",
+  "type": "sterling.process",
+  "subtype": "bpml",
+  "description": "Sterling B2B Business Process: Demo_BP_Dynamic_ConsumerName",
+  "file_path": "sterling-b2b-samples\\filegateway-scenarios\\dynamic-rct-using-bp-01\\dynamic-consumername.bpml",
+  "file_name": "dynamic-consumername.bpml",
+  "rules": [],
+  "operations": [],
+  "assignments": [],
+  "sequences": [
+    {
+      "name": "",
+      "type": "sequential_flow"
+    }
+  ],
+  "patterns": [],
+  "raw_content": "<process name = \"Demo_BP_Dynamic_ConsumerName\">\n  <sequence>\n    <assign to=\"ConsumerName\">Demo_Consumer_DR_01</assign>\n  </sequence>\n</process>"
+}

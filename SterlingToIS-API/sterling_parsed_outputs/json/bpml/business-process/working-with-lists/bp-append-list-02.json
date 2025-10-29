@@ -1,0 +1,54 @@
+{
+  "id": "bp-append-list-02",
+  "name": "Demo_BP_Append_List",
+  "type": "sterling.process",
+  "subtype": "bpml",
+  "description": "Sterling B2B Business Process: Demo_BP_Append_List",
+  "file_path": "sterling-b2b-samples\\business-process\\working-with-lists\\bp-append-list-02.bpml",
+  "file_name": "bp-append-list-02.bpml",
+  "rules": [
+    {
+      "name": "has_next",
+      "condition": "",
+      "type": "business_rule"
+    },
+    {
+      "name": "skip_item",
+      "condition": "",
+      "type": "business_rule"
+    }
+  ],
+  "operations": [
+    {
+      "name": "Release Service",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "TARGET": "/ProcessData/List/Item[1]",
+        ".": {
+          "from": "*"
+        }
+      }
+    }
+  ],
+  "assignments": [],
+  "sequences": [
+    {
+      "name": "",
+      "type": "sequential_flow"
+    },
+    {
+      "name": "nextItem",
+      "type": "sequential_flow"
+    },
+    {
+      "name": "AddItemSeq",
+      "type": "sequential_flow"
+    }
+  ],
+  "patterns": [
+    "batch_processing",
+    "conditional_logic"
+  ],
+  "raw_content": "<process name=\"Demo_BP_Append_List\">\n    <rule name=\"has_next\">\n        <condition>count(/ProcessData/List/Item) &gt; 0</condition>\n    </rule>\n\n    <rule name=\"skip_item\">\n        <condition>/ProcessData/List/Item[1]/text = &apos;U002&apos;</condition>\n    </rule>\n\n    <sequence>\n        <assign to=\"List/Item\">U001</assign>\n        <assign to=\"List/Item\" append=\"true\">U002</assign>\n        <assign to=\"List/Item\" append=\"true\">U003</assign>\n        <assign to=\"List/Item\" append=\"true\">U004</assign>\n        <assign to=\"ItemsList\">.</assign>\n        <choice name=\"forEachItem\">\n            <select>\n                <case ref=\"has_next\" activity=\"nextItem\"/>\n            </select>\n\n            <sequence name=\"nextItem\">\n                <choice name=\"AddItem\">\n                    <select>\n                        <case ref=\"skip_item\" negative=\"true\" activity=\"AddItemSeq\"/>\n                    </select>\n\n                    <sequence name=\"AddItemSeq\">\n                        <assign name=\"Assign\" to=\"ItemsList\" from=\"if( ItemsList = &apos;.&apos;, List/Item[1]/text(), concat(ItemsList, &apos;,&apos; ,List/Item[1]/text()))\"></assign>\n                    </sequence>\n                </choice>\n                <operation name=\"Release Service\">\n                    <participant name=\"ReleaseService\"/>\n                    <output message=\"ReleaseServiceTypeInputMessage\">\n                        <assign to=\"TARGET\">/ProcessData/List/Item[1]</assign>\n                        <assign to=\".\" from=\"*\"></assign>\n                    </output>\n                    <input message=\"inmsg\">\n                        <assign to=\".\" from=\"*\"></assign>\n                    </input>\n                </operation>\n\n                <repeat name=\"endLoop\" ref=\"forEachItem\"/>\n\n            </sequence>\n        </choice>\n    </sequence>\n</process>\n"
+}

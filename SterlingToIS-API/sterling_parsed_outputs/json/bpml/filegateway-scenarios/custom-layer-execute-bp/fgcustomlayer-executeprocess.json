@@ -1,0 +1,56 @@
+{
+  "id": "fgcustomlayer-executeprocess",
+  "name": "FGCustomLayer_ExecuteProcess",
+  "type": "sterling.process",
+  "subtype": "bpml",
+  "description": "Sterling B2B Business Process: FGCustomLayer_ExecuteProcess",
+  "file_path": "sterling-b2b-samples\\filegateway-scenarios\\custom-layer-execute-bp\\fgcustomlayer-executeprocess.bpml",
+  "file_name": "fgcustomlayer-executeprocess.bpml",
+  "rules": [],
+  "operations": [
+    {
+      "name": "Invoke Sub-Process",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "INVOKE_MODE": "INLINE",
+        "WFD_NAME": {
+          "from": "/ProcessData/BP_TO_RUN/text()"
+        },
+        ".": {
+          "from": "*"
+        }
+      }
+    },
+    {
+      "name": "Release Service",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "TARGET": "/ProcessData/DocumentId",
+        ".": {
+          "from": "*"
+        }
+      }
+    },
+    {
+      "name": "Get Document Information Service",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "*"
+        }
+      }
+    }
+  ],
+  "assignments": [],
+  "sequences": [
+    {
+      "name": "Sequence Start",
+      "type": "sequential_flow"
+    }
+  ],
+  "patterns": [],
+  "raw_content": "<process name = \"FGCustomLayer_ExecuteProcess\"> \n  <sequence name=\"Sequence Start\">\n    <operation name=\"Invoke Sub-Process\">\n      <participant name=\"InvokeSubProcessService\"/>\n      <output message=\"InvokeSubProcessServiceTypeInputMessage\">\n        <assign to=\"INVOKE_MODE\">INLINE</assign>       <!-- you can change for INLINE too-->\n        <assign to=\"WFD_NAME\" from=\"/ProcessData/BP_TO_RUN/text()\"></assign>\n        <assign to=\".\" from=\"*\"></assign>\n      </output>\n      <input message=\"inmsg\">\n        <assign to=\".\" from=\"*\"></assign>\n      </input>\n    </operation>\n\n    <assign name=\"Assign\" to=\"Completed\">Y</assign>\n    \n    <operation name=\"Release Service\">\n      <participant name=\"ReleaseService\"/>\n      <output message=\"ReleaseServiceTypeInputMessage\">\n        <assign to=\"TARGET\">/ProcessData/DocumentId</assign>\n        <assign to=\".\" from=\"*\"></assign>\n      </output>\n      <input message=\"inmsg\">\n        <assign to=\".\" from=\"*\"></assign>\n      </input>\n    </operation>\n\n    <operation name=\"Get Document Information Service\">\n      <participant name=\"GetDocumentInfoService\"/>\n      <output message=\"GetDocumentInfoServiceTypeInputMessage\">\n        <assign to=\".\" from=\"*\"></assign>\n      </output>\n      <input message=\"inmsg\">\n        <assign to=\".\" from=\"*\"></assign>\n      </input>\n    </operation>\n\n  </sequence>\n</process>"
+}

@@ -1,0 +1,20 @@
+{
+  "id": "consumers-broadcast-list",
+  "name": "Demo_BP_Consumer_Broadcast_List",
+  "type": "sterling.process",
+  "subtype": "bpml",
+  "description": "Sterling B2B Business Process: Demo_BP_Consumer_Broadcast_List",
+  "file_path": "sterling-b2b-samples\\filegateway-scenarios\\multiples-consumers-broadcast-list\\consumers-broadcast-list.bpml",
+  "file_name": "consumers-broadcast-list.bpml",
+  "rules": [],
+  "operations": [],
+  "assignments": [],
+  "sequences": [
+    {
+      "name": "",
+      "type": "sequential_flow"
+    }
+  ],
+  "patterns": [],
+  "raw_content": "<process name = \"Demo_BP_Consumer_Broadcast_List\">\n<sequence>\n<assign to=\"ConsumerNameList/ConsumerName\">Demo_Consumer_01</assign>\n<assign to=\"ConsumerNameList/ConsumerName\" append =\"true\">Demo_Consumer_02</assign>\n<assign to=\"ConsumerNameList/ConsumerName\" append =\"true\">Demo_Consumer_03</assign>\n</sequence>\n</process>"
+}

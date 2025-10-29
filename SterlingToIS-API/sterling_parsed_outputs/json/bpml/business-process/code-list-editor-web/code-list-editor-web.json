@@ -1,0 +1,223 @@
+{
+  "id": "code-list-editor-web",
+  "name": "CodeListEditorWeb",
+  "type": "sterling.process",
+  "subtype": "bpml",
+  "description": "Sterling B2B Business Process: CodeListEditorWeb",
+  "file_path": "sterling-b2b-samples\\business-process\\code-list-editor-web\\code-list-editor-web.bpml",
+  "file_name": "code-list-editor-web.bpml",
+  "rules": [
+    {
+      "name": "list_name",
+      "condition": "",
+      "type": "business_rule"
+    },
+    {
+      "name": "http_method_post",
+      "condition": "",
+      "type": "business_rule"
+    },
+    {
+      "name": "http_method_get",
+      "condition": "",
+      "type": "business_rule"
+    },
+    {
+      "name": "no_parameters",
+      "condition": "",
+      "type": "business_rule"
+    },
+    {
+      "name": "is_new_page",
+      "condition": "",
+      "type": "business_rule"
+    },
+    {
+      "name": "search_has_results",
+      "condition": "",
+      "type": "business_rule"
+    },
+    {
+      "name": "update_has_results",
+      "condition": "",
+      "type": "business_rule"
+    }
+  ],
+  "operations": [
+    {
+      "name": "AssignService",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "*"
+        },
+        "/ProcessData/ResponseData/searchpage": "Search Page",
+        "This/sqlMain": {
+          "from": "concat(\"SELECT * FROM CODELIST_XREF_ITEM WHERE CODELIST_XREF_ITEM.LIST_NAME = '\",/ProcessData/sLN/text(),\"' AND CODELIST_XREF_ITEM.LIST_VERSION = (SELECT DEFAULT_VERSION FROM CODELIST_XREF_VERS WHERE CODELIST_XREF_VERS.LIST_NAME = '\",/ProcessData/sLN/text(),\"')\")"
+        },
+        "This/sqlSender": {
+          "from": "if (string-length(/ProcessData/sSIt) > 0,concat(\" AND SENDER_ITEM like '%\",/ProcessData/sSIt/text(),\"%'\"),\"\")"
+        },
+        "This/sqlReceiver": {
+          "from": "if (string-length(/ProcessData/sRIt) > 0,concat(\" AND RECEIVER_ITEM like '%\",/ProcessData/sRIt/text(),\"%'\"),\"\")"
+        },
+        "This/sqlSelect": {
+          "from": "concat(This/sqlMain,This/sqlSender,This/sqlReceiver)"
+        }
+      }
+    },
+    {
+      "name": "Lightweight JDBC Adapter",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "*"
+        },
+        "pool": {
+          "from": "/ProcessData/This/databasePool/text()"
+        },
+        "query_type": "SELECT",
+        "result_name": "Result1",
+        "row_name": "Row1",
+        "sql": {
+          "from": "/ProcessData/This/sqlSelect/text()"
+        }
+      }
+    },
+    {
+      "name": "AssignService",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "*"
+        },
+        "/ProcessData/ResponseData/updatepage": "Update Page",
+        "This/P1": "UPDATE CODELIST_XREF_ITEM SET",
+        "This/F1": {
+          "from": "concat(\" SENDER_ITEM = '\",/ProcessData/HttpURLDecodedValues/mSIt/text(),\"',\")"
+        },
+        "This/F2": {
+          "from": "concat(\" RECEIVER_ITEM = '\",/ProcessData/HttpURLDecodedValues/mRIt/text(),\"',\")"
+        },
+        "This/F3": {
+          "from": "concat(\" DESCRIPTION = '\",/ProcessData/HttpURLDecodedValues/mDesc/text(),\"',\")"
+        },
+        "This/F4": {
+          "from": "concat(\" TEXT1 = '\",/ProcessData/HttpURLDecodedValues/mT1/text(),\"',\")"
+        },
+        "This/F5": {
+          "from": "concat(\" TEXT2 = '\",/ProcessData/HttpURLDecodedValues/mT2/text(),\"',\")"
+        },
+        "This/F6": {
+          "from": "concat(\" TEXT3 = '\",/ProcessData/HttpURLDecodedValues/mT3/text(),\"'\")"
+        },
+        "This/W1": {
+          "from": "concat(\" WHERE LIST_NAME = '\",/ProcessData/HttpURLDecodedValues/LN,\"'\")"
+        },
+        "This/W2": {
+          "from": "concat(\" AND LIST_VERSION = '\",/ProcessData/HttpURLDecodedValues/LV,\"'\")"
+        },
+        "This/W3": " AND SENDER_ID IS NULL AND RECEIVER_ID IS NULL",
+        "This/W4": {
+          "from": "concat(\" AND SENDER_ITEM = '\",/ProcessData/HttpURLDecodedValues/SIt,\"'\")"
+        },
+        "This/W5": {
+          "from": "concat(\" AND RECEIVER_ITEM = '\",/ProcessData/HttpURLDecodedValues/RIt,\"'\")"
+        },
+        "This/sqlUpdate": {
+          "from": "concat(This/P1,This/F1,This/F2,This/F3,This/F4,This/F5,This/F6,This/W1,This/W2,This/W3,This/W4,This/W5)"
+        }
+      }
+    },
+    {
+      "name": "Lightweight JDBC Adapter",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "*"
+        },
+        "pool": {
+          "from": "/ProcessData/This/databasePool/text()"
+        },
+        "query_type": "UPDATE",
+        "result_name": "Result1",
+        "row_name": "Row1",
+        "sql": {
+          "from": "/ProcessData/This/sqlUpdate/text()"
+        }
+      }
+    },
+    {
+      "name": "XSLT Service",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "input_pd_xpath": "/ProcessData/ResponseData",
+        "xml_input_from": "ProcData",
+        "xml_input_validation": "NO",
+        "xslt_name": "CodeListEditorWeb",
+        ".": {
+          "from": "*"
+        }
+      }
+    },
+    {
+      "name": "HttpRespond",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "doc-has-headers": "false",
+        ".": {
+          "from": "*"
+        }
+      }
+    }
+  ],
+  "assignments": [],
+  "sequences": [
+    {
+      "name": "",
+      "type": "sequential_flow"
+    },
+    {
+      "name": "GET",
+      "type": "sequential_flow"
+    },
+    {
+      "name": "SearchListName",
+      "type": "sequential_flow"
+    },
+    {
+      "name": "NewPage",
+      "type": "sequential_flow"
+    },
+    {
+      "name": "POST",
+      "type": "sequential_flow"
+    },
+    {
+      "name": "OutputNewPage",
+      "type": "sequential_flow"
+    },
+    {
+      "name": "OutputSearchResults",
+      "type": "sequential_flow"
+    },
+    {
+      "name": "OutputSearchNoResults",
+      "type": "sequential_flow"
+    },
+    {
+      "name": "OutputUpdateResults",
+      "type": "sequential_flow"
+    }
+  ],
+  "patterns": [
+    "conditional_logic"
+  ],
+  "raw_content": "<process name=\"CodeListEditorWeb\">\n  <rule name=\"list_name\">\n    <condition>string-length(/ProcessData/sLN) &gt; 0</condition>\n  </rule>\n\n  <rule name=\"http_method_post\">\n    <condition>string(/ProcessData/http-method) = &quot;POST&quot;</condition>\n  </rule>\n\n  <rule name=\"http_method_get\">\n    <condition>string(/ProcessData/http-method) = &quot;GET&quot;</condition>\n  </rule>\n\n  <rule name=\"no_parameters\">\n    <condition>string-length(/ProcessData/sLN) = 0 and\n        string-length(/ProcessData/sSIt) = 0 and\n        string-length(/ProcessData/sRIt) = 0</condition>\n  </rule>\n\n  <rule name=\"is_new_page\">\n    <condition>string(/ProcessData/ResponseData/newpage) = &quot;New Page&quot;</condition>\n  </rule>\n\n  <rule name=\"search_has_results\">\n    <condition>string(/ProcessData/ResponseData/searchpage) = &quot;Search Page&quot; and count(/ProcessData/Result1/Row1) &gt; 0</condition>\n  </rule>\n\n  <rule name=\"update_has_results\">\n    <condition>string(/ProcessData/ResponseData/updatepage) = &quot;Update Page&quot; and count(/ProcessData/Result1/Row1) &gt; 0</condition>\n  </rule>\n\n  <sequence>\n    <assign to=\"/ProcessData/This/databasePool\">db2Pool</assign>\n    <choice>\n      <select>\n        <case ref=\"http_method_get\" activity=\"GET\"/>\n        <case ref=\"http_method_post\" activity=\"POST\"/>\n      </select>\n\n      <sequence name=\"GET\">\n        <choice>\n          <select>\n            <case ref=\"list_name\" activity=\"SearchListName\"/>\n            <case ref=\"no_parameters\" activity=\"NewPage\"/>\n          </select>\n\n          <sequence name=\"SearchListName\">\n            <operation name=\"AssignService\">\n              <participant name=\"AssignService\"/>\n              <output message=\"AssignOutputMessage\">\n                <assign to=\".\" from=\"*\"/>\n                <assign to=\"/ProcessData/ResponseData/searchpage\">Search Page</assign>\n                <assign to=\"This/sqlMain\" from=\"concat(&quot;SELECT * FROM CODELIST_XREF_ITEM WHERE CODELIST_XREF_ITEM.LIST_NAME = &apos;&quot;,/ProcessData/sLN/text(),&quot;&apos; AND CODELIST_XREF_ITEM.LIST_VERSION = (SELECT DEFAULT_VERSION FROM CODELIST_XREF_VERS WHERE CODELIST_XREF_VERS.LIST_NAME = &apos;&quot;,/ProcessData/sLN/text(),&quot;&apos;)&quot;)\"></assign>\n                <assign to=\"This/sqlSender\" from=\"if (string-length(/ProcessData/sSIt) &gt; 0,concat(&quot; AND SENDER_ITEM like &apos;%&quot;,/ProcessData/sSIt/text(),&quot;%&apos;&quot;),&quot;&quot;)\"></assign>\n                <assign to=\"This/sqlReceiver\" from=\"if (string-length(/ProcessData/sRIt) &gt; 0,concat(&quot; AND RECEIVER_ITEM like &apos;%&quot;,/ProcessData/sRIt/text(),&quot;%&apos;&quot;),&quot;&quot;)\"></assign>\n                <assign to=\"This/sqlSelect\" from=\"concat(This/sqlMain,This/sqlSender,This/sqlReceiver)\"></assign>\n              </output>\n              <input message=\"AssignInputMessage\">\n                <assign to=\".\" from=\"*\"/>\n              </input>\n            </operation>\n\n            <operation name=\"Lightweight JDBC Adapter\">\n              <participant name=\"LightweightJDBCAdapterQuery\"/>\n              <output message=\"LightweightJDBCAdapterTypeInputMessage\">\n                <assign to=\".\" from=\"*\"></assign>\n                <assign to=\"pool\" from=\"/ProcessData/This/databasePool/text()\"></assign>\n                <assign to=\"query_type\">SELECT</assign>\n                <assign to=\"result_name\">Result1</assign>\n                <assign to=\"row_name\">Row1</assign>\n                <assign to=\"sql\" from=\"/ProcessData/This/sqlSelect/text()\"></assign>\n              </output>\n              <input message=\"inmsg\">\n                <assign to=\".\" from=\"DocToDOM(PrimaryDocument)\"></assign>\n              </input>\n            </operation>\n          </sequence>\n          <sequence name=\"NewPage\">\n            <assign to=\"/ProcessData/ResponseData/newpage\">New Page</assign>\n          </sequence>\n        </choice>\n      </sequence>\n\n      <sequence name=\"POST\">\n\n\n        <operation name=\"AssignService\">\n          <participant name=\"AssignService\"/>\n          <output message=\"AssignOutputMessage\">\n            <assign to=\".\" from=\"*\"/>\n            <assign to=\"/ProcessData/ResponseData/updatepage\">Update Page</assign>\n            <assign to=\"This/P1\">UPDATE CODELIST_XREF_ITEM SET</assign>\n            <assign to=\"This/F1\" from=\"concat(&quot; SENDER_ITEM = &apos;&quot;,/ProcessData/HttpURLDecodedValues/mSIt/text(),&quot;&apos;,&quot;)\"></assign>\n            <assign to=\"This/F2\" from=\"concat(&quot; RECEIVER_ITEM = &apos;&quot;,/ProcessData/HttpURLDecodedValues/mRIt/text(),&quot;&apos;,&quot;)\"></assign>\n            <assign to=\"This/F3\" from=\"concat(&quot; DESCRIPTION = &apos;&quot;,/ProcessData/HttpURLDecodedValues/mDesc/text(),&quot;&apos;,&quot;)\"></assign>\n            <assign to=\"This/F4\" from=\"concat(&quot; TEXT1 = &apos;&quot;,/ProcessData/HttpURLDecodedValues/mT1/text(),&quot;&apos;,&quot;)\"></assign>\n            <assign to=\"This/F5\" from=\"concat(&quot; TEXT2 = &apos;&quot;,/ProcessData/HttpURLDecodedValues/mT2/text(),"
+}

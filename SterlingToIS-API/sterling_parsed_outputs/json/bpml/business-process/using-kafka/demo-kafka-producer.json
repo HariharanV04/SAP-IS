@@ -1,0 +1,67 @@
+{
+  "id": "demo-kafka-producer",
+  "name": "Demo_Kafka_Producer",
+  "type": "sterling.process",
+  "subtype": "bpml",
+  "description": "Sterling B2B Business Process: Demo_Kafka_Producer",
+  "file_path": "sterling-b2b-samples\\business-process\\using-kafka\\demo-kafka-producer.bpml",
+  "file_name": "demo-kafka-producer.bpml",
+  "rules": [],
+  "operations": [
+    {
+      "name": "Kafka Client Begin Session Service",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "Action": "put",
+        "BootStrapServers": "localhost:29092",
+        "KafkaClientAdapter": "KafkaClientAdapter",
+        "SecurityAction": "PLAINTEXT",
+        "ProducerConfig": "buffer.memory=102400;compression.type=gzip",
+        ".": {
+          "from": "PrimaryDocument"
+        }
+      }
+    },
+    {
+      "name": "Kafka Client Producer Service",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "SessionID": {
+          "from": "//KafkaBeginSessionServiceResults/SessionID/text()"
+        },
+        "KafkaClientAdapter": {
+          "from": "//KafkaBeginSessionServiceResults/KafkaClientAdapter/text()"
+        },
+        "Topic": "sb2b-kfk-outbound",
+        ".": {
+          "from": "PrimaryDocument"
+        }
+      }
+    },
+    {
+      "name": "Kafka Client End Session Service",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "SessionID": {
+          "from": "//KafkaBeginSessionServiceResults/SessionID/text()"
+        },
+        "KafkaClientAdapter": {
+          "from": "//KafkaBeginSessionServiceResults/KafkaClientAdapter/text()"
+        },
+        "Action": "put"
+      }
+    }
+  ],
+  "assignments": [],
+  "sequences": [
+    {
+      "name": "",
+      "type": "sequential_flow"
+    }
+  ],
+  "patterns": [],
+  "raw_content": "<process name=\"Demo_Kafka_Producer\">\n\t<sequence>\n\t\t<operation name=\"Kafka Client Begin Session Service\">\n\t\t\t<participant name='KafkaBeginSessionService'/>\n\t\t\t<output message=\"xout\">\n\t\t\t\t<assign to='Action'>put</assign>\n\t\t\t\t<assign to='BootStrapServers'>localhost:29092</assign>\n\t\t\t\t<assign to='KafkaClientAdapter'>KafkaClientAdapter</assign>\n\t\t\t\t<assign to='SecurityAction'>PLAINTEXT</assign>\n\t\t\t\t<assign to='ProducerConfig'>buffer.memory=102400;compression.type=gzip</assign>\n\t\t\t\t<assign to='.' from='PrimaryDocument'/>\n\t\t\t</output>\n\t\t\t<input message=\"xin\">\n\t\t\t\t<assign to=\"KafkaBeginSessionServiceResults\" from=\"*\"/>\n\t\t\t</input>\n\t\t</operation>\n\t\t<operation name=\"Kafka Client Producer Service\">\n\t\t\t<participant name=\"KafkaProducerService\"/>\n\t\t\t<output message=\"xout\">\n\t\t\t\t<assign to=\"SessionID\" from=\"//KafkaBeginSessionServiceResults/SessionID/text()\"/>\n\t\t\t\t<assign to=\"KafkaClientAdapter\" from=\"//KafkaBeginSessionServiceResults/KafkaClientAdapter/text()\"/>\n\t\t\t\t<assign to='Topic'>sb2b-kfk-outbound</assign>\n\t\t\t\t<assign to='.' from='PrimaryDocument'/>\n\t\t\t</output>\n\t\t\t<input message=\"xin\">\n\t\t\t\t<assign to=\".\" from=\"*\"/>\n\t\t\t</input>\n\t\t</operation>\n\t\t<operation name=\"Kafka Client End Session Service\">\n\t\t\t<participant name='KafkaEndSessionService'/>\n\t\t\t<output message=\"xout\">\n\t\t\t\t<assign to=\"SessionID\" from=\"//KafkaBeginSessionServiceResults/SessionID/text()\"/>\n\t\t\t\t<assign to=\"KafkaClientAdapter\" from=\"//KafkaBeginSessionServiceResults/KafkaClientAdapter/text()\"/>\n\t\t\t\t<assign to='Action'>put</assign>\n\t\t\t</output>\n\t\t\t<input message=\"xin\">\n\t\t\t\t<assign to=\".\" from=\"*\"/>\n\t\t\t</input>\n\t\t</operation>\n\t</sequence>\n</process>\n"
+}

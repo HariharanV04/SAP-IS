@@ -1,0 +1,65 @@
+{
+  "id": "create-partners-group-sfg-xml",
+  "name": "ldapsync-create-group-restapi-xml",
+  "type": "sterling.process",
+  "subtype": "bpml",
+  "description": "Sterling B2B Business Process: ldapsync-create-group-restapi-xml",
+  "file_path": "sterling-b2b-samples\\business-process\\restapiclient-samples\\create-partners-group-sfg-xml.bpml",
+  "file_name": "create-partners-group-sfg-xml.bpml",
+  "rules": [],
+  "operations": [
+    {
+      "name": "AssignService",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "DOMToDoc(/ProcessData/create,'PrimaryDocument')"
+        },
+        "This/server": "http://127.0.0.1:5078",
+        "This/api": "/B2BAPIs/svc/partnergroups/",
+        "This/url": {
+          "from": "concat(This/server/text(),This/api/text())"
+        },
+        "This/auth": "admin:passw0rd",
+        "create/@groupName": "Group01",
+        "create/@groupMembers": "Sistema_100,Sistema_110"
+      }
+    },
+    {
+      "name": "Create Partner",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "url": {
+          "from": "This/url/text()"
+        },
+        "restoperation": "POST",
+        "auth": {
+          "from": "This/auth/text()"
+        },
+        "Authorization": "Basic",
+        "Content-type": "Application/XML",
+        "Accept": "Application/XML",
+        "isProxy": "false",
+        "jsoninput1": "false",
+        ".": {
+          "from": "*"
+        }
+      }
+    }
+  ],
+  "assignments": [],
+  "sequences": [
+    {
+      "name": "",
+      "type": "sequential_flow"
+    },
+    {
+      "name": "",
+      "type": "sequential_flow"
+    }
+  ],
+  "patterns": [],
+  "raw_content": "<process name=\"ldapsync-create-group-restapi-xml\">\n    <sequence>\n\n        <operation name=\"AssignService\">\n            <participant name=\"AssignService\"/>\n            <output message=\"AssignOutputMessage\">\n                <assign to=\".\" from=\"*\"/>\n                <assign to=\"This/server\">http://127.0.0.1:5078</assign>\n                <assign to=\"This/api\">/B2BAPIs/svc/partnergroups/</assign>\n                <assign to=\"This/url\" from=\"concat(This/server/text(),This/api/text())\"></assign>\n                <assign to=\"This/auth\">admin:passw0rd</assign>\n                <assign to=\"create/@groupName\">Group01</assign>\n                <assign to=\"create/@groupMembers\">Sistema_100,Sistema_110</assign>\n                <assign to=\".\" from=\"DOMToDoc(/ProcessData/create,&apos;PrimaryDocument&apos;)\"></assign>\n            </output>\n            <input message=\"AssignInputMessage\">\n                <assign to=\".\" from=\"*\"/>\n            </input>\n        </operation>\n\n        <operation name=\"Create Partner\">\n            <participant name=\"RESTAPIClient\"/>\n            <output message=\"xout\">\n                <assign to=\"url\" from=\"This/url/text()\"></assign>\n                <assign to=\"restoperation\">POST</assign>\n                <assign to=\"auth\" from=\"This/auth/text()\"></assign>\n                <assign to=\"Authorization\">Basic</assign>\n                <assign to=\"Content-type\">Application/XML</assign>\n                <assign to=\"Accept\">Application/XML</assign>\n                <assign to=\"isProxy\">false</assign>\n                <assign to=\"jsoninput1\">false</assign>\n                <assign to=\".\" from=\"*\" />\n            </output>\n            <input message=\"xin\">\n                <assign to=\"HTTPResponse\" from=\"*\" />\n            </input>\n        </operation>\n\n        <onFault>\n            <sequence>\n                <assign to=\"status\">FAIL</assign>\n            </sequence>\n        </onFault>\n    </sequence>\n</process>\n"
+}

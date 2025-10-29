@@ -1,0 +1,33 @@
+{
+  "id": "bp-async-parent-primarydoc",
+  "name": "DEMO_AsyncParentBP_PrimaryDoc",
+  "type": "sterling.process",
+  "subtype": "bpml",
+  "description": "Sterling B2B Business Process: DEMO_AsyncParentBP_PrimaryDoc",
+  "file_path": "sterling-b2b-samples\\business-process\\bp-parent-to-bp-child-samples\\bp-async-parent-primarydoc.bpml",
+  "file_name": "bp-async-parent-primarydoc.bpml",
+  "rules": [],
+  "operations": [
+    {
+      "name": "",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "*"
+        },
+        "WFD_NAME": "DEMO_AsyncChildBP",
+        "INVOKE_MODE": "ASYNC"
+      }
+    }
+  ],
+  "assignments": [],
+  "sequences": [
+    {
+      "name": "simple",
+      "type": "sequential_flow"
+    }
+  ],
+  "patterns": [],
+  "raw_content": "<process name=\"DEMO_AsyncParentBP_PrimaryDoc\"> \n  <sequence name=\"simple\"> \n    <assign to=\"Msg1\" from=\"'Hello'\" append=\"true\"/> \n    <assign to=\"Msg2\" from=\"Msg1\" append=\"true\"/> \n    <assign to=\"Msg3\" from=\"Msg1\"/> \n     <assign to=\"OtherMsg4\" from=\"//Msg2\" append=\"true\"/> \n    <assign to=\"OtherMsg5/OtherMsg6\" from=\"//Msg2/Msg1/text()\" append=\"true\"/> \n    <assign to=\"message_to_child\" from=\"//PrimaryDocument | // OtherMsg5 \" append=\"true\"/> \n  <operation> \n     <participant name=\"InvokeBusinessProcessService\"/> \n       <output message=\"Xout\"> \n         <assign to=\".\" from=\"*\"></assign> \n         <assign to=\"WFD_NAME\">DEMO_AsyncChildBP</assign> \n         <assign to=\"INVOKE_MODE\">ASYNC</assign> \n       </output> \n       <input message=\"Xin\" > \n          <assign to=\".\" from=\"*\"></assign> \n       </input> \n    </operation> \n </sequence> \n</process> \n"
+}

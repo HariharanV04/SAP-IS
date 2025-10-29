@@ -1,0 +1,79 @@
+{
+  "id": "create-user-restapi-xml",
+  "name": "create-user-restapi-xml",
+  "type": "sterling.process",
+  "subtype": "bpml",
+  "description": "Sterling B2B Business Process: create-user-restapi-xml",
+  "file_path": "sterling-b2b-samples\\business-process\\restapiclient-samples\\create-user-restapi-xml.bpml",
+  "file_name": "create-user-restapi-xml.bpml",
+  "rules": [],
+  "operations": [
+    {
+      "name": "AssignService",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "DOMToDoc(/ProcessData/create,'PrimaryDocument')"
+        },
+        "This/server": "http://127.0.0.1:5078",
+        "This/url": {
+          "from": "concat(This/server/text(),'/B2BAPIs/svc/tradingpartners/')"
+        },
+        "This/auth": "admin:passw0rd",
+        "create/@username": "demopartner01",
+        "create/@partnerName": "demopartner01",
+        "create/@givenName": "demo",
+        "create/@surname": "demopartner01",
+        "create/@authenticationType": "Local",
+        "create/@community": "Demo_Community",
+        "create/@emailAddress": "kk@ibm.com",
+        "create/@password": "passw0rd",
+        "create/@postalCode": "12345-678",
+        "create/@isInitiatingConsumer": "true",
+        "create/@isInitiatingProducer": "true",
+        "create/@isListeningConsumer": "false",
+        "create/@isListeningProducer": "false",
+        "create/@doesUseSSH": "true",
+        "create/@phone": "555-5555",
+        "create/@timeZone": "-031",
+        "create/@countryOrRegion": "BR"
+      }
+    },
+    {
+      "name": "Create Partner",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "url": {
+          "from": "This/url/text()"
+        },
+        "restoperation": "POST",
+        "auth": {
+          "from": "This/auth/text()"
+        },
+        "Authorization": "Basic",
+        "Content-type": "Application/XML",
+        "Accept": "Application/XML",
+        "isProxy": "false",
+        "jsoninput1": "false",
+        ".": {
+          "from": "*"
+        }
+      }
+    }
+  ],
+  "assignments": [],
+  "sequences": [
+    {
+      "name": "",
+      "type": "sequential_flow"
+    },
+    {
+      "name": "",
+      "type": "sequential_flow"
+    }
+  ],
+  "patterns": [],
+  "raw_content": "<process name=\"create-user-restapi-xml\">\n    <sequence>\n\n        <operation name=\"AssignService\">\n            <participant name=\"AssignService\"/>\n            <output message=\"AssignOutputMessage\">\n                <assign to=\".\" from=\"*\"/>\n                <assign to=\"This/server\">http://127.0.0.1:5078</assign>\n                <assign to=\"This/url\" from=\"concat(This/server/text(),&apos;/B2BAPIs/svc/tradingpartners/&apos;)\"></assign>\n                <assign to=\"This/auth\">admin:passw0rd</assign>\n                <assign to=\"create/@username\">demopartner01</assign>\n                <assign to=\"create/@partnerName\">demopartner01</assign>\n                <assign to=\"create/@givenName\">demo</assign>\n                <assign to=\"create/@surname\">demopartner01</assign>\n                <assign to=\"create/@authenticationType\">Local</assign>\n                <assign to=\"create/@community\">Demo_Community</assign>\n                <assign to=\"create/@emailAddress\">kk@ibm.com</assign>\n                <assign to=\"create/@password\">passw0rd</assign>\n                <assign to=\"create/@postalCode\">12345-678</assign>\n                <assign to=\"create/@isInitiatingConsumer\">true</assign>\n                <assign to=\"create/@isInitiatingProducer\">true</assign>\n                <assign to=\"create/@isListeningConsumer\">false</assign>\n                <assign to=\"create/@isListeningProducer\">false</assign>\n                <assign to=\"create/@doesUseSSH\">true</assign>\n                <assign to=\"create/@phone\">555-5555</assign>\n                <assign to=\"create/@timeZone\">-031</assign>\n                <assign to=\"create/@countryOrRegion\">BR</assign>\n                <assign to=\".\" from=\"DOMToDoc(/ProcessData/create,&apos;PrimaryDocument&apos;)\"></assign>\n            </output>\n            <input message=\"AssignInputMessage\">\n                <assign to=\".\" from=\"*\"/>\n            </input>\n        </operation>\n\n        <operation name=\"Create Partner\">\n            <participant name=\"RESTAPIClient\"/>\n            <output message=\"xout\">\n                <assign to=\"url\" from=\"This/url/text()\"></assign>\n                <assign to=\"restoperation\">POST</assign>\n                <assign to=\"auth\" from=\"This/auth/text()\"></assign>\n                <assign to=\"Authorization\">Basic</assign>\n                <assign to=\"Content-type\">Application/XML</assign>\n                <assign to=\"Accept\">Application/XML</assign>\n                <assign to=\"isProxy\">false</assign>\n                <assign to=\"jsoninput1\">false</assign>\n                <assign to=\".\" from=\"*\" />\n            </output>\n            <input message=\"xin\">\n                <assign to=\"HTTPResponse\" from=\"*\" />\n            </input>\n        </operation>\n\n        <onFault>\n            <sequence>\n                <assign to=\"status\">FAIL</assign>\n            </sequence>\n        </onFault>\n    </sequence>\n</process>\n"
+}

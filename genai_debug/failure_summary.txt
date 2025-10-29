@@ -1,7 +1,0 @@
-GenAI Analysis Failed After 3 Attempts
-==================================================
-Last error: Invalid JSON format: Expecting property name enclosed in double quotes: line 2 column 43 (char 44)
-Markdown content length: 692 characters
-
-All attempts failed to generate valid JSON.
-Manual intervention required.

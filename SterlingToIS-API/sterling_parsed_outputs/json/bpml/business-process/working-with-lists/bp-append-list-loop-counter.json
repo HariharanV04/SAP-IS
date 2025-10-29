@@ -1,0 +1,41 @@
+{
+  "id": "bp-append-list-loop-counter",
+  "name": "Demo_BP_Append_List",
+  "type": "sterling.process",
+  "subtype": "bpml",
+  "description": "Sterling B2B Business Process: Demo_BP_Append_List",
+  "file_path": "sterling-b2b-samples\\business-process\\working-with-lists\\bp-append-list-loop-counter.bpml",
+  "file_name": "bp-append-list-loop-counter.bpml",
+  "rules": [
+    {
+      "name": "moreItens",
+      "condition": "",
+      "type": "business_rule"
+    }
+  ],
+  "operations": [],
+  "assignments": [],
+  "sequences": [
+    {
+      "name": "",
+      "type": "sequential_flow"
+    },
+    {
+      "name": "loopStart",
+      "type": "sequential_flow"
+    },
+    {
+      "name": "choiceStart",
+      "type": "sequential_flow"
+    },
+    {
+      "name": "taskStart",
+      "type": "sequential_flow"
+    }
+  ],
+  "patterns": [
+    "batch_processing",
+    "conditional_logic"
+  ],
+  "raw_content": "<process name=\"Demo_BP_Append_List\">\n    <rule name=\"moreItens\">\n        <condition>total &gt;= number(counter/text())</condition>\n    </rule>\n\n    <sequence>\n        <assign to=\"List/Item\">U001</assign>\n        <assign to=\"List/Item\" append=\"true\">U002</assign>\n        <assign to=\"List/Item\" append=\"true\">U003</assign>\n        <assign to=\"List/Item\" append=\"true\">U004</assign>\n        <assign to=\"total\" from=\"count(/ProcessData/List/Item)\"></assign>\n        <assign to=\"ItemsList\">.</assign>\n        <assign to=\"counter\">1</assign>\n        <sequence name=\"loopStart\">\n            <choice>\n                <select>\n                    <case ref=\"moreItens\" activity=\"choiceStart\"/>\n                </select>\n                <sequence name=\"choiceStart\">\n                    <sequence name=\"taskStart\">\n\n                        <assign to=\"CurrentItem\" from=\"List/Item[number(/ProcessData/counter/text())]/text()\"/>\n                        <assign to=\"ItemsList\" from=\"if( ItemsList = &apos;.&apos;, CurrentItem/text(), concat(ItemsList, &apos;,&apos; ,CurrentItem/text()))\"></assign>\n\n                        <assign to=\"counter\" from=\"counter + 1\"/>\n                    </sequence>\n                    <repeat ref=\"loopStart\"/>\n                </sequence>\n            </choice>\n        </sequence>\n    </sequence>\n</process>\n"
+}

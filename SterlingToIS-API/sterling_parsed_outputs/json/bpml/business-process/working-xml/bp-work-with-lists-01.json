@@ -1,0 +1,20 @@
+{
+  "id": "bp-work-with-lists-01",
+  "name": "Demo_ListHandling",
+  "type": "sterling.process",
+  "subtype": "bpml",
+  "description": "Sterling B2B Business Process: Demo_ListHandling",
+  "file_path": "sterling-b2b-samples\\business-process\\working-xml\\bp-work-with-lists-01.bpml",
+  "file_name": "bp-work-with-lists-01.bpml",
+  "rules": [],
+  "operations": [],
+  "assignments": [],
+  "sequences": [
+    {
+      "name": "",
+      "type": "sequential_flow"
+    }
+  ],
+  "patterns": [],
+  "raw_content": "<process name = \"Demo_ListHandling\">\n    <sequence>\n        <assign to=\"SourceList/User\">U001</assign>\n        <assign to=\"SourceList/User\" append =\"true\">U002</assign>\n        <assign to=\"SourceList/User\" append =\"true\">U003</assign>\n        <assign to=\"SourceList/User\" append =\"true\">U004</assign>\n        <assign to=\"DestList/User\">U001</assign>\n        <assign to=\"DestList/User\" append =\"true\">U002</assign>\n        <assign to=\"DestList/User\" append =\"true\">U005</assign>\n        <assign to=\"DeleteList\" from=\"/ProcessData/DestList/User[not(. = /ProcessData/SourceList/User)]\"></assign>\n        <assign to=\"AddList\" from=\"/ProcessData/SourceList/User[not(. = /ProcessData/DestList/User)]\"></assign>\n        <assign to=\"UpdateList\" from=\"/ProcessData/SourceList/User[(. = /ProcessData/DestList/User)]\"></assign>\n        <assign to=\"FullList\" from=\"/ProcessData/SourceList/User|/ProcessData/DestList/User[not(. = /ProcessData/SourceList/User)]\"></assign>\n    </sequence>\n</process>\n"
+}

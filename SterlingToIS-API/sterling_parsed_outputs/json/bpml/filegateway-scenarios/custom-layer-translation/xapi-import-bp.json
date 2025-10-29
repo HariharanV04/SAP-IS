@@ -1,0 +1,32 @@
+{
+  "id": "xapi-import-bp",
+  "name": "FileGatewayCustomLayerXAPI",
+  "type": "sterling.process",
+  "subtype": "bpml",
+  "description": "Sterling B2B Business Process: FileGatewayCustomLayerXAPI",
+  "file_path": "sterling-b2b-samples\\filegateway-scenarios\\custom-layer-translation\\xapi-import-bp.bpml",
+  "file_name": "xapi-import-bp.bpml",
+  "rules": [],
+  "operations": [
+    {
+      "name": "XAPI Service",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "*"
+        },
+        "api": "multiApi"
+      }
+    }
+  ],
+  "assignments": [],
+  "sequences": [
+    {
+      "name": "",
+      "type": "sequential_flow"
+    }
+  ],
+  "patterns": [],
+  "raw_content": "<process name=\"FileGatewayCustomLayerXAPI\">\n    <sequence>\n        <operation name=\"XAPI Service\">\n            <participant name=\"XAPIService\"/>\n            <output message=\"XAPIServiceTypeInputMessage\">\n                <assign to=\".\" from=\"*\"/>\n                <assign to=\"api\">multiApi</assign>\n            </output>\n            <input message=\"inmsg\">\n                <assign to=\".\" from=\"*\"/>\n            </input>\n        </operation>\n    </sequence>\n</process>"
+}

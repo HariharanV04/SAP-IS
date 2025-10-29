@@ -1,0 +1,33 @@
+{
+  "id": "file-folding",
+  "name": "Demo_BP_LineFolding",
+  "type": "sterling.process",
+  "subtype": "bpml",
+  "description": "Sterling B2B Business Process: Demo_BP_LineFolding",
+  "file_path": "sterling-b2b-samples\\business-process\\file-folding\\file-folding.bpml",
+  "file_name": "file-folding.bpml",
+  "rules": [],
+  "operations": [
+    {
+      "name": "FileFolding",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "srcLocationMode": "inline",
+        "javaSrc": "import java.io.BufferedReader; \nimport java.io.InputStreamReader; \nimport java.io.PrintStream; \nimport com.sterlingcommerce.woodstock.workflow.WorkFlowContext; \nimport com.sterlingcommerce.woodstock.workflow.WorkFlowException; \nimport com.sterlingcommerce.woodstock.workflow.Document; \n \nString strFoldLen = wfc.getParm(\"LineFoldLength\"); \nint foldLen = new Integer(strFoldLen).intValue(); \n\nDocument srcDoc = wfc.getPrimaryDocument(); \nDocument foldDoc = wfc.newDocument(); \n \nBufferedReader reader = new BufferedReader(new InputStreamReader(srcDoc.getInputStream())); \nPrintStream writer = new PrintStream(foldDoc.getOutputStream()); \n \nString line = \"\"; \nwhile ((line = reader.readLine()) != null) { \n    String foldStr = line.replaceAll(\"(.{\" + foldLen + \"})\", \"$1\\n\"); \n    writer.println(foldStr); \n} \n \nwriter.close(); \nreader.close(); \n \nwfc.putPrimaryDocument(foldDoc); \nreturn \"OK\"; ",
+        ".": {
+          "from": "*"
+        }
+      }
+    }
+  ],
+  "assignments": [],
+  "sequences": [
+    {
+      "name": "",
+      "type": "sequential_flow"
+    }
+  ],
+  "patterns": [],
+  "raw_content": "<process name=\"Demo_BP_LineFolding\">\n<sequence>\n<assign to=\"LineFoldLength\">240</assign>\n\n<operation name=\"FileFolding\">\n\t<participant name=\"JavaTask\"/>\n\t<output message=\"Xout\" >\n\t<assign to=\"srcLocationMode\">inline</assign>\n\t<assign to=\"javaSrc\">import java.io.BufferedReader; \nimport java.io.InputStreamReader; \nimport java.io.PrintStream; \nimport com.sterlingcommerce.woodstock.workflow.WorkFlowContext; \nimport com.sterlingcommerce.woodstock.workflow.WorkFlowException; \nimport com.sterlingcommerce.woodstock.workflow.Document; \n \nString strFoldLen = wfc.getParm(\"LineFoldLength\"); \nint foldLen = new Integer(strFoldLen).intValue(); \n\nDocument srcDoc = wfc.getPrimaryDocument(); \nDocument foldDoc = wfc.newDocument(); \n \nBufferedReader reader = new BufferedReader(new InputStreamReader(srcDoc.getInputStream())); \nPrintStream writer = new PrintStream(foldDoc.getOutputStream()); \n \nString line = \"\"; \nwhile ((line = reader.readLine()) != null) { \n    String foldStr = line.replaceAll(\"(.{\" + foldLen + \"})\", \"$1\\n\"); \n    writer.println(foldStr); \n} \n \nwriter.close(); \nreader.close(); \n \nwfc.putPrimaryDocument(foldDoc); \nreturn \"OK\"; </assign>\n\t<assign to=\".\" from=\"*\"></assign>\n\t</output>\n\t<input message=\"Xin\" >\n\t<assign to=\".\" from=\"*\"></assign>\n\t</input>\n</operation>\n</sequence>\n</process>\n"
+}

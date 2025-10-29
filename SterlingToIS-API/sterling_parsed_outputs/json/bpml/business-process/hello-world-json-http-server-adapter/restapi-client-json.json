@@ -1,0 +1,39 @@
+{
+  "id": "restapi-client-json",
+  "name": "RESTAPIClientJSON",
+  "type": "sterling.process",
+  "subtype": "bpml",
+  "description": "Sterling B2B Business Process: RESTAPIClientJSON",
+  "file_path": "sterling-b2b-samples\\business-process\\hello-world-json-http-server-adapter\\restapi-client-json.bpml",
+  "file_name": "restapi-client-json.bpml",
+  "rules": [],
+  "operations": [
+    {
+      "name": "Request",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "url": "http://localhost:5033/helloworldjson",
+        "restoperation": "GET",
+        "Content-type": "Application/json",
+        "Accept": "Application/json",
+        "isProxy": "false",
+        "proxyHost": "127.0.0.1",
+        "proxyPort": "8080",
+        "isProxyAuth": "false",
+        ".": {
+          "from": "*"
+        }
+      }
+    }
+  ],
+  "assignments": [],
+  "sequences": [
+    {
+      "name": "",
+      "type": "sequential_flow"
+    }
+  ],
+  "patterns": [],
+  "raw_content": "<process name=\"RESTAPIClientJSON\">\n  <sequence>\n    <operation name=\"Request\">\n      <participant name='RESTAPIClient'/>\n      <output message='xout'>\n        <assign to=\"url\">http://localhost:5033/helloworldjson</assign>\n        <assign to=\"restoperation\">GET</assign>\n        <!-- assign to='auth'>admin:password</assign -->\n        <!-- assign to='Authorization'>Basic</assign -->\n        <assign to=\"Content-type\">Application/json</assign>\n        <assign to=\"Accept\">Application/json</assign>\n        <assign to=\"isProxy\">false</assign>\n        <assign to=\"proxyHost\">127.0.0.1</assign>\n        <assign to=\"proxyPort\">8080</assign>\n        <assign to=\"isProxyAuth\">false</assign>\n        <assign to=\".\" from=\"*\" />\n      </output>\n      <input message=\"xin\">\n        <assign to=\".\" from=\"*\" />\n      </input>\n    </operation>\n  </sequence>\n</process>"
+}

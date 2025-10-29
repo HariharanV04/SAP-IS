@@ -1,1 +1,0 @@
-This iFlow retrieves detailed product information from SAP HANA via OData based on a product identifier. It validates the product ID, logs request processing details, and returns formatted product data or an appropriate error message if the product is not found. The flow includes validation, logging, data retrieval, and error handling components.

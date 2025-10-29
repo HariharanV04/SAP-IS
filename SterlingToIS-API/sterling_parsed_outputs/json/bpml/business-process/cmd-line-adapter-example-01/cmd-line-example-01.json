@@ -1,0 +1,37 @@
+{
+  "id": "cmd-line-example-01",
+  "name": "Demo_BP_CLA_Example_01",
+  "type": "sterling.process",
+  "subtype": "bpml",
+  "description": "Sterling B2B Business Process: Demo_BP_CLA_Example_01",
+  "file_path": "sterling-b2b-samples\\business-process\\cmd-line-adapter-example-01\\cmd-line-example-01.bpml",
+  "file_name": "cmd-line-example-01.bpml",
+  "rules": [],
+  "operations": [
+    {
+      "name": "Command Line 2 Adapter",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "*"
+        },
+        "cmdLine": "/home/siuser/myscript.sh $0 $1 $2 $Outputs",
+        "parm0": "CLA2",
+        "parm1": "Hello",
+        "parm2": "World!",
+        "useOutput": "true",
+        "workingDir": "/home/siuser/"
+      }
+    }
+  ],
+  "assignments": [],
+  "sequences": [
+    {
+      "name": "",
+      "type": "sequential_flow"
+    }
+  ],
+  "patterns": [],
+  "raw_content": "<process name=\"Demo_BP_CLA_Example_01\">\n    <sequence>\n        <operation name=\"Command Line 2 Adapter\">\n            <participant name=\"CommandLineAdapter2\"/>\n            <output message=\"CmdLine2InputMessage\">\n                <assign to=\".\" from=\"*\"/>\n                <assign to=\"cmdLine\">/home/siuser/myscript.sh $0 $1 $2 $Outputs</assign>\n                <assign to=\"parm0\">CLA2</assign>\n                <assign to=\"parm1\">Hello</assign>\n                <assign to=\"parm2\">World!</assign>\n                <assign to=\"useOutput\">true</assign>\n                <assign to=\"workingDir\">/home/siuser/</assign>\n            </output>\n            <input message=\"inmsg\">\n                <assign to=\".\" from=\"*\"/>\n            </input>\n        </operation>\n</sequence>\n</process>"
+}

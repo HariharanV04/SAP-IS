@@ -1,0 +1,268 @@
+================================================================================
+STERLING B2B XML PROCESSOR - SUMMARY REPORT
+================================================================================
+
+Generated: 2025-10-22 20:23:04
+
+STATISTICS
+--------------------------------------------------------------------------------
+Total Files: 76
+BPML Files: 72
+MXL Files: 4
+Successful: 74
+Failed: 2
+Success Rate: 97.4%
+
+INTEGRATION PATTERNS
+--------------------------------------------------------------------------------
+Conditional Logic: 17
+Batch Processing: 10
+
+OUTPUT FILES
+--------------------------------------------------------------------------------
+Combined Documentation: combined_documentation.md
+All Components JSON: all_components.json
+Individual Markdown Files: individual_markdown/ (74 files)
+Individual JSON Files: json/ (74 files)
+
+COMPONENTS
+--------------------------------------------------------------------------------
+1. XAPI_CreateUser_Example01 (sterling.process)
+   File: XAPI_CreateUser.bpml
+
+2. XAPI_CreateRoutingChannel (sterling.process)
+   File: XAPI_CreateRoutingChannel.bpml
+
+3. DEMO_AsyncChildBP (sterling.process)
+   File: bp-async-child.bpml
+
+4. DEMO_AsyncParentBP_PrimaryDoc (sterling.process)
+   File: bp-async-parent-primarydoc.bpml
+
+5. DEMO_Async_ParentBP (sterling.process)
+   File: bp-async-parent.bpml
+
+6. Demo_BP_Convert_Json2Xml_input (sterling.process)
+   File: convert-json2xml-file.bpml
+
+7. Demo_BP_Convert_Json2Xml_input (sterling.process)
+   File: convert-json2xml-input.bpml
+
+8. Demo_BP_Convert_Json2Xml_input (sterling.process)
+   File: convert-xml2json-file.bpml
+
+9. Demo_BP_Convert_Xml2Json_input (sterling.process)
+   File: convert-xml2json-input.bpml
+
+10. JavaTaskCheckSum (sterling.process)
+   File: check-sum-java-task.bpml
+
+11. Demo_BP_CLA_Example_01 (sterling.process)
+   File: cmd-line-example-01.bpml
+
+12. CodeListEditorWeb (sterling.process)
+   File: code-list-editor-web.bpml
+   Patterns: conditional_logic
+
+13. Demo_BP_CompressFilesFromFS (sterling.process)
+   File: compress-files-from-filesystem.bpml
+
+14. Demo_BP_CompressFilesUsingCLA (sterling.process)
+   File: compress-files-using-cla.bpml
+
+15. Demo_BP_CopyFileFromFSA2MBX (sterling.process)
+   File: copy-file-from-fsa-to-mbx.bpml
+
+16. Demo_BP_CopyMultipleFilesFromFSA2MBX (sterling.process)
+   File: copy-multiplefiles-fsa-to-mbx.bpml
+   Patterns: batch_processing, conditional_logic
+
+17. Demo_BP_LineFolding (sterling.process)
+   File: file-folding.bpml
+
+18. Demo_BP_FTPGetMultipleFiles (sterling.process)
+   File: ftp-get-multiple-files.bpml
+   Patterns: batch_processing, conditional_logic
+
+19. GenerateFiles (sterling.process)
+   File: generate-files.bpml
+   Patterns: batch_processing, conditional_logic
+
+20. ColetaArquivoViaCDstoreMbx (sterling.process)
+   File: collect-file-on-cd-store-mbx.bpml
+   Patterns: batch_processing, conditional_logic
+
+21. ColetaArquivoViaCD (sterling.process)
+   File: collect-file-on-cd.bpml
+   Patterns: batch_processing, conditional_logic
+
+22. WriteReadFileOnCD (sterling.process)
+   File: write-read-file-on-cd.bpml
+   Patterns: batch_processing, conditional_logic
+
+23. JavaTaskGzipCompress (sterling.process)
+   File: gzip-compress-java-task.bpml
+
+24. HelloWorldJSON (sterling.process)
+   File: hello-world-json.bpml
+
+25. RESTAPIClientJSON (sterling.process)
+   File: restapi-client-json.bpml
+
+26. HelloWorldXML (sterling.process)
+   File: hello-world-xml.bpml
+
+27. RESTAPIClientXML (sterling.process)
+   File: restapi-client-xml.bpml
+
+28. HttpPostToMailbox (sterling.process)
+   File: http-post-to-mailbox.bpml
+
+29. Demo_LDAPAdapter (sterling.process)
+   File: demo-ldap-01.bpml
+
+30. Demo_LDAPExtraction (sterling.process)
+   File: demo-ldap-02.bpml
+
+31. Demo_BP_RenameRegexJavaTask (sterling.process)
+   File: demo-rename-regex-java-task.bpml
+
+32. REST_CreatePartnerGroups (sterling.process)
+   File: create-partners-group-sfg-json.bpml
+
+33. ldapsync-create-group-restapi-xml (sterling.process)
+   File: create-partners-group-sfg-xml.bpml
+
+34. create-user-restapi-json (sterling.process)
+   File: create-user-restapi-json.bpml
+
+35. create-user-restapi-xml (sterling.process)
+   File: create-user-restapi-xml.bpml
+
+36. update-partners-group-sfgs (sterling.process)
+   File: update-partners-group-sfg.bpml
+
+37. Demo_BP_test_smtp (sterling.process)
+   File: bp-send-smtp-mail.bpml
+
+38. Demo_BP_SFTPGetMultipleFiles (sterling.process)
+   File: sftp-get-multiple-files.bpml
+   Patterns: batch_processing, conditional_logic
+
+39. Demo_Kafka_Consumer (sterling.process)
+   File: demo-kafka-consumer.bpml
+
+40. Demo_Kafka_Producer (sterling.process)
+   File: demo-kafka-producer.bpml
+
+41. Demo_BP_Append_List (sterling.process)
+   File: bp-append-list-01.bpml
+   Patterns: batch_processing, conditional_logic
+
+42. Demo_BP_Append_List (sterling.process)
+   File: bp-append-list-02.bpml
+   Patterns: batch_processing, conditional_logic
+
+43. Demo_BP_Append_List (sterling.process)
+   File: bp-append-list-loop-counter.bpml
+   Patterns: batch_processing, conditional_logic
+
+44. Demo_ListHandling (sterling.process)
+   File: bp-work-with-lists-01.bpml
+
+45. Demo_ListHandling (sterling.process)
+   File: bp-work-with-lists-01.bpml
+
+46. Demo_XML_Attributes_Elements (sterling.process)
+   File: xml-attributes-elements.bpml
+
+47. MAILBOX_DELETE_FILE_RUNTASK (sterling.process)
+   File: mailbox-delete-file-runtask.bpml
+   Patterns: conditional_logic
+
+48. MAILBOX_GET_INDEX_CDP (sterling.process)
+   File: mailbox-get-index-cdp.bpml
+
+49. MAILBOX_GET_INDEX_TXT (sterling.process)
+   File: mailbox-get-index-txt.bpml
+
+50. MAILBOX_GET_INDEX_XML (sterling.process)
+   File: mailbox-get-index-xml.bpml
+
+51. MAILBOX_DELETE_FILE_RUNTASK (sterling.process)
+   File: mailbox-delete-file-runtask.bpml
+   Patterns: conditional_logic
+
+52. MAILBOX_GET_INDEX_CDP_ADV (sterling.process)
+   File: mailbox-get-index-cdp-adv.bpml
+   Patterns: conditional_logic
+
+53. Demo_BP_Content_Based_Routing (sterling.process)
+   File: content-based-routing-01.bpml
+
+54. Demo_BP_Content_Based_Routing_XML (sterling.process)
+   File: content-based-routing-02.bpml
+
+55. Demo_BP_CustomLayer_Consumer (sterling.process)
+   File: demo-bp-customlayer-consumer.bpml
+
+56. Demo_BP_CustomLayer_Producer (sterling.process)
+   File: demo-bp-customlayer-producer.bpml
+
+57. FGCustomLayer_ExecuteProcess (sterling.process)
+   File: fgcustomlayer-executeprocess.bpml
+
+58. FileGatewayCustomLayerXAPI (sterling.process)
+   File: xapi-import-bp.bpml
+
+59. FGCustomLayer_Translation (sterling.process)
+   File: fgcustomlayer-translation.bpml
+
+60. FileGatewayCustomLayerXAPI (sterling.process)
+   File: xapi-import-bp.bpml
+
+61. Demo_BP_Dynamic_ConsumerName (sterling.process)
+   File: dynamic-consumername.bpml
+
+62. SFGAdvancedSearchWeb (sterling.process)
+   File: sfg-advanced-search-web.bpml
+   Patterns: conditional_logic
+
+63. Demo_BP_Consumer_Broadcast_List (sterling.process)
+   File: consumers-broadcast-list.bpml
+
+64. Demo_BP_RouteViaCustomFTP (sterling.process)
+   File: route-via-custom-ftp.bpml
+   Patterns: conditional_logic
+
+65. Demo_BP_RouteViaCustomProtocol (sterling.process)
+   File: route-via-custom-protocol.bpml
+
+66. Demo_BP_RouteViaCustomSFTP (sterling.process)
+   File: route-via-custom-sftp.bpml
+   Patterns: conditional_logic
+
+67. Demo_BP_RouteViaFileSystem (sterling.process)
+   File: route-via-filesystem.bpml
+
+68. Demo_BP_RouteViaHttpPost (sterling.process)
+   File: route-via-http-post.bpml
+
+69. Demo_BP_RouteViaKafka (sterling.process)
+   File: route-via-kafka.bpml
+
+70. Demo_BP_Content_Based_Routing (sterling.process)
+   File: content-based-routing-01.bpml
+
+71. Demo_Map_Content_Based_Routing (sterling.map)
+   File: Demo_Map_Content_Based_Routing.mxl
+
+72. Demo_Map_TranslationLayer (sterling.map)
+   File: Demo_Map_TranslationLayer.mxl
+
+73. Demo_Map_Content_Based_Routing (sterling.map)
+   File: Demo_Map_Content_Based_Routing.mxl
+
+74. MapPos2CsvSample01 (sterling.map)
+   File: MapPos2CsvSample01.mxl
+

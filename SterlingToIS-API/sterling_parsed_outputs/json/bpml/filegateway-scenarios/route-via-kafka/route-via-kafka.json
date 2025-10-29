@@ -1,0 +1,77 @@
+{
+  "id": "route-via-kafka",
+  "name": "Demo_BP_RouteViaKafka",
+  "type": "sterling.process",
+  "subtype": "bpml",
+  "description": "Sterling B2B Business Process: Demo_BP_RouteViaKafka",
+  "file_path": "sterling-b2b-samples\\filegateway-scenarios\\route-via-kafka\\route-via-kafka.bpml",
+  "file_name": "route-via-kafka.bpml",
+  "rules": [],
+  "operations": [
+    {
+      "name": "Kafka Client Begin Session Service",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "Action": "put",
+        "BootStrapServers": {
+          "from": "//customkafka_BootStrapServers/text()"
+        },
+        "KafkaClientAdapter": {
+          "from": "//customkafka_KafkaClientAdapter/text()"
+        },
+        "SecurityAction": {
+          "from": "//customkafka_SecurityAction/text()"
+        },
+        "ProducerConfig": {
+          "from": "//customkafka_ProducerConfig/text()"
+        },
+        ".": {
+          "from": "PrimaryDocument"
+        }
+      }
+    },
+    {
+      "name": "Kafka Client Producer Service",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "SessionID": {
+          "from": "//KafkaBeginSessionServiceResults/SessionID/text()"
+        },
+        "KafkaClientAdapter": {
+          "from": "//KafkaBeginSessionServiceResults/KafkaClientAdapter/text()"
+        },
+        "Topic": {
+          "from": "//customkafka_Topic/text()"
+        },
+        ".": {
+          "from": "PrimaryDocument"
+        }
+      }
+    },
+    {
+      "name": "Kafka Client End Session Service",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "SessionID": {
+          "from": "//KafkaBeginSessionServiceResults/SessionID/text()"
+        },
+        "KafkaClientAdapter": {
+          "from": "//KafkaBeginSessionServiceResults/KafkaClientAdapter/text()"
+        },
+        "Action": "put"
+      }
+    }
+  ],
+  "assignments": [],
+  "sequences": [
+    {
+      "name": "",
+      "type": "sequential_flow"
+    }
+  ],
+  "patterns": [],
+  "raw_content": "<process name=\"Demo_BP_RouteViaKafka\">\n\t<sequence>\n\t\t<operation name=\"Kafka Client Begin Session Service\">\n\t\t\t<participant name='KafkaBeginSessionService'/>\n\t\t\t<output message=\"xout\">\n\t\t\t\t<assign to='Action'>put</assign>\n\t\t\t\t<assign to='BootStrapServers' from=\"//customkafka_BootStrapServers/text()\" />\n\t\t\t\t<assign to='KafkaClientAdapter' from=\"//customkafka_KafkaClientAdapter/text()\" />\n\t\t\t\t<assign to='SecurityAction' from=\"//customkafka_SecurityAction/text()\" />\n\t\t\t\t<assign to='ProducerConfig'  from=\"//customkafka_ProducerConfig/text()\" />\n\t\t\t\t<assign to='.' from='PrimaryDocument'/>\n\t\t\t</output>\n\t\t\t<input message=\"xin\">\n\t\t\t\t<assign to=\"KafkaBeginSessionServiceResults\" from=\"*\"/>\n\t\t\t</input>\n\t\t</operation>\n\t\t<operation name=\"Kafka Client Producer Service\">\n\t\t\t<participant name=\"KafkaProducerService\"/>\n\t\t\t<output message=\"xout\">\n\t\t\t\t<assign to=\"SessionID\" from=\"//KafkaBeginSessionServiceResults/SessionID/text()\"/>\n\t\t\t\t<assign to=\"KafkaClientAdapter\" from=\"//KafkaBeginSessionServiceResults/KafkaClientAdapter/text()\"/>\n\t\t\t\t<assign to='Topic' from=\"//customkafka_Topic/text()\" />\n\t\t\t\t<assign to='.' from='PrimaryDocument'/>\n\t\t\t</output>\n\t\t\t<input message=\"xin\">\n\t\t\t\t<assign to=\".\" from=\"*\"/>\n\t\t\t</input>\n\t\t</operation>\n\t\t<operation name=\"Kafka Client End Session Service\">\n\t\t\t<participant name='KafkaEndSessionService'/>\n\t\t\t<output message=\"xout\">\n\t\t\t\t<assign to=\"SessionID\" from=\"//KafkaBeginSessionServiceResults/SessionID/text()\"/>\n\t\t\t\t<assign to=\"KafkaClientAdapter\" from=\"//KafkaBeginSessionServiceResults/KafkaClientAdapter/text()\"/>\n\t\t\t\t<assign to='Action'>put</assign>\n\t\t\t</output>\n\t\t\t<input message=\"xin\">\n\t\t\t\t<assign to=\".\" from=\"*\"/>\n\t\t\t</input>\n\t\t</operation>\n\t</sequence>\n</process>\n"
+}

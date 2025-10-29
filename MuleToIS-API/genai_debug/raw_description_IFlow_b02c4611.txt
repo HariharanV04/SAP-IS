@@ -1,1 +1,0 @@
-This integration flow retrieves product details from an SAP HANA OData service based on a product identifier. It validates the product ID against a predefined list, logs request details, queries the OData service with specific filters and field selection, and formats the response for the consumer. Error handling is included for invalid product identifiers.

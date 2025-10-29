@@ -1,0 +1,33 @@
+{
+  "id": "gzip-compress-java-task",
+  "name": "JavaTaskGzipCompress",
+  "type": "sterling.process",
+  "subtype": "bpml",
+  "description": "Sterling B2B Business Process: JavaTaskGzipCompress",
+  "file_path": "sterling-b2b-samples\\business-process\\gzip-compress-java-task\\gzip-compress-java-task.bpml",
+  "file_name": "gzip-compress-java-task.bpml",
+  "rules": [],
+  "operations": [
+    {
+      "name": "GzipCompress",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "srcLocationMode": "inline",
+        "javaSrc": "\nimport com.sterlingcommerce.woodstock.workflow.Document;\nimport java.io.*;\nimport java.util.zip.GZIPOutputStream;\n\ntry {\n    String fileName = \"myfilename.gz\";\n\n    Document doc = wfc.getPrimaryDocument();\n    String bodyNameInput = doc.getBodyName();\n    wfc.addWFContent(\"DocumentNameInput\",bodyNameInput); \n\n    // Open the file for reading\n    InputStream is = doc.getBodyInputStream();\n    BufferedInputStream bis = new BufferedInputStream(is);\n\n\n    // Open the gzip file for writing\n    Document newDoc = new Document();\n    OutputStream os = newDoc.getOutputStream();\n\n    //FileOutputStream fos = new FileOutputStream(fileName + \".gz\");\n    //GZIPOutputStream gzos = new GZIPOutputStream(fos, 9);\n    GZIPOutputStream gzos = new GZIPOutputStream(os, 9);\n    BufferedOutputStream bos = new BufferedOutputStream(gzos);\n\n    // Write the compressed data\n    byte[] buffer = new byte[1024];\n    int bytesRead;\n    while ((bytesRead = bis.read(buffer)) != -1) {\n    bos.write(buffer, 0, bytesRead);\n    }\n\n    // Close the streams\n    bos.close();\n    bis.close();\n\n    //String newContent = \"This is the content of the new Primary Document\";\n    //Document newDoc = new Document();\n    //OutputStream os = newDoc.getOutputStream();\n    //os.write(newContent.getBytes());\n    os.flush();\n    os.close();\n    wfc.putPrimaryDocument(newDoc);\n    wfc.addWFContent(\"DocumentNameOutput\",fileName); \n} catch (IOException e) {\n    log.log(\"Error: \" + e.getMessage());\n}\nreturn \"OK\";\n    ",
+        ".": {
+          "from": "*"
+        }
+      }
+    }
+  ],
+  "assignments": [],
+  "sequences": [
+    {
+      "name": "",
+      "type": "sequential_flow"
+    }
+  ],
+  "patterns": [],
+  "raw_content": "<process name=\"JavaTaskGzipCompress\">\n<sequence>\n<operation name=\"GzipCompress\">\n\t<participant name=\"JavaTask\"/>\n\t<output message=\"Xout\" >\n\t<assign to=\"srcLocationMode\">inline</assign>\n\t<assign to=\"javaSrc\">\nimport com.sterlingcommerce.woodstock.workflow.Document;\nimport java.io.*;\nimport java.util.zip.GZIPOutputStream;\n\ntry {\n    String fileName = \"myfilename.gz\";\n\n    Document doc = wfc.getPrimaryDocument();\n    String bodyNameInput = doc.getBodyName();\n    wfc.addWFContent(\"DocumentNameInput\",bodyNameInput); \n\n    // Open the file for reading\n    InputStream is = doc.getBodyInputStream();\n    BufferedInputStream bis = new BufferedInputStream(is);\n\n\n    // Open the gzip file for writing\n    Document newDoc = new Document();\n    OutputStream os = newDoc.getOutputStream();\n\n    //FileOutputStream fos = new FileOutputStream(fileName + \".gz\");\n    //GZIPOutputStream gzos = new GZIPOutputStream(fos, 9);\n    GZIPOutputStream gzos = new GZIPOutputStream(os, 9);\n    BufferedOutputStream bos = new BufferedOutputStream(gzos);\n\n    // Write the compressed data\n    byte[] buffer = new byte[1024];\n    int bytesRead;\n    while ((bytesRead = bis.read(buffer)) != -1) {\n    bos.write(buffer, 0, bytesRead);\n    }\n\n    // Close the streams\n    bos.close();\n    bis.close();\n\n    //String newContent = \"This is the content of the new Primary Document\";\n    //Document newDoc = new Document();\n    //OutputStream os = newDoc.getOutputStream();\n    //os.write(newContent.getBytes());\n    os.flush();\n    os.close();\n    wfc.putPrimaryDocument(newDoc);\n    wfc.addWFContent(\"DocumentNameOutput\",fileName); \n} catch (IOException e) {\n    log.log(\"Error: \" + e.getMessage());\n}\nreturn \"OK\";\n    </assign>\n\t<assign to=\".\" from=\"*\"></assign>\n\t</output>\n\t<input message=\"Xin\" >\n\t<assign to=\".\" from=\"*\"></assign>\n\t</input>\n</operation>\n</sequence>\n</process>\n"
+}

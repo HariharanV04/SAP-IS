@@ -1,0 +1,32 @@
+{
+  "id": "XAPI_CreateUser",
+  "name": "XAPI_CreateUser_Example01",
+  "type": "sterling.process",
+  "subtype": "bpml",
+  "description": "Sterling B2B Business Process: XAPI_CreateUser_Example01",
+  "file_path": "sterling-b2b-samples\\apis\\create-user-using-xapi\\XAPI_CreateUser.bpml",
+  "file_name": "XAPI_CreateUser.bpml",
+  "rules": [],
+  "operations": [
+    {
+      "name": "XAPI Service",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "*"
+        },
+        "api": "createUserHierarchy"
+      }
+    }
+  ],
+  "assignments": [],
+  "sequences": [
+    {
+      "name": "Sequence Start",
+      "type": "sequential_flow"
+    }
+  ],
+  "patterns": [],
+  "raw_content": "<process name=\"XAPI_CreateUser_Example01\">\n  <sequence name=\"Sequence Start\">\n    <operation name=\"XAPI Service\">\n      <participant name=\"XAPIService\"/>\n      <output message=\"XAPIServiceTypeInputMessage\">\n        <assign to=\".\" from=\"*\"></assign>\n        <assign to=\"api\">createUserHierarchy</assign>\n      </output>\n      <input message=\"inmsg\">\n        <assign to=\".\" from=\"*\"></assign>\n      </input>\n    </operation>\n  </sequence>\n</process>\n"
+}

@@ -1,1 +1,0 @@
-This iFlow retrieves product details via OData based on a product identifier. It validates the requested product ID, fetches product data from an ESPM service, and processes the response using a Groovy script. If the product ID is invalid, it returns a formatted error message with a 404 status code. For valid IDs, it returns the product details with a 200 status code.

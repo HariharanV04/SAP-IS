@@ -1,0 +1,61 @@
+{
+  "id": "compress-files-from-filesystem",
+  "name": "Demo_BP_CompressFilesFromFS",
+  "type": "sterling.process",
+  "subtype": "bpml",
+  "description": "Sterling B2B Business Process: Demo_BP_CompressFilesFromFS",
+  "file_path": "sterling-b2b-samples\\business-process\\compress-files\\compress-files-from-filesystem.bpml",
+  "file_name": "compress-files-from-filesystem.bpml",
+  "rules": [],
+  "operations": [
+    {
+      "name": "FileSystem",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "Action": "FS_COLLECT",
+        "collectionFolder": "c:\\tmp\\files2compress",
+        "filter": "*.csv",
+        "collectMultiple": "true",
+        ".": {
+          "from": "*"
+        }
+      }
+    },
+    {
+      "name": "Compress",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "*"
+        },
+        "compression_action": "compress",
+        "compressed_filename": "ZippedFiles.zip",
+        "compression_level": "9",
+        "compression_type": "Deflate"
+      }
+    },
+    {
+      "name": "FileSystem",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "Action": "FS_EXTRACT",
+        "extractionFolder": "c:\\tmp\\compressedFiles",
+        ".": {
+          "from": "*"
+        }
+      }
+    }
+  ],
+  "assignments": [],
+  "sequences": [
+    {
+      "name": "",
+      "type": "sequential_flow"
+    }
+  ],
+  "patterns": [],
+  "raw_content": "<process name=\"Demo_BP_CompressFilesFromFS\">\n  <sequence>\n\n    <operation name=\"FileSystem\">\n      <participant name=\"Generic_FSA_Adapter\"/>\n      <output message=\"outputMessage\">\n        <assign to=\"Action\">FS_COLLECT</assign>\n        <assign to=\"collectionFolder\">c:\\tmp\\files2compress</assign>\n        <assign to=\"filter\">*.csv</assign>\n        <assign to=\"collectMultiple\">true</assign>\n        <assign to=\".\" from=\"*\"></assign>\n      </output>\n      <input message=\"inputMessage\">\n        <assign to=\".\" from=\"*\"></assign>\n      </input>\n    </operation>    \n\n    <operation name=\"Compress\">\n      <participant name=\"CompressionService\"/>\n      <output message=\"outputMessage\">\n        <assign to=\".\" from=\"*\"></assign>\n        <assign to=\"compression_action\">compress</assign>\n        <assign to=\"compressed_filename\">ZippedFiles.zip</assign>\n        <assign to=\"compression_level\">9</assign>\n        <assign to=\"compression_type\">Deflate</assign>\n      </output>\n      <input message=\"inputMessage\">\n        <assign to=\".\" from=\"*\"></assign>\n      </input>\n    </operation>\n\n    <operation name=\"FileSystem\">\n      <participant name=\"Generic_FSA_Adapter\"/>\n      <output message=\"outputMessage\">\n        <assign to=\"Action\">FS_EXTRACT</assign>\n        <assign to=\"extractionFolder\">c:\\tmp\\compressedFiles</assign>\n        <assign to=\".\" from=\"*\"></assign>\n      </output>\n      <input message=\"inputMessage\">\n        <assign to=\".\" from=\"*\"></assign>\n      </input>\n    </operation>  \n    \n  </sequence>\n</process>"
+}

@@ -1,0 +1,33 @@
+{
+  "id": "XAPI_CreateRoutingChannel",
+  "name": "XAPI_CreateRoutingChannel",
+  "type": "sterling.process",
+  "subtype": "bpml",
+  "description": "Sterling B2B Business Process: XAPI_CreateRoutingChannel",
+  "file_path": "sterling-b2b-samples\\apis\\sfg-routing-channel-xapi\\XAPI_CreateRoutingChannel.bpml",
+  "file_name": "XAPI_CreateRoutingChannel.bpml",
+  "rules": [],
+  "operations": [
+    {
+      "name": "XAPI Service",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "*"
+        },
+        "api": "createFgTemplatedRoutingChannel",
+        "UserId": "admin"
+      }
+    }
+  ],
+  "assignments": [],
+  "sequences": [
+    {
+      "name": "Sequence Start",
+      "type": "sequential_flow"
+    }
+  ],
+  "patterns": [],
+  "raw_content": "<process name=\"XAPI_CreateRoutingChannel\">\n  <sequence name=\"Sequence Start\">\n    <operation name=\"XAPI Service\">\n      <participant name=\"XAPIService\"/>\n      <output message=\"XAPIServiceTypeInputMessage\">\n        <assign to=\".\" from=\"*\"></assign>\n        <assign to=\"api\">createFgTemplatedRoutingChannel</assign>\n        <assign to=\"UserId\">admin</assign>\n      </output>\n      <input message=\"inmsg\">\n        <assign to=\".\" from=\"*\"></assign>\n      </input>\n    </operation>\n  </sequence>\n</process>"
+}

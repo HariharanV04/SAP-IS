@@ -1,0 +1,59 @@
+{
+  "id": "hello-world-xml",
+  "name": "HelloWorldXML",
+  "type": "sterling.process",
+  "subtype": "bpml",
+  "description": "Sterling B2B Business Process: HelloWorldXML",
+  "file_path": "sterling-b2b-samples\\business-process\\hello-world-xml-http-server-adapter\\hello-world-xml.bpml",
+  "file_name": "hello-world-xml.bpml",
+  "rules": [],
+  "operations": [
+    {
+      "name": "XSLT Service",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "input_pd_xpath": "/ProcessData/ResponseData",
+        "xml_input_from": "ProcData",
+        "xml_input_validation": "NO",
+        "xslt_name": "HelloWorldXML",
+        ".": {
+          "from": "*"
+        }
+      }
+    },
+    {
+      "name": "SetContenType",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "*"
+        },
+        "DocumentContentType": "application",
+        "DocumentContentSubType": "xml",
+        "updateMetaDataOnly": "true"
+      }
+    },
+    {
+      "name": "HttpRespond",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "doc-has-headers": "false",
+        ".": {
+          "from": "*"
+        }
+      }
+    }
+  ],
+  "assignments": [],
+  "sequences": [
+    {
+      "name": "",
+      "type": "sequential_flow"
+    }
+  ],
+  "patterns": [],
+  "raw_content": "<process name=\"HelloWorldXML\">\n    <sequence>\n        <assign to=\"ResponseData/book/title\">The Lord of Rings</assign>\n        <assign to=\"ResponseData/book/author\">J. R. R. Tolkien</assign>\n        <assign to=\"ResponseData/book/published\">1954</assign>\n\n        <operation name=\"XSLT Service\">\n            <participant name=\"XSLTService\" />\n            <output message=\"XSLTServiceTypeInputMessage\">\n                <assign to=\"input_pd_xpath\">/ProcessData/ResponseData</assign>\n                <assign to=\"xml_input_from\">ProcData</assign>\n                <assign to=\"xml_input_validation\">NO</assign>\n                <assign to=\"xslt_name\">HelloWorldXML</assign>\n                <assign to=\".\" from=\"*\"></assign>\n            </output>\n            <input message=\"inmsg\">\n                <assign to=\".\" from=\"*\"></assign>\n            </input>\n        </operation>\n\n        <operation name=\"SetContenType\">\n            <participant name=\"GetDocumentInfoService\"/>\n            <output message=\"xout\">\n                <assign to=\".\" from=\"*\"></assign>\n                <assign to=\"DocumentContentType\">application</assign>\n                <assign to=\"DocumentContentSubType\">xml</assign>\n                <assign to=\"updateMetaDataOnly\">true</assign>\n            </output>\n            <input message=\"xin\">\n                <assign to=\"docdata\" from=\"*\"></assign>\n            </input>\n        </operation>\n\n        <operation name=\"HttpRespond\">\n            <participant name=\"HttpRespond\" />\n            <output message=\"HttpRespondInputMessage\">\n                <assign to=\"doc-has-headers\">false</assign> \n                <!-- Implying non-raw mode by default. -->\n                <assign to=\".\" from=\"*\"></assign>\n            </output>\n            <input message=\"inmsg\">\n                <assign to=\".\" from=\"*\"></assign>\n            </input>\n        </operation>\n    </sequence>\n</process>"
+}

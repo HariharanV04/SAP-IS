@@ -1,0 +1,112 @@
+{
+  "id": "route-via-custom-sftp",
+  "name": "Demo_BP_RouteViaCustomSFTP",
+  "type": "sterling.process",
+  "subtype": "bpml",
+  "description": "Sterling B2B Business Process: Demo_BP_RouteViaCustomSFTP",
+  "file_path": "sterling-b2b-samples\\filegateway-scenarios\\route-via-custom-sftp-client-adapter\\route-via-custom-sftp.bpml",
+  "file_name": "route-via-custom-sftp.bpml",
+  "rules": [
+    {
+      "name": "changeDirectory?",
+      "condition": "",
+      "type": "business_rule"
+    }
+  ],
+  "operations": [
+    {
+      "name": "SFTP BEGIN SESSION SERVICE",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "SFTPClientAdapter": {
+          "from": "/ProcessData/customsftp_SFTPClientAdapter/text()"
+        },
+        "ProfileId": {
+          "from": "/ProcessData/customsftp_ProfileId/text()"
+        },
+        ".": {
+          "from": "*"
+        }
+      }
+    },
+    {
+      "name": "changeDir",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "SessionToken": {
+          "from": "/ProcessData/SftpBeginSessionServiceResults/SessionToken/text()"
+        },
+        "Directory": {
+          "from": "/ProcessData/SftpBeginSessionServiceResults/TPProfile/Directory/text()"
+        }
+      }
+    },
+    {
+      "name": "SFTP PUT SERVICE",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "SessionToken": {
+          "from": "SftpBeginSessionServiceResults/SessionToken/text()"
+        },
+        "RemoteFileName": {
+          "from": "DestinationMessageName/text()"
+        },
+        ".": {
+          "from": "*"
+        }
+      }
+    },
+    {
+      "name": "SFTP END SESSION SERVICE",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "SessionToken": {
+          "from": "SftpBeginSessionServiceResults/SessionToken/text()"
+        }
+      }
+    },
+    {
+      "name": "SFTP END SESSION SERVICE",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "SessionToken": {
+          "from": "SftpBeginSessionServiceResults/SessionToken/text()"
+        },
+        ".": {
+          "from": "ResponseTimeout"
+        }
+      }
+    },
+    {
+      "name": "generateException",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "exceptionCode": "Error, SFTP PUT",
+        ".": {
+          "from": "*"
+        }
+      }
+    }
+  ],
+  "assignments": [],
+  "sequences": [
+    {
+      "name": "",
+      "type": "sequential_flow"
+    },
+    {
+      "name": "onFault Sequence",
+      "type": "sequential_flow"
+    }
+  ],
+  "patterns": [
+    "conditional_logic"
+  ],
+  "raw_content": "<process name=\"Demo_BP_RouteViaCustomSFTP\">\n    <rule name=\"changeDirectory?\">\n        <condition>normalize-space(/ProcessData/SftpBeginSessionServiceResults/TPProfile/Directory/text()) != ''</condition>\n    </rule>\n    \t\n    <sequence>\n        <operation name=\"SFTP BEGIN SESSION SERVICE\">\n            <participant name=\"SFTPClientBeginSession\"/>\n            <output message=\"BeginSessionRequest\">\n                <assign to=\"SFTPClientAdapter\" from=\"/ProcessData/customsftp_SFTPClientAdapter/text()\"></assign>\n                <assign to=\"ProfileId\" from=\"/ProcessData/customsftp_ProfileId/text()\"></assign> \n                <assign to=\".\" from=\"*\"/>\n            </output>\n            <input message=\"inmsg\">\n                <assign to=\"SftpBeginSessionServiceResults\" from=\"*\"></assign>\n            </input>\n        </operation>\n        <choice name=\"Check to change directory\">\n            <select>\n                <case ref=\"changeDirectory?\" activity=\"changeDir\"/>\n            </select>\n            <operation name=\"changeDir\">\n                <participant name=\"SFTPClientCd\"/> \n                <output message=\"CdRequest\"> \n                    <assign to=\"SessionToken\" from=\"/ProcessData/SftpBeginSessionServiceResults/SessionToken/text()\"/> \n                    <assign to=\"Directory\" from=\"/ProcessData/SftpBeginSessionServiceResults/TPProfile/Directory/text()\"/> \n                </output> \n                <input message=\"inmsg\"> \n                    <assign to=\"SFTPClientCdResults\" from=\"*\"></assign> \n                </input> \n            </operation>\n        </choice>\n        <operation name=\"SFTP PUT SERVICE\">\n            <participant name=\"SFTPClientPut\"/>\n            <output message=\"PutRequest\">\n                <assign to=\"SessionToken\" from=\"SftpBeginSessionServiceResults/SessionToken/text()\"></assign>\n                <assign to=\"RemoteFileName\" from=\"DestinationMessageName/text()\"/>\n                <assign to=\".\" from=\"*\"/>\n            </output>\n            <input message=\"inmsg\">\n                <assign to=\"PutResult\" from=\"*\"></assign>\n            </input>\n        </operation>\n\n        <operation name=\"SFTP END SESSION SERVICE\">\n            <participant name=\"SFTPClientEndSession\"/>\n            <output message=\"EndSessionRequest\">\n                <assign to=\"SessionToken\" from=\"SftpBeginSessionServiceResults/SessionToken/text()\"></assign>\n            </output>\n            <input message=\"inmsg\">\n                <assign to=\"SftpEndSessionServiceResults\" from=\"*\"></assign>\n            </input>\n        </operation>\n\n        <onFault>\n      \t    <sequence name=\"onFault Sequence\">\n                <operation name=\"SFTP END SESSION SERVICE\">\n                    <participant name=\"SFTPClientEndSession\"/>\n                    <output message=\"EndSessionRequest\">\n                        <assign to=\"SessionToken\" from=\"SftpBeginSessionServiceResults/SessionToken/text()\"></assign>\n                        <assign to=\".\" from=\"ResponseTimeout\"></assign>\n                    </output>\n                    <input message=\"inmsg\">\n                        <assign to=\"SftpEndSessionServiceResults\" from=\"*\"></assign>\n                    </input>\n                </operation>\n                <operation name=\"generateException\">\n                    <participant name=\"BPExceptionService\"/>\n                    <output message=\"Xout\">\n                        <assign to=\"exceptionCode\">Error, SFTP PUT</assign>\n                        <assign to=\".\" from=\"*\"/>\n                    </output>\n                    <input message=\"Xin\">\n                        <assign to=\".\" from=\"*\"/>\n                    </input>\n                </operation>\n\t          </sequence>\n        </onFault>\n    </sequence>\n</process>"
+}

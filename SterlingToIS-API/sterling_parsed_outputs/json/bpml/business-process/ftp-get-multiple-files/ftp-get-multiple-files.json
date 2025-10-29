@@ -1,0 +1,211 @@
+{
+  "id": "ftp-get-multiple-files",
+  "name": "Demo_BP_FTPGetMultipleFiles",
+  "type": "sterling.process",
+  "subtype": "bpml",
+  "description": "Sterling B2B Business Process: Demo_BP_FTPGetMultipleFiles",
+  "file_path": "sterling-b2b-samples\\business-process\\ftp-get-multiple-files\\ftp-get-multiple-files.bpml",
+  "file_name": "ftp-get-multiple-files.bpml",
+  "rules": [
+    {
+      "name": "FileCounter",
+      "condition": "",
+      "type": "business_rule"
+    },
+    {
+      "name": "DELETE_FILES?",
+      "condition": "",
+      "type": "business_rule"
+    },
+    {
+      "name": "MOVE_FILES?",
+      "condition": "",
+      "type": "business_rule"
+    }
+  ],
+  "operations": [
+    {
+      "name": "AssignService",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "REMOTE_HOST": "localhost",
+        "REMOTE_PORT": "21",
+        "FTP_CLIENT_ADAPTER": "FTPClientAdapter",
+        "REMOTE_USER": "sistema_ftp",
+        "REMOTE_PASSWORD": "passw0rd",
+        "REMOTE_DIRECTORY": "/home/sistema_ftp",
+        "REMOTE_FILENAME": "*.txt",
+        "MAILBOX_PATH": "/Sistema_ftp/Inbox"
+      }
+    },
+    {
+      "name": "FTP Client Begin Session Service",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "RemoteHost": {
+          "from": "//REMOTE_HOST/text()"
+        },
+        "FTPClientAdapter": {
+          "from": "//FTP_CLIENT_ADAPTER/text()"
+        },
+        "UsingRevealedPasswd": "True",
+        "RemotePasswd": {
+          "from": "//REMOTE_PASSWORD/text()"
+        },
+        "RemoteUserId": {
+          "from": "//REMOTE_USER/text()"
+        },
+        "RemotePort": {
+          "from": "//REMOTE_PORT/text()"
+        },
+        ".": {
+          "from": "*"
+        }
+      }
+    },
+    {
+      "name": "FTP CD SERVICE",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "SessionToken": {
+          "from": "/ProcessData/FTPClientBeginSessionServiceResults/SessionToken/text()"
+        },
+        "Directory": {
+          "from": "//REMOTE_DIRECTORY/text()"
+        }
+      }
+    },
+    {
+      "name": "FTP Client LIST Service",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "*"
+        },
+        "NamesOnly": "YES",
+        "RemoteFileName": {
+          "from": "//REMOTE_FILENAME/text()"
+        },
+        "ResponseTimeout": "60",
+        "SessionToken": {
+          "from": "/ProcessData/FTPClientBeginSessionServiceResults/SessionToken/text()"
+        }
+      }
+    },
+    {
+      "name": "FTP Client GET Service",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "RemoteFileName": {
+          "from": "//ListNames/Name[1]/text()"
+        },
+        "SessionToken": {
+          "from": "/ProcessData/FTPClientBeginSessionServiceResults/SessionToken/text()"
+        },
+        "ConnectionType": "PASSIVE"
+      }
+    },
+    {
+      "name": "Mailbox Add Service",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "Extractable": "YES",
+        "MailboxPath": {
+          "from": "//MAILBOX_PATH/text()"
+        },
+        "MessageName": {
+          "from": "//ListNames/Name[1]/text()"
+        },
+        ".": {
+          "from": "*"
+        }
+      }
+    },
+    {
+      "name": "FTP Client MOVE Service",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "*"
+        },
+        "RemoteFileName": {
+          "from": "/ProcessData/ListNames/Name[1]/text()"
+        },
+        "SessionToken": {
+          "from": "/ProcessData/FTPClientBeginSessionServiceResults/SessionToken/text()"
+        }
+      }
+    },
+    {
+      "name": "FTP Client DELETE Service",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "*"
+        },
+        "RemoteFileName": {
+          "from": "/ProcessData/ListNames/Name[1]/text()"
+        },
+        "SessionToken": {
+          "from": "/ProcessData/FTPClientBeginSessionServiceResults/SessionToken/text()"
+        }
+      }
+    },
+    {
+      "name": "Release Service",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "TARGET": "/ProcessData/PrimaryDocument | /ProcessData/DocumentList/DocumentId[1] | /ProcessData/ListNames/Name[1] | /ProcessData/MailboxAddResults",
+        ".": {
+          "from": "*"
+        }
+      }
+    },
+    {
+      "name": "FTP Client End Session Service",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "SessionToken": {
+          "from": "/ProcessData/FTPClientBeginSessionServiceResults/SessionToken/text()"
+        },
+        ".": {
+          "from": "*"
+        }
+      }
+    }
+  ],
+  "assignments": [],
+  "sequences": [
+    {
+      "name": "",
+      "type": "sequential_flow"
+    },
+    {
+      "name": "proceed",
+      "type": "sequential_flow"
+    },
+    {
+      "name": "MOVE_FILE_YES",
+      "type": "sequential_flow"
+    },
+    {
+      "name": "DELETE_FILE_YES",
+      "type": "sequential_flow"
+    }
+  ],
+  "patterns": [
+    "batch_processing",
+    "conditional_logic"
+  ],
+  "raw_content": "<process name=\"Demo_BP_FTPGetMultipleFiles\">\n  <rule name=\"FileCounter\">\n    <condition>/ProcessData/FileCounter/text()>0</condition>\n  </rule>\n  <rule name=\"DELETE_FILES?\">\n    <condition>/ProcessData/DELETE_FILES/text()=&apos;YES&apos;</condition>\n  </rule>\n  <rule name=\"MOVE_FILES?\">\n    <condition>/ProcessData/MOVE_FILES/text()=&apos;YES&apos;</condition>\n  </rule>\n\n  <sequence>\n    <operation name=\"AssignService\">\n      <participant name=\"AssignService\"/>\n      <output message=\"AssignOutputMessage\">\n        <assign to=\"REMOTE_HOST\">localhost</assign>\n        <assign to=\"REMOTE_PORT\">21</assign>\n        <assign to=\"FTP_CLIENT_ADAPTER\">FTPClientAdapter</assign>\n        <assign to=\"REMOTE_USER\">sistema_ftp</assign>\n        <assign to=\"REMOTE_PASSWORD\">passw0rd</assign>\n        <assign to=\"REMOTE_DIRECTORY\">/home/sistema_ftp</assign>\n        <assign to=\"REMOTE_FILENAME\">*.txt</assign>\n        <assign to=\"MAILBOX_PATH\">/Sistema_ftp/Inbox</assign>\n        <!-- <assign to=\"DELETE_FILES\">YES</assign> -->\n        <!-- <assign to=\"MOVE_FILES\">YES</assign> -->\n      </output>\n      <input message=\"AssignInputMessage\">\n        <assign to=\".\" from=\"*\"/>\n      </input>\n    </operation>\n\n\n    <operation name=\"FTP Client Begin Session Service\">\n      <participant name=\"FTPClientBeginSession\"/>\n      <output message=\"FTPClientBeginSessionServiceTypeInputMessage\">\n        <assign to=\"RemoteHost\" from=\"//REMOTE_HOST/text()\"></assign>\n        <assign to=\"FTPClientAdapter\" from=\"//FTP_CLIENT_ADAPTER/text()\"></assign>\n        <assign to=\"UsingRevealedPasswd\">True</assign>\n        <assign to=\"RemotePasswd\" from=\"//REMOTE_PASSWORD/text()\"></assign>\n        <assign to=\"RemoteUserId\" from=\"//REMOTE_USER/text()\"></assign>\n        <assign to=\"RemotePort\" from=\"//REMOTE_PORT/text()\"></assign>\n        <assign to=\".\" from=\"*\"></assign>\n      </output>\n      <input message=\"inmsg\">\n        <assign to=\"FTPClientBeginSessionServiceResults\" from=\"*\"></assign>\n      </input>\n    </operation>\n\n    <operation name=\"FTP CD SERVICE\">\n      <participant name=\"FTPClientCd\"/>\n      <output message=\"CdRequest\">\n        <assign to=\"SessionToken\" from=\"/ProcessData/FTPClientBeginSessionServiceResults/SessionToken/text()\"></assign>\n        <assign to=\"Directory\" from=\"//REMOTE_DIRECTORY/text()\"></assign>\n      </output>\n      <input message=\"inmsg\">\n        <assign to=\"FTPClientCdResults\" from=\"*\"></assign>\n      </input>\n    </operation>\n\n    <operation name=\"FTP Client LIST Service\">\n      <participant name=\"FTPClientList\"/>\n      <output message=\"FTPClientListServiceTypeInputMessage\">\n        <assign to=\".\" from=\"*\"></assign>\n        <assign to=\"NamesOnly\">YES</assign>\n        <assign to=\"RemoteFileName\" from=\"//REMOTE_FILENAME/text()\"></assign>\n        <assign to=\"ResponseTimeout\">60</assign>\n        <assign to=\"SessionToken\" from=\"/ProcessData/FTPClientBeginSessionServiceResults/SessionToken/text()\"></assign>\n      </output>\n      <input message=\"inmsg\">\n        <assign to=\".\" from=\"*\"></assign>\n      </input>\n    </operation>\n\n    <assign name=\"Assign\" to=\"FileCounter\" from=\"count(/ProcessData/ListNames/Name)\"></assign>\n\n    <choice name=\"forEachFile\">\n      <select>\n        <case ref=\"FileCounter\" activity=\"proceed\"/>\n      </select>\n\n      <sequence name=\"proceed\">\n\n        <!-- FTP Get and output to primary document-->\n        <operation name=\"FTP Client GET Service\">\n          <participant name=\"FTPClientGet\"/>\n          <output message=\"FtpGetRequests\">\n            <assign to=\"RemoteFileName\" from=\"//ListNames/Name[1]/text()\"></assign>\n            <assign to=\"SessionToken\" from=\"/ProcessData/FTPClientBeginSessionServiceResults/SessionToken/text()\"></assign>\n            <assign to=\"ConnectionType\">PASSIVE</assign>\n          </output>\n          <input message=\"FtpGetResults\">\n            <assign to=\".\" from=\"*\"></assign>\n          </input>\n        </operation>\n\n\n        <operation name=\"Mailbox Add Service\">\n          <participant name=\"MailboxAdd\"/>\n          <output message=\"MailboxAddServiceTypeInputMessage\">\n            <assign to=\"Extractable\">YES</assign>\n            <assign to=\"MailboxPath\" from=\"//MAILBOX_PATH/text()\"></assign>\n            <assign to=\"MessageName\" from=\"//ListNames/Name[1]/text()\"></assign>\n            <assign to=\".\" from=\"*\"></assign>\n          </output>\n          <input message=\"inmsg\">\n            <assign to=\"MailboxAddResults\" from=\"*\"></assign>\n          </input>\n        </operation>\n\n        <choice name=\"MOVE_FILE\">\n          <select>\n            <case ref=\"MOVE_FILES?\" activity=\"MOVE_FILE_YES\"/>\n          </select>\n\n          <sequence name=\"MOVE_FILE_YES\">\n\n            <operation name=\"FTP Client MOVE Service\">\n              <participant name=\"FTPClientMove\"/>\n              <output message=\"FTPClientMoveServiceTypeInputMessage\">\n                <assign to=\".\" from=\"*\"></assign>\n                <assign to=\"RemoteFileName\" from=\"/ProcessData/ListNames/Name[1]/text()\"></assign>\n                <assign to=\"Ses"
+}

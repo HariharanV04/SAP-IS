@@ -1,1 +1,0 @@
-This iFlow retrieves product details from an OData service based on a product identifier. It validates the product ID against a list of known identifiers, fetches the product data if valid, and returns a formatted error response if the product is not found. The flow includes validation logic, OData querying with filtering, and error handling capabilities.

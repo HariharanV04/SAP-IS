@@ -1,0 +1,139 @@
+{
+  "id": "mailbox-get-index-cdp-adv",
+  "name": "MAILBOX_GET_INDEX_CDP_ADV",
+  "type": "sterling.process",
+  "subtype": "bpml",
+  "description": "Sterling B2B Business Process: MAILBOX_GET_INDEX_CDP_ADV",
+  "file_path": "sterling-b2b-samples\\connect-direct\\copy-multiples-files-from-sfg-advanced\\mailbox-get-index-cdp-adv.bpml",
+  "file_name": "mailbox-get-index-cdp-adv.bpml",
+  "rules": [
+    {
+      "name": "os_windows",
+      "condition": "",
+      "type": "business_rule"
+    },
+    {
+      "name": "os_unix",
+      "condition": "",
+      "type": "business_rule"
+    },
+    {
+      "name": "os_other",
+      "condition": "",
+      "type": "business_rule"
+    },
+    {
+      "name": "has_filter",
+      "condition": "",
+      "type": "business_rule"
+    },
+    {
+      "name": "has_mailboxpath",
+      "condition": "",
+      "type": "business_rule"
+    }
+  ],
+  "operations": [
+    {
+      "name": "AssignService",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "*"
+        },
+        "This/SlashType": "\\",
+        "This/Dummy": "/* Dummy Comment */",
+        "This/MailboxPath": "/Inbox",
+        "This/MessageNamePattern": "*"
+      }
+    },
+    {
+      "name": "Mailbox Query Service",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "*"
+        },
+        "MailboxPath": {
+          "from": "This/MailboxPath/text()"
+        },
+        "MessageExtractable": "YES",
+        "MessageNamePattern": {
+          "from": "This/MessageNamePattern/text()"
+        },
+        "OrderBy": "MessageId"
+      }
+    },
+    {
+      "name": "XSLT Service",
+      "participant": "",
+      "type": "service",
+      "config": {
+        "input_pd_xpath": "/ProcessData/This",
+        "xml_input_from": "ProcData",
+        "xml_input_validation": "NO",
+        "xslt_name": "PullListCdpAdv",
+        ".": {
+          "from": "*"
+        }
+      }
+    },
+    {
+      "name": "CD Server BP Response Service",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "*"
+        }
+      }
+    },
+    {
+      "name": "CD Server BP Response Service",
+      "participant": "",
+      "type": "service",
+      "config": {
+        ".": {
+          "from": "*"
+        }
+      }
+    }
+  ],
+  "assignments": [],
+  "sequences": [
+    {
+      "name": "CDServerSnodeCallbackBP",
+      "type": "sequential_flow"
+    },
+    {
+      "name": "osWindows",
+      "type": "sequential_flow"
+    },
+    {
+      "name": "osUnix",
+      "type": "sequential_flow"
+    },
+    {
+      "name": "osOther",
+      "type": "sequential_flow"
+    },
+    {
+      "name": "setFilter",
+      "type": "sequential_flow"
+    },
+    {
+      "name": "setMailboxPath",
+      "type": "sequential_flow"
+    },
+    {
+      "name": "On Fault Sequence Start",
+      "type": "sequential_flow"
+    }
+  ],
+  "patterns": [
+    "conditional_logic"
+  ],
+  "raw_content": "<process name=\"MAILBOX_GET_INDEX_CDP_ADV\">\n  <rule name=\"os_windows\">\n   <condition>contains(/ProcessData/CDServerNodeData/RemoteFileName/text(),'os=windows')</condition>\n  </rule>\n  <rule name=\"os_unix\">\n   <condition>contains(/ProcessData/CDServerNodeData/RemoteFileName/text(),'os=unix')</condition>\n  </rule>\n  <rule name=\"os_other\">\n   <condition>contains(/ProcessData/CDServerNodeData/RemoteFileName/text(),'os=other')</condition>\n  </rule>\n  <rule name=\"has_filter\">\n   <condition>contains(/ProcessData/CDServerNodeData/RemoteFileName/text(),'fi=')</condition>\n  </rule>\n  <rule name=\"has_mailboxpath\">\n   <condition>contains(/ProcessData/CDServerNodeData/RemoteFileName/text(),'mbx=')</condition>\n  </rule>\n\n  <sequence name=\"CDServerSnodeCallbackBP\">\n\n    <operation name=\"AssignService\">\n      <participant name=\"AssignService\"/>\n      <output message=\"AssignOutputMessage\">\n        <assign to=\".\" from=\"*\"/>\n        <assign to=\"This/SlashType\">\\</assign>\n        <assign to=\"This/Dummy\">/* Dummy Comment */</assign>\n        <assign to=\"This/MailboxPath\">/Inbox</assign>\n        <assign to=\"This/MessageNamePattern\">*</assign>\n      </output>\n      <input message=\"AssignInputMessage\">\n        <assign to=\".\" from=\"*\"/>\n      </input>\n    </operation>\n\n    <choice name=\"OSType\">\n      <select>\n        <case ref=\"os_windows\" activity=\"osWindows\"/>\n        <case ref=\"os_unix\" activity=\"osUnix\"/>\n        <case ref=\"os_other\" activity=\"osOther\"/>\n      </select>\n\n      <sequence name=\"osWindows\">\n        <assign to=\"This/SlashType\">\\</assign>\n      </sequence>\n      \n      <sequence name=\"osUnix\">\n        <assign to=\"This/SlashType\">/</assign>\n        <assign to=\"This/Dummy\">RUNECHO RUN TASK PNODE SYSOPTS=\"echo Dummy\"</assign>\n      </sequence>\n      \n      <sequence name=\"osOther\">\n        <assign to=\"This/SlashType\">_</assign>\n      </sequence>\n    </choice>\n\n    <choice name=\"HasFilter\">\n      <select>\n        <case ref=\"has_filter\" activity=\"setFilter\"/>\n      </select>\n\n      <sequence name=\"setFilter\">\n        <assign to=\"This/MessageNamePattern\" from=\"substring-before(substring-after(/ProcessData/CDServerNodeData/RemoteFileName/text(),'fi='),';')\"/>\n      </sequence>\n    </choice>\n\n    <choice name=\"HasMailboxPath\">\n      <select>\n        <case ref=\"has_mailboxpath\" activity=\"setMailboxPath\"/>\n      </select>\n\n      <sequence name=\"setMailboxPath\">\n        <assign to=\"This/MailboxPath\" from=\"translate(substring-before(substring-after(/ProcessData/CDServerNodeData/RemoteFileName/text(),'mbx='),';'),'@','/')\"/>\n      </sequence>\n    </choice>\n\n\n    <operation name=\"Mailbox Query Service\">\n      <participant name=\"MailboxQuery\"/>\n      <output message=\"MailboxQueryServiceTypeInputMessage\">\n        <assign to=\".\" from=\"*\"></assign>\n        <assign to=\"MailboxPath\" from=\"This/MailboxPath/text()\"></assign>\n        <assign to=\"MessageExtractable\">YES</assign>\n        <assign to=\"MessageNamePattern\" from=\"This/MessageNamePattern/text()\"></assign>\n        <assign to=\"OrderBy\">MessageId</assign>\n      </output>\n      <input message=\"inmsg\">\n        <assign to=\"This/PullList\" from=\"Message/MessageName\"></assign>\n      </input>\n    </operation>\n\n    <operation name=\"XSLT Service\">\n      <participant name=\"XSLTService\"/>\n      <output message=\"XSLTServiceTypeInputMessage\">\n        <assign to=\"input_pd_xpath\">/ProcessData/This</assign>\n        <assign to=\"xml_input_from\">ProcData</assign>\n        <assign to=\"xml_input_validation\">NO</assign>\n        <assign to=\"xslt_name\">PullListCdpAdv</assign>\n        <assign to=\".\" from=\"*\"></assign>\n      </output>\n      <input message=\"inmsg\">\n        <assign to=\".\" from=\"*\"></assign>\n      </input>\n    </operation>\n\n    <assign to=\"RemoteFileName\">PullFileList</assign>\n\n    <!-- Return (0) as failure success to caller -->\n    <assign to=\"CDServerNodeData/CallbackReturnCount\">0</assign>\n\n    <operation name=\"CD Server BP Response Service\">\n      <participant name=\"CDServerBPResponse\"/>\n      <output message=\"CDServerBPResponseServiceTypeInputMessage\">\n        <assign to=\".\" from=\"*\"></assign>\n      </output>\n      <input message=\"inmsg\">\n        <assign to=\".\" from=\"*\"></assign>\n      </input>\n    </operation>\n\n    <onFault>\n      <sequence name=\"On Fault Sequence Start\">\n        <!-- Return (8) as failure status to caller -->\n        <assign to=\"CDServerNodeData/CallbackReturnCount\">8</assign>\n\n        <operation name=\"CD Server BP Response Service\">\n          <participant name=\"CDServerBPResponse\"/>\n          <output message=\"CDServerBPResponseServiceTypeInputMessage\">\n            <assign to=\".\" from=\"*\"></assign>\n          </output>\n          <input message=\"inmsg\">\n            <assign to=\"OnFaultCDServerBPResponseResults\" from=\"*\"></assign>\n          </input>\n        </operation>\n      </sequence>\n    </onFault>\n  </sequence>\n</process>"
+}
