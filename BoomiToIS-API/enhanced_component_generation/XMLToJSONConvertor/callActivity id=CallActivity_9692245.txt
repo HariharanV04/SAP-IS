@@ -1,0 +1,90 @@
+<callActivity id="CallActivity_96922485" name="XML to JSON Converter ">
+    <extensionElements>
+        <property>
+            <key>
+                xmlJsonUseStreaming
+            </key>
+            <value>
+                true
+            </value>
+        </property>
+        <property>
+            <key>
+                xmlJsonSuppressRootElement
+            </key>
+            <value>
+                true
+            </value>
+        </property>
+        <property>
+            <key>
+                xmlJsonPathTable
+            </key>
+            <value>
+                &lt;row&gt;&lt;cell&gt;/EmpJob/EmpJob&lt;/cell&gt;&lt;cell&gt;&lt;/cell&gt;&lt;/row&gt;
+            </value>
+        </property>
+        <property>
+            <key>
+                jsonOutputEncoding
+            </key>
+            <value>
+                UTF-8
+            </value>
+        </property>
+        <property>
+            <key>
+                xmlJsonConvertAllElements
+            </key>
+            <value>
+                specific
+            </value>
+        </property>
+        <property>
+            <key>
+                activityType
+            </key>
+            <value>
+                XmlToJsonConverter
+            </value>
+        </property>
+        <property>
+            <key>
+                cmdVariantUri
+            </key>
+            <value>
+                ctype::FlowstepVariant/cname::XmlToJsonConverter
+            </value>
+        </property>
+        <property>
+            <key>
+                useNamespaces
+            </key>
+            <value>
+                false
+            </value>
+        </property>
+        <property>
+            <key>
+                jsonNamespaceSeparator
+            </key>
+            <value>
+                :
+            </value>
+        </property>
+    </extensionElements>
+    <incoming>
+        SequenceFlow_96922496
+    </incoming>
+    <outgoing>
+        SequenceFlow_96922492
+    </outgoing>
+</callActivity>
+<sequenceFlow id="SequenceFlow_96922492" sourceRef="CallActivity_96922485" targetRef="CallActivity_96922486"/>
+<BPMNShape bpmnElement="CallActivity_96922485" id="BPMNShape_CallActivity_96922485">
+    <Bounds height="60.0" width="100.0" x="3140.0" y="131.0"/>
+</BPMNShape>
+<BPMNEdge bpmnElement="SequenceFlow_96922492" id="BPMNEdge_SequenceFlow_96922492" sourceElement="BPMNShape_CallActivity_96922485" targetElement="BPMNShape_CallActivity_96922486">
+    <waypoint x="3190.5" xsi:type="dc:Point" y="161.0"/>
+    <waypoint x="3322.5" xsi:type="dc:Point" y="161.0"/>
+</BPMNEdge>

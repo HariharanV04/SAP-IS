@@ -61,14 +61,14 @@
 }
 ```
 
-### 5. Gateway
+### 5. Gateways (Router vs Join)
 ```json
 {
   "type": "gateway",
   "id": "gateway_1",
   "name": "Decision Gateway",
   "config": {
-    "gateway_type": "exclusive|parallel|inclusive",
+    "gateway_type": "exclusive|join",
     "routing_conditions": [
       {
         "condition": "${message.status == 'success'}",
@@ -76,6 +76,28 @@
       }
     ]
   }
+}
+```
+
+- If `gateway_type` is `exclusive`, the converter emits an `ExclusiveGateway` (Router).
+- For a parallel join/synchronization point, use a Join component directly:
+
+```json
+{
+  "type": "join",
+  "id": "join_1",
+  "name": "Join Parallel",
+  "config": {}
+}
+```
+
+Sequence flows may include optional conditions:
+```json
+{
+  "sequence_flows": [
+    { "id": "f1", "source": "gateway_1", "target": "path_a", "condition": "${body.flag == 'A'}" },
+    { "id": "f2", "source": "gateway_1", "target": "path_b" }
+  ]
 }
 ```
 

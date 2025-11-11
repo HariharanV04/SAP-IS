@@ -1,0 +1,1406 @@
+{
+  "metadata_version": "1.0.0",
+  "template_info": {
+    "name": "SAP Integration Suite Complete Component Template",
+    "version": "2024.1",
+    "description": "Comprehensive template for all 76 SAP IS components with full configuration properties",
+    "last_updated": "2024-12-20"
+  },
+  "iflow_info": {
+    "id": "<unique_iflow_id>",
+    "name": "<iflow_name>",
+    "description": "<optional_description>",
+    "version": "<version_number>",
+    "vendor": "<vendor_name>",
+    "release": "<release_version>"
+  },
+  "endpoints": [
+    {
+      "id": "<endpoint_id>",
+      "name": "<endpoint_name>",
+      "description": "<optional_description>",
+      "components": [],
+      "flow": [],
+      "sequence_flows": []
+    }
+  ],
+  "component_templates": {
+    
+    "// ========================================": "PROCESS & CONTAINER COMPONENTS (1-5)",
+    "// ========================================": "",
+    
+    "1_integration_process": {
+      "type": "integration_process",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "IntegrationProcess",
+      "config": {
+        "isExecutable": "true",
+        "transaction_timeout": "30",
+        "transactional_handling": "Not Required|Required for JDBC|From Calling Process",
+        "componentVersion": "1.2",
+        "cmdVariantUri": "ctype::FlowElementVariant/cname::IntegrationProcess/version::1.2.1",
+        "log_level": "All events|Errors only|None",
+        "log_configuration": {
+          "logLevel": "Info|Debug|Warn|Error",
+          "logLocation": "Database|Header",
+          "enableMPLAttachments": "true|false"
+        },
+        "namespaceMapping": "<namespace_mappings>",
+        "httpSessionHandling": "None|On Exchange|On Integration Flow",
+        "returnExceptionToSender": "true|false",
+        "corsEnabled": "true|false",
+        "allowedOrigins": "*|<domain_list>",
+        "allowedHeaders": "<header_list>",
+        "allowedMethods": "GET,POST,PUT,DELETE",
+        "ServerTrace": "true|false",
+        "xsrfProtection": "true|false",
+        "isTransactional": "true|false"
+      }
+    },
+
+    "2_exception_subprocess": {
+      "type": "exception_subprocess",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "ExceptionSubprocess",
+      "config": {
+        "triggeredByEvent": "true",
+        "componentVersion": "1.0",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::ExceptionSubprocess/version::1.0.0",
+        "error_type": "All|java.lang.Exception|java.lang.RuntimeException|<specific_exception_class>",
+        "errorCode": "<error_code>",
+        "errorMessageVariable": "<variable_name>",
+        "components": [],
+        "nested_sequence_flows": [],
+        "propagateException": "true|false"
+      }
+    },
+
+    "3_local_integration_process": {
+      "type": "lip",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "LocalIntegrationProcess",
+      "config": {
+        "process_id": "<lip_process_id>",
+        "process_name": "<lip_process_name>",
+        "processType": "directCall|integration",
+        "componentVersion": "1.1",
+        "cmdVariantUri": "ctype::FlowElementVariant/cname::LocalIntegrationProcess/version::1.1.3",
+        "transactionTimeout": "30",
+        "transactionalHandling": "From Calling Process|Not Required|Required for JDBC",
+        "isExecutable": "true",
+        "components": [],
+        "nested_sequence_flows": []
+      }
+    },
+
+    "4_receiver": {
+      "type": "receiver",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "EndpointRecevier",
+      "config": {
+        "ifl_type": "EndpointRecevier",
+        "enableBasicAuthentication": "true|false",
+        "componentVersion": "1.0"
+      }
+    },
+
+    "5_sender": {
+      "type": "sender",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "EndpointSender",
+      "config": {
+        "ifl_type": "EndpointSender",
+        "enableBasicAuthentication": "true|false",
+        "userRole": "<role_name>",
+        "senderAuthType": "None|RoleBased|ClientCertificate",
+        "clientCertificates": "<certificate_list>",
+        "componentVersion": "1.0"
+      }
+    },
+
+    "// ========================================": "EVENT COMPONENTS (6-13)",
+    "// ========================================": "",
+
+    "6_start_event": {
+      "type": "start_event",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "StartEvent",
+      "config": {
+        "componentVersion": "1.0",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::StartEvent/version::1.0",
+        "activityType": "StartEvent"
+      }
+    },
+
+    "7_end_event": {
+      "type": "end_event",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "EndEvent",
+      "config": {
+        "componentVersion": "1.0",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::EndEvent/version::1.0",
+        "activityType": "EndEvent"
+      }
+    },
+
+    "8_start_message": {
+      "type": "message_start_event",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "MessageStartEvent",
+      "config": {
+        "componentVersion": "1.0",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::MessageStartEvent/version::1.0",
+        "messageEventDefinition": "true"
+      }
+    },
+
+    "9_end_message": {
+      "type": "message_end_event",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "MessageEndEvent",
+      "config": {
+        "componentVersion": "1.1",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::MessageEndEvent/version::1.1.0",
+        "messageEventDefinition": "true"
+      }
+    },
+
+    "10_error_start_event": {
+      "type": "error_start_event",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "ErrorStartEvent",
+      "config": {
+        "componentVersion": "1.0",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::ErrorStartEvent/version::1.0",
+        "errorCode": "<error_code>",
+        "errorName": "<error_name>",
+        "errorEventDefinition": "true"
+      }
+    },
+
+    "11_error_end_event": {
+      "type": "error_end_event",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "ErrorEndEvent",
+      "config": {
+        "componentVersion": "1.0",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::ErrorEndEvent/version::1.0",
+        "errorCode": "<error_code>",
+        "errorName": "<error_name>",
+        "errorEventDefinition": "true"
+      }
+    },
+
+    "12_escalation_end_event": {
+      "type": "escalation_end_event",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "EscalationEndEvent",
+      "config": {
+        "componentVersion": "1.0",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::EscalationEndEvent/version::1.0",
+        "escalationCode": "<escalation_code>",
+        "escalationName": "<escalation_name>",
+        "escalationEventDefinition": "true"
+      }
+    },
+
+    "13_terminate_message": {
+      "type": "terminate_end_event",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "TerminateEndEvent",
+      "config": {
+        "componentVersion": "1.0",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::TerminateEndEvent/version::1.0",
+        "terminateAll": "true|false",
+        "terminateEventDefinition": "true"
+      }
+    },
+
+    "// ========================================": "TIMER & MAPPING COMPONENTS (14-18)",
+    "// ========================================": "",
+
+    "14_timer": {
+      "type": "timer",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "Timer",
+      "config": {
+        "componentVersion": "1.0",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::Timer/version::1.0",
+        "timerType": "fixedDate|cycle|duration",
+        "timerDate": "<ISO8601_date>",
+        "timerCycle": "<cron_expression>",
+        "timerDuration": "<ISO8601_duration>",
+        "timeZone": "<timezone_id>",
+        "schedulerExpression": "<scheduler_expression>",
+        "timerEventDefinition": "true"
+      }
+    },
+
+    "15_id_mapping": {
+      "type": "id_mapping",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "IDMapping",
+      "config": {
+        "componentVersion": "1.0",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::IDMapping/version::1.0",
+        "sourceSystemID": "<source_system>",
+        "targetSystemID": "<target_system>",
+        "contextObject": "<context_object>",
+        "mappingType": "Create|Get|Delete",
+        "sourceValue": "<source_value_expression>",
+        "targetValue": "<target_value_expression>",
+        "sourceAgency": "<agency>",
+        "targetAgency": "<agency>",
+        "sourceScheme": "<scheme>",
+        "targetScheme": "<scheme>",
+        "failIfNoMapping": "true|false",
+        "headerName": "<header_name>"
+      }
+    },
+
+    "16_message_mapping": {
+      "type": "message_mapping",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "MessageMapping",
+      "config": {
+        "componentVersion": "1.5",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::MessageMapping/version::1.5.0",
+        "mappinguri": "<mapping_resource_path>",
+        "mappingname": "<mapping_name>",
+        "mappingpath": "<mapping_path>",
+        "mappingType": "MessageMapping|OperationMapping",
+        "sourceMessageType": "<source_message_type>",
+        "targetMessageType": "<target_message_type>",
+        "mappingkey": "<mapping_key>"
+      }
+    },
+
+    "17_operation_mapping": {
+      "type": "operation_mapping",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "OperationMapping",
+      "config": {
+        "componentVersion": "1.0",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::OperationMapping/version::1.0",
+        "mappinguri": "<operation_mapping_resource>",
+        "sourceOperation": "<source_operation>",
+        "targetOperation": "<target_operation>",
+        "sourceInterface": "<source_interface>",
+        "targetInterface": "<target_interface>",
+        "sourceNamespace": "<namespace>",
+        "targetNamespace": "<namespace>"
+      }
+    },
+
+    "18_xslt_mapping": {
+      "type": "xslt_mapping",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "XSLTMapping",
+      "config": {
+        "componentVersion": "1.1",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::XsltMapping/version::1.1.0",
+        "xsltFilename": "<xslt_filename.xsl>",
+        "xsltVersion": "1.0|2.0|3.0",
+        "outputType": "String|DOM|Bytes",
+        "parameters": {
+          "<param_name_1>": "<param_value_1>",
+          "<param_name_2>": "<param_value_2>"
+        },
+        "xsltParameterTable": "<xml_encoded_parameters>",
+        "allowXsltIncludeImport": "true|false"
+      }
+    },
+
+    "// ========================================": "CONTENT TRANSFORMATION (19-26)",
+    "// ========================================": "",
+
+    "19_content_modifier": {
+      "type": "content_modifier",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "Enricher",
+      "config": {
+        "componentVersion": "1.5",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::Enricher/version::1.5.0",
+        "activityType": "Enricher",
+        "bodyType": "expression|constant",
+        "bodyContent": "<content_or_expression>",
+        "wrapContent": "<wrapper_element_name>",
+        "propertyTable": "<xml_encoded_property_table>",
+        "headerTable": "<xml_encoded_header_table>",
+        "properties": [
+          {
+            "Action": "Create|Delete|Modify",
+            "Type": "constant|expression|header|property",
+            "Value": "<value>",
+            "Default": "<default_value>",
+            "Name": "<property_name>",
+            "Datatype": "java.lang.String|java.lang.Integer|java.lang.Boolean|java.math.BigDecimal"
+          }
+        ],
+        "headers": [
+          {
+            "Action": "Create|Delete|Modify",
+            "Type": "constant|expression|header|property",
+            "Value": "<value>",
+            "Default": "<default_value>",
+            "Name": "<header_name>",
+            "Datatype": "java.lang.String"
+          }
+        ]
+      }
+    },
+
+    "20_csv_to_xml": {
+      "type": "csv_to_xml_converter",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "CSVToXMLConverter",
+      "config": {
+        "componentVersion": "1.1",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::CSVToXMLConverter/version::1.1.0",
+        "path": "<xpath_to_csv_element>",
+        "fieldSeparator": ",|;|<custom_separator>",
+        "recordMarker": "<record_element_name>",
+        "includeFieldNames": "true|false",
+        "includeParentElement": "true|false",
+        "parentElementName": "<parent_element_name>",
+        "encoding": "UTF-8|ISO-8859-1|<encoding>"
+      }
+    },
+
+    "21_edi_to_xml": {
+      "type": "edi_to_xml_converter",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "EDIToXMLConverter",
+      "config": {
+        "componentVersion": "1.0",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::EDIToXMLConverter/version::1.0",
+        "schemaName": "<edi_schema_file>",
+        "validate": "true|false",
+        "encoding": "UTF-8|ISO-8859-1|<encoding>",
+        "segmentTerminator": "<terminator_char>",
+        "elementSeparator": "<separator_char>",
+        "decimalSeparator": ".|,",
+        "escapeCharacter": "<escape_char>"
+      }
+    },
+
+    "22_json_to_xml": {
+      "type": "json_to_xml_converter",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "JsonToXmlConverter",
+      "config": {
+        "componentVersion": "1.1",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::JsonToXmlConverter/version::1.1.2",
+        "addXMLRootElement": "true|false",
+        "additionalRootElementName": "<root_element_name>",
+        "additionalRootElementNamespace": "<namespace_uri>",
+        "useNamespaces": "true|false",
+        "jsonNamespaceMapping": "<namespace_mappings>",
+        "jsonNamespaceSeparator": ":|<separator>",
+        "jsonPrefix": "<prefix>",
+        "arrayElementName": "<array_element_name>",
+        "suppressJsonRootElement": "true|false",
+        "encoding": "UTF-8|<encoding>"
+      }
+    },
+
+    "23_xml_to_csv": {
+      "type": "xml_to_csv_converter",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "XMLToCSVConverter",
+      "config": {
+        "componentVersion": "1.0",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::XMLToCSVConverter/version::1.0",
+        "pathToTargetElement": "<xpath_expression>",
+        "fieldSeparator": ",|;|<custom_separator>",
+        "includeFieldNames": "true|false",
+        "includeParentElement": "true|false",
+        "encoding": "UTF-8|ISO-8859-1|<encoding>",
+        "fieldNamesAsFirstLine": "true|false"
+      }
+    },
+
+    "24_xml_to_edi": {
+      "type": "xml_to_edi_converter",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "XMLToEDIConverter",
+      "config": {
+        "componentVersion": "1.0",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::XMLToEDIConverter/version::1.0",
+        "schemaName": "<edi_schema_file>",
+        "validate": "true|false",
+        "encoding": "UTF-8|ISO-8859-1|<encoding>",
+        "segmentTerminator": "<terminator_char>",
+        "elementSeparator": "<separator_char>",
+        "decimalSeparator": ".|,",
+        "escapeCharacter": "<escape_char>"
+      }
+    },
+
+    "25_xml_to_json": {
+      "type": "xml_to_json_converter",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "XmlToJsonConverter",
+      "config": {
+        "componentVersion": "1.2",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::XmlToJsonConverter/version::1.2.0",
+        "jsonOutputEncoding": "UTF-8|<encoding>",
+        "suppressJsonRootElement": "true|false",
+        "arrayName": "<array_name>",
+        "streamJsonOutput": "true|false",
+        "xmlNamespaceMapping": "<namespace_mappings>",
+        "useNamespaces": "true|false",
+        "skipRootElement": "true|false",
+        "jsonPrefix": "<prefix>"
+      }
+    },
+
+    "26_base64_decoder": {
+      "type": "base64_decoder",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "Base64Decoder",
+      "config": {
+        "componentVersion": "1.0",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::Base64Decoder/version::1.0",
+        "contentEncoding": "UTF-8|<encoding>",
+        "useAttachments": "true|false",
+        "lineLength": "76|<integer>",
+        "lineSeparator": "None|CR|LF|CRLF"
+      }
+    },
+
+    "// ========================================": "ENCODING/COMPRESSION (27-34)",
+    "// ========================================": "",
+
+    "27_gzip_decompression": {
+      "type": "gzip_decompressor",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "GZipDecompressor",
+      "config": {
+        "componentVersion": "1.0",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::GZipDecompressor/version::1.0",
+        "streaming": "true|false"
+      }
+    },
+
+    "28_mime_multipart_decoder": {
+      "type": "mime_multipart_decoder",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "MIMEMultipartDecoder",
+      "config": {
+        "componentVersion": "1.0",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::MIMEMultipartDecoder/version::1.0",
+        "bodyPartHandling": "KeepAsBody|KeepAsAttachments",
+        "headerHandling": "KeepHeaders|RemoveHeaders"
+      }
+    },
+
+    "29_zip_decompression": {
+      "type": "zip_decompressor",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "ZipDecompressor",
+      "config": {
+        "componentVersion": "1.0",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::ZipDecompressor/version::1.0",
+        "filePattern": "<regex_pattern>",
+        "processMode": "All|First|Last",
+        "zipEntrySource": "Body|Attachments|All"
+      }
+    },
+
+    "30_edi_extractor": {
+      "type": "edi_extractor",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "EDIExtractor",
+      "config": {
+        "componentVersion": "1.0",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::EDIExtractor/version::1.0",
+        "extractionPath": "<path_expression>",
+        "validate": "true|false",
+        "schemaName": "<edi_schema_file>"
+      }
+    },
+
+    "31_base64_encoder": {
+      "type": "base64_encoder",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "Base64Encoder",
+      "config": {
+        "componentVersion": "1.0",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::Base64Encoder/version::1.0",
+        "contentEncoding": "UTF-8|<encoding>",
+        "lineSeparator": "None|CR|LF|CRLF",
+        "lineLength": "76|<integer>",
+        "encodeAttachments": "true|false"
+      }
+    },
+
+    "32_gzip_compression": {
+      "type": "gzip_compressor",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "GZipCompressor",
+      "config": {
+        "componentVersion": "1.0",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::GZipCompressor/version::1.0",
+        "streaming": "true|false",
+        "compressionLevel": "1|2|3|4|5|6|7|8|9"
+      }
+    },
+
+    "33_mime_multipart_encoder": {
+      "type": "mime_multipart_encoder",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "MIMEMultipartEncoder",
+      "config": {
+        "componentVersion": "1.0",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::MIMEMultipartEncoder/version::1.0",
+        "includeHeaders": "true|false",
+        "boundary": "<boundary_string>",
+        "attachmentHandling": "KeepAsAttachments|MoveToBody"
+      }
+    },
+
+    "34_zip_compression": {
+      "type": "zip_compressor",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "ZipCompressor",
+      "config": {
+        "componentVersion": "1.0",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::ZipCompressor/version::1.0",
+        "compressionLevel": "1|2|3|4|5|6|7|8|9",
+        "zipEntryName": "<filename>",
+        "includeAttachments": "true|false",
+        "zipSource": "Body|Attachments|All"
+      }
+    },
+
+    "// ========================================": "FILTERING & SCRIPTING (35-39)",
+    "// ========================================": "",
+
+    "35_filter": {
+    "type": "filter",
+    "id": "<component_id>",
+    "name": "<component_name>",
+    "sap_activity_type": "Filter",
+    "config": {
+      "componentVersion": "1.0",
+      "cmdVariantUri": "ctype::FlowstepVariant/cname::Filter/version::1.0",
+      "expression": "<xpath_or_script_expression>",
+      "expressionType": "XML", 
+      "xpath": "<xpath_expression>",
+      "value": "<comparison_value>",
+      "valueType": "<boolean|integer|string|node|nodelist>",
+      "traceEnabled": false,
+      "negateResult": false,
+      "description": "",
+      "enabled": true
+      }
+    },
+
+    "36_message_digest": {
+      "type": "message_digest",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "MessageDigest",
+      "config": {
+        "componentVersion": "1.0",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::MessageDigest/version::1.0",
+        "algorithm": "MD5|SHA-1|SHA-256|SHA-384|SHA-512",
+        "encoding": "Base64|Hex",
+        "headerName": "<output_header_name>"
+      }
+    },
+
+    "37_groovy_script": {
+      "type": "script",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "Script",
+      "sap_sub_activity_type": "GroovyScript",
+      "config": {
+        "componentVersion": "1.1",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::GroovyScript/version::1.1.2",
+        "activityType": "Script",
+        "subActivityType": "GroovyScript",
+        "script": "<script_filename.groovy>",
+        "scriptFile": "<script_filename.groovy>",
+        "scriptContent": "<groovy_code>",
+        "scriptFunction": "<function_name>",
+        "scriptBundleId": "<bundle_id>",
+        "scriptCollection": "groovy"
+      }
+    },
+
+    "38_javascript": {
+      "type": "javascript",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "Script",
+      "sap_sub_activity_type": "JavaScript",
+      "config": {
+        "componentVersion": "1.0",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::JavaScript/version::1.0",
+        "activityType": "Script",
+        "subActivityType": "JavaScript",
+        "script": "<script_filename.js>",
+        "scriptFile": "<script_filename.js>",
+        "scriptContent": "<javascript_code>",
+        "scriptFunction": "<function_name>"
+      }
+    },
+
+    "39_xml_modifier": {
+      "type": "xml_modifier",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "XMLModifier",
+      "config": {
+        "componentVersion": "1.0",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::XMLModifier/version::1.0",
+        "modificationsTable": "<xml_encoded_modifications>",
+        "modifications": [
+          {
+            "Action": "Add|Modify|Delete",
+            "Path": "<xpath>",
+            "Value": "<value_or_expression>",
+            "Type": "Element|Attribute|Text",
+            "Namespace": "<namespace_uri>",
+            "NamespacePrefix": "<prefix>"
+          }
+        ]
+      }
+    },
+
+    "// ========================================": "ENRICHMENT & MESSAGING (40-45)",
+    "// ========================================": "",
+
+    "40_content_enricher": {
+      "type": "enricher",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "Enricher",
+      "config": {
+        "componentVersion": "1.6",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::Enricher/version::1.6.0",
+        "activityType": "Enricher",
+        "bodyType": "expression|constant",
+        "bodyContent": "<content_or_expression>",
+        "wrapContent": "<wrapper_element_name>",
+        "propertyTable": "<xml_encoded_property_table>",
+        "headerTable": "<xml_encoded_header_table>",
+        "properties": [
+          {
+            "Action": "Create|Delete",
+            "Type": "constant|expression|header|property",
+            "Value": "<value>",
+            "Default": "<default_value>",
+            "Name": "<property_name>",
+            "Datatype": "java.lang.String|java.lang.Integer|java.lang.Boolean|java.math.BigDecimal"
+          }
+        ],
+        "headers": [
+          {
+            "Action": "Create|Delete",
+            "Type": "constant|expression|header|property",
+            "Value": "<value>",
+            "Default": "<default_value>",
+            "Name": "<header_name>",
+            "Datatype": "java.lang.String"
+          }
+        ]
+      }
+    },
+
+    "41_poll_enrich": {
+      "type": "poll_enrich",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "PollEnrich",
+      "config": {
+        "componentVersion": "1.0",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::PollEnrich/version::1.0",
+        "resourceUri": "<resource_uri>",
+        "timeout": "<milliseconds>",
+        "aggregationAlgorithm": "Combine|Enrich",
+        "aggregationStrategy": "<strategy_bean_name>",
+        "originalMessageIsKey": "true|false"
+      }
+    },
+
+    "42_request_reply": {
+      "type": "request_reply",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "ExternalCall",
+      "sap_component_type": "HTTP|SuccessFactors|SFTP|OData|SOAP|ProcessDirect",
+      "sap_protocol": "HTTP|HTTPS|SFTP|OData V2|OData V4|SOAP 1.1|SOAP 1.2",
+      "sap_endpoint_path": "<endpoint_path_or_url>",
+      "sap_operation": "GET|POST|PUT|DELETE|PATCH|get|post|put|delete|patch",
+      "config": {
+        "componentVersion": "1.0",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::ExternalCall/version::1.0.4",
+        "activityType": "ExternalCall",
+        "url": "<full_url>",
+        "address": "<base_url>",
+        "endpoint_path": "<path>",
+        "method": "GET|POST|PUT|DELETE|PATCH",
+        "httpMethod": "GET|POST|PUT|DELETE|PATCH",
+        "headers": {
+          "<header_name>": "<header_value>"
+        },
+        "httpRequestHeader": "<xml_encoded_headers>",
+        "authentication": {
+          "type": "None|Basic|OAuth|OAuth2ClientCredentials|ClientCertificate",
+          "authenticationMethod": "None|Basic Authentication|OAuth2 Client Credentials|Client Certificate",
+          "credentialName": "<credential_name>",
+          "credential_name": "<credential_name>"
+        },
+        "timeout": "<milliseconds>",
+        "httpRequestTimeout": "60000",
+        "throwExceptionOnFailure": "true|false",
+        "httpShouldSendBody": "true|false",
+        "httpKeepAlive": "true|false",
+        "allowedResponseHeaders": "*|<header_list>",
+        "allowedRequestHeaders": "*|<header_list>",
+        "proxyType": "none|default|manual|<proxy_type>",
+        "proxyHost": "<proxy_host>",
+        "proxyPort": "<proxy_port>",
+        "locationID": "<location_id>",
+        "privateKeyAlias": "<key_alias>",
+        "retry": {
+          "enabled": "true|false",
+          "retryOnConnectionFailure": "true|false",
+          "retryInterval": "5",
+          "retryIteration": "1",
+          "maximumReconnectAttempts": "3"
+        }
+      }
+    },
+
+    "43_send": {
+      "type": "send",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "Send",
+      "config": {
+        "componentVersion": "1.0",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::Send/version::1.0",
+        "endpoint": "<endpoint_uri>",
+        "exchangePattern": "InOnly|InOut"
+      }
+    },
+
+    "44_idempotent_process_call": {
+      "type": "idempotent_process_call",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "IdempotentProcessCall",
+      "config": {
+        "componentVersion": "1.0",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::IdempotentProcessCall/version::1.0",
+        "processId": "<called_process_id>",
+        "processName": "<called_process_name>",
+        "messageIdExpression": "<expression_for_deduplication>",
+        "skipDuplicateMessages": "true|false",
+        "entryTtl": "<time_in_days>",
+        "dataStoreName": "<datastore_name>"
+      }
+    },
+
+    "45_looping_process_call": {
+      "type": "looping_process_call",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "LoopingProcessCall",
+      "config": {
+        "componentVersion": "1.0",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::LoopingProcessCall/version::1.0",
+        "processId": "<called_process_id>",
+        "processName": "<called_process_name>",
+        "loopCondition": "<expression>",
+        "maxNumberOfIterations": "<integer>",
+        "parallel": "true|false",
+        "numberOfConcurrentProcesses": "<integer>"
+      }
+    },
+
+    "// ========================================": "PROCESS CALL & ROUTING (46-52)",
+    "// ========================================": "",
+
+    "46_process_call": {
+      "type": "process_call",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "ProcessCallElement",
+      "config": {
+        "componentVersion": "1.0",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::NonLoopingProcess/version::1.0.4",
+        "activityType": "ProcessCallElement",
+        "subActivityType": "NonLoopingProcess",
+        "processId": "<called_process_id>",
+        "processName": "<called_process_name>",
+        "transactionalHandling": "From Calling Process|Not Required|Required for JDBC",
+        "transactionTimeout": "30"
+      }
+    },
+
+    "47_aggregator": {
+      "type": "aggregator",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "Aggregator",
+      "config": {
+        "componentVersion": "1.2",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::Aggregator/version::1.2.0",
+        "aggregationAlgorithm": "Combine|Concatenate",
+        "correlationExpression": "<expression>",
+        "completionCondition": "<expression>",
+        "completionTimeout": "<milliseconds>",
+        "completionTimeoutExpression": "<expression>",
+        "dataStoreName": "<datastore_name>",
+        "aggregationStrategy": "Custom|<built_in_strategy>",
+        "lastMessageCondition": "<expression>",
+        "messageSequenceExpression": "<expression>",
+        "parallel": "true|false"
+      }
+    },
+
+    "48_gather": {
+      "type": "gather",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "Gather",
+      "config": {
+        "componentVersion": "1.0",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::Gather/version::1.0",
+        "gatherCondition": "<expression>",
+        "timeout": "<milliseconds>",
+        "incomingBranches": "<integer>",
+        "aggregationAlgorithm": "Combine|Concatenate"
+      }
+    },
+
+    "49_join": {
+      "type": "join_gateway",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "Join",
+      "config": {
+        "componentVersion": "1.0",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::Join/version::1.0.0",
+        "activityType": "Join",
+        "subActivityType": "parallel|exclusive",
+        "joinType": "parallel|exclusive"
+      }
+    },
+
+    "50_parallel_multicast": {
+      "type": "multicast",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "Multicast",
+      "config": {
+        "componentVersion": "1.2",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::Multicast/version::1.2.0",
+        "parallelProcessing": "true",
+        "stopOnException": "true|false",
+        "streaming": "true|false",
+        "timeout": "<milliseconds>",
+        "executorServiceRef": "<executor_ref>",
+        "aggregationStrategy": "<strategy_bean_name>",
+        "shareUnitOfWork": "true|false"
+      }
+    },
+
+    "51_sequential_multicast": {
+      "type": "sequential_multicast",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "Multicast",
+      "config": {
+        "componentVersion": "1.2",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::Multicast/version::1.2.0",
+        "parallelProcessing": "false",
+        "stopOnException": "true|false",
+        "streaming": "true|false",
+        "aggregationStrategy": "<strategy_bean_name>",
+        "shareUnitOfWork": "true|false"
+      }
+    },
+
+    "52_router": {
+      "type": "router",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "ExclusiveGateway",
+      "config": {
+        "componentVersion": "1.1",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::ExclusiveGateway/version::1.1.2",
+        "activityType": "ExclusiveGateway",
+        "gatewayType": "exclusive",
+        "default": "<default_flow_id>",
+        "defaultFlowId": "<default_flow_id>",
+        "throwException": "true|false",
+        "routing_conditions": [
+          {
+            "id": "<flow_id>",
+            "name": "<route_name>",
+            "target": "<target_component_id>",
+            "condition": "<xpath_or_expression>",
+            "expression": "<xpath_or_expression>",
+            "expressionType": "XML|JavaScript|Groovy",
+            "expression_type": "XML|JavaScript|Groovy",
+            "default": false,
+            "conditionExpression": "<raw_condition_xml>"
+          }
+        ]
+      }
+    },
+
+    "// ========================================": "SPLITTER COMPONENTS (53-59)",
+    "// ========================================": "",
+
+    "53_edi_splitter": {
+      "type": "edi_splitter",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "EDISplitter",
+      "config": {
+        "componentVersion": "1.0",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::EDISplitter/version::1.0",
+        "segmentType": "<segment_type_to_split>",
+        "grouping": "1",
+        "parallel": "true|false",
+        "streaming": "true|false",
+        "stopOnException": "true|false",
+        "executorServiceRef": "<executor_ref>"
+      }
+    },
+
+    "54_general_splitter": {
+      "type": "general_splitter",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "Splitter",
+      "config": {
+        "componentVersion": "1.4",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::Splitter/version::1.4.0",
+        "activityType": "Splitter",
+        "expressionType": "XPath|Token|Line|JSONPath",
+        "xpath": "<xpath_expression>",
+        "path": "<xpath_or_jsonpath_expression>",
+        "token": "<token_string>",
+        "grouping": "1",
+        "parallel": "true|false",
+        "streaming": "true|false",
+        "stopOnException": "true|false",
+        "timeout": "<milliseconds>",
+        "executorServiceRef": "<executor_ref>"
+      }
+    },
+
+    "55_idoc_splitter": {
+      "type": "idoc_splitter",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "IDocSplitter",
+      "config": {
+        "componentVersion": "1.0",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::IDocSplitter/version::1.0",
+        "parallel": "true|false",
+        "streaming": "true|false",
+        "stopOnException": "true|false",
+        "executorServiceRef": "<executor_ref>"
+      }
+    },
+
+    "56_iterating_splitter": {
+      "type": "iterating_splitter",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "IteratingSplitter",
+      "config": {
+        "componentVersion": "1.2",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::IteratingSplitter/version::1.2.0",
+        "expressionType": "XPath|Token|Line|JSONPath",
+        "xpath": "<xpath_expression>",
+        "path": "<xpath_or_jsonpath_expression>",
+        "token": "<token_string>",
+        "grouping": "1",
+        "parallel": "true|false",
+        "streaming": "true|false",
+        "stopOnException": "true|false",
+        "timeout": "<milliseconds>",
+        "executorServiceRef": "<executor_ref>"
+      }
+    },
+
+    "57_pkcs7_splitter": {
+      "type": "pkcs7_splitter",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "PKCS7Splitter",
+      "config": {
+        "componentVersion": "1.0",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::PKCS7Splitter/version::1.0",
+        "parallel": "true|false",
+        "stopOnException": "true|false"
+      }
+    },
+
+    "58_tar_splitter": {
+      "type": "tar_splitter",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "TarSplitter",
+      "config": {
+        "componentVersion": "1.0",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::TarSplitter/version::1.0",
+        "filePattern": "<regex_pattern>",
+        "parallel": "true|false",
+        "streaming": "true|false",
+        "stopOnException": "true|false"
+      }
+    },
+
+    "59_zip_splitter": {
+      "type": "zip_splitter",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "ZipSplitter",
+      "config": {
+        "componentVersion": "1.0",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::ZipSplitter/version::1.0",
+        "filePattern": "<regex_pattern>",
+        "parallel": "true|false",
+        "streaming": "true|false",
+        "stopOnException": "true|false"
+      }
+    },
+
+    "// ========================================": "SECURITY - DECRYPTION (60-61)",
+    "// ========================================": "",
+
+    "60_pgp_decryptor": {
+      "type": "pgp_decryptor",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "PGPDecryptor",
+      "config": {
+        "componentVersion": "1.0",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::PGPDecryptor/version::1.0",
+        "privateKeyAlias": "<keystore_alias>",
+        "signaturesHandling": "Verify|Ignore|VerifyAndRemove",
+        "signerPublicKeyAlias": "<signer_alias>",
+        "signerUserIds": "<userid_list>"
+      }
+    },
+
+    "61_pkcs7_decryptor": {
+      "type": "pkcs7_decryptor",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "PKCS7Decryptor",
+      "config": {
+        "componentVersion": "1.0",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::PKCS7Decryptor/version::1.0",
+        "privateKeyAlias": "<keystore_alias>",
+        "contentEncryptionAlgorithm": "AES|DES|3DES|AES128_CBC|AES192_CBC|AES256_CBC"
+      }
+    },
+
+    "// ========================================": "SECURITY - ENCRYPTION (62-63)",
+    "// ========================================": "",
+
+    "62_pgp_encryptor": {
+      "type": "pgp_encryptor",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "PGPEncryptor",
+      "config": {
+        "componentVersion": "1.0",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::PGPEncryptor/version::1.0",
+        "recipientPublicKeyAlias": "<recipient_alias>",
+        "recipientPublicKeyAliases": "<alias_list>",
+        "encryptionAlgorithm": "CAST5|AES128|AES192|AES256|3DES|IDEA|BLOWFISH",
+        "armor": "true|false",
+        "integrityCheck": "true|false",
+        "compressionAlgorithm": "ZIP|ZLIB|BZIP2|Uncompressed"
+      }
+    },
+
+    "63_pkcs7_encryptor": {
+      "type": "pkcs7_encryptor",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "PKCS7Encryptor",
+      "config": {
+        "componentVersion": "1.0",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::PKCS7Encryptor/version::1.0",
+        "recipientPublicKeyAlias": "<recipient_alias>",
+        "recipientPublicKeyAliases": "<alias_list>",
+        "contentEncryptionAlgorithm": "AES128_CBC|AES192_CBC|AES256_CBC|DES_EDE3_CBC|RC2_CBC"
+      }
+    },
+
+    "// ========================================": "SECURITY - SIGNING (64-66)",
+    "// ========================================": "",
+
+    "64_pkcs7_signer": {
+      "type": "pkcs7_signer",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "PKCS7Signer",
+      "config": {
+        "componentVersion": "1.0",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::PKCS7Signer/version::1.0",
+        "privateKeyAlias": "<keystore_alias>",
+        "signatureAlgorithm": "SHA1withRSA|SHA256withRSA|SHA384withRSA|SHA512withRSA|MD5withRSA",
+        "includeCertificates": "true|false",
+        "includeSigningTime": "true|false"
+      }
+    },
+
+    "65_simple_signer": {
+      "type": "simple_signer",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "SimpleSigner",
+      "config": {
+        "componentVersion": "1.0",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::SimpleSigner/version::1.0",
+        "privateKeyAlias": "<keystore_alias>",
+        "signatureAlgorithm": "SHA1withRSA|SHA256withRSA|SHA384withRSA|SHA512withRSA"
+      }
+    },
+
+    "66_xml_digital_signer": {
+      "type": "xml_digital_signer",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "XMLDigitalSigner",
+      "config": {
+        "componentVersion": "1.0",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::XMLDigitalSigner/version::1.0",
+        "privateKeyAlias": "<keystore_alias>",
+        "signatureAlgorithm": "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256|http://www.w3.org/2001/04/xmldsig-more#rsa-sha512",
+        "digestAlgorithm": "http://www.w3.org/2001/04/xmlenc#sha256|http://www.w3.org/2001/04/xmlenc#sha512",
+        "canonicalizationMethod": "http://www.w3.org/TR/2001/REC-xml-c14n-20010315|http://www.w3.org/TR/2001/REC-xml-c14n-20010315#WithComments",
+        "transformAlgorithms": "<transform_algorithm_list>",
+        "xpathExpression": "<xpath_to_sign>",
+        "includeKeyInfo": "true|false",
+        "keyInfoContent": "X509Certificate|X509IssuerSerial|X509SubjectName|PublicKey"
+      }
+    },
+
+    "// ========================================": "SECURITY - VERIFICATION (67-68)",
+    "// ========================================": "",
+
+    "67_pkcs7_signature_verifier": {
+      "type": "pkcs7_verifier",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "PKCS7SignatureVerifier",
+      "config": {
+        "componentVersion": "1.0",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::PKCS7SignatureVerifier/version::1.0",
+        "signerPublicKeyAlias": "<signer_alias>",
+        "signerPublicKeyAliases": "<alias_list>",
+        "removeSignature": "true|false",
+        "verifySignature": "true|false"
+      }
+    },
+
+    "68_xml_signature_verifier": {
+      "type": "xml_signature_verifier",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "XMLSignatureVerifier",
+      "config": {
+        "componentVersion": "1.0",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::XMLSignatureVerifier/version::1.0",
+        "signerPublicKeyAlias": "<signer_alias>",
+        "signerPublicKeyAliases": "<alias_list>",
+        "removeSignature": "true|false",
+        "verifySignature": "true|false",
+        "xpathExpression": "<xpath_to_signature>"
+      }
+    },
+
+    "// ========================================": "DATA STORE COMPONENTS (69-72)",
+    "// ========================================": "",
+
+    "69_delete": {
+      "type": "data_store_delete",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "DataStoreDelete",
+      "config": {
+        "componentVersion": "1.0",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::DataStoreDelete/version::1.0",
+        "dataStoreName": "<datastore_name>",
+        "entryId": "<entry_id_expression>",
+        "visibility": "Global|Integration Flow|Tenant"
+      }
+    },
+
+    "70_get": {
+      "type": "data_store_get",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "DataStoreGet",
+      "config": {
+        "componentVersion": "1.0",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::DataStoreGet/version::1.0",
+        "dataStoreName": "<datastore_name>",
+        "entryId": "<entry_id_expression>",
+        "visibility": "Global|Integration Flow|Tenant",
+        "throwExceptionOnMissingEntry": "true|false"
+      }
+    },
+
+    "71_select": {
+      "type": "data_store_select",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "DataStoreSelect",
+      "config": {
+        "componentVersion": "1.0",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::DataStoreSelect/version::1.0",
+        "dataStoreName": "<datastore_name>",
+        "visibility": "Global|Integration Flow|Tenant",
+        "numberOfPolls": "1",
+        "deleteOnCompletion": "true|false"
+      }
+    },
+
+    "72_write": {
+      "type": "data_store_write",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "DataStoreWrite",
+      "config": {
+        "componentVersion": "1.0",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::DataStoreWrite/version::1.0",
+        "dataStoreName": "<datastore_name>",
+        "entryId": "<entry_id_expression>",
+        "visibility": "Global|Integration Flow|Tenant",
+        "overwriteEntry": "true|false",
+        "retentionThreshold": "<days>"
+      }
+    },
+
+    "// ========================================": "VARIABLE COMPONENTS (73-74)",
+    "// ========================================": "",
+
+    "73_persist": {
+      "type": "persist",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "Persist",
+      "config": {
+        "componentVersion": "1.0",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::Persist/version::1.0",
+        "persistenceType": "JMS|DataStore",
+        "queueName": "<jms_queue_name>",
+        "dataStoreName": "<datastore_name>",
+        "entryId": "<entry_id_expression>",
+        "visibility": "Global|Integration Flow|Tenant",
+        "retentionThreshold": "<days>",
+        "encryptMessage": "true|false",
+        "compressMessage": "true|false"
+      }
+    },
+
+    "74_write_variables": {
+      "type": "write_variables",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "WriteVariables",
+      "config": {
+        "componentVersion": "1.0",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::WriteVariables/version::1.0",
+        "variables": [
+          {
+            "name": "<variable_name>",
+            "type": "constant|expression|header|property",
+            "value": "<value_or_expression>",
+            "datatype": "java.lang.String|java.lang.Integer|<type>"
+          }
+        ]
+      }
+    },
+
+    "// ========================================": "VALIDATOR COMPONENTS (75-76)",
+    "// ========================================": "",
+
+    "75_edi_validator": {
+      "type": "edi_validator",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "EDIValidator",
+      "config": {
+        "componentVersion": "1.0",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::EDIValidator/version::1.0",
+        "schemaName": "<edi_schema_file>",
+        "validate": "true|false",
+        "failOnValidationError": "true|false",
+        "storeValidationErrors": "true|false",
+        "validationErrorHeaderName": "<header_name>"
+      }
+    },
+
+    "76_xml_validator": {
+      "type": "xml_validator",
+      "id": "<component_id>",
+      "name": "<component_name>",
+      "sap_activity_type": "XMLValidator",
+      "config": {
+        "componentVersion": "1.1",
+        "cmdVariantUri": "ctype::FlowstepVariant/cname::XMLValidator/version::1.1.0",
+        "schemaSource": "XSD|WSDL|DTD",
+        "schemaResourcePath": "<xsd_or_wsdl_file>",
+        "schemaRootElement": "<root_element_qname>",
+        "failOnValidationError": "true|false",
+        "storeValidationErrors": "true|false",
+        "validationErrorHeaderName": "<header_name>",
+        "useExternalSchemaLocation": "true|false"
+      }
+    }
+  }
+
+}

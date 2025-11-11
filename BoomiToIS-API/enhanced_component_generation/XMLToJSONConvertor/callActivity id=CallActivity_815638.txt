@@ -1,0 +1,102 @@
+<callActivity id="CallActivity_81563860" name="XML to JSON Converter">
+    <extensionElements>
+        <property>
+            <key>
+                xmlJsonUseStreaming
+            </key>
+            <value>
+                true
+            </value>
+        </property>
+        <property>
+            <key>
+                xmlJsonSuppressRootElement
+            </key>
+            <value>
+                true
+            </value>
+        </property>
+        <property>
+            <key>
+                xmlJsonPathTable
+            </key>
+            <value>
+                &lt;row&gt;&lt;cell&gt;/Titles/Title/businessUnits&lt;/cell&gt;&lt;cell&gt;&lt;/cell&gt;&lt;/row&gt;&lt;row&gt;&lt;cell&gt;/Titles/Title&lt;/cell&gt;&lt;cell&gt;&lt;/cell&gt;&lt;/row&gt;
+            </value>
+        </property>
+        <property>
+            <key>
+                jsonOutputEncoding
+            </key>
+            <value/>
+        </property>
+        <property>
+            <key>
+                jsonNamespaceMapping
+            </key>
+            <value/>
+        </property>
+        <property>
+            <key>
+                xmlJsonConvertAllElements
+            </key>
+            <value>
+                specific
+            </value>
+        </property>
+        <property>
+            <key>
+                componentVersion
+            </key>
+            <value>
+                1.0
+            </value>
+        </property>
+        <property>
+            <key>
+                activityType
+            </key>
+            <value>
+                XmlToJsonConverter
+            </value>
+        </property>
+        <property>
+            <key>
+                cmdVariantUri
+            </key>
+            <value>
+                ctype::FlowstepVariant/cname::XmlToJsonConverter/version::1.0.6
+            </value>
+        </property>
+        <property>
+            <key>
+                useNamespaces
+            </key>
+            <value>
+                true
+            </value>
+        </property>
+        <property>
+            <key>
+                jsonNamespaceSeparator
+            </key>
+            <value>
+                :
+            </value>
+        </property>
+    </extensionElements>
+    <incoming>
+        SequenceFlow_81564255
+    </incoming>
+    <outgoing>
+        SequenceFlow_81563892
+    </outgoing>
+</callActivity>
+<sequenceFlow id="SequenceFlow_81563892" sourceRef="CallActivity_81563860" targetRef="CallActivity_81563891"/>
+<BPMNShape bpmnElement="CallActivity_81563860" id="BPMNShape_CallActivity_81563860">
+    <Bounds height="60.0" width="100.0" x="1597.0" y="-152.0"/>
+</BPMNShape>
+<BPMNEdge bpmnElement="SequenceFlow_81563892" id="BPMNEdge_SequenceFlow_81563892" sourceElement="BPMNShape_CallActivity_81563860" targetElement="BPMNShape_CallActivity_81563891">
+    <waypoint x="1647.0" xsi:type="dc:Point" y="-122.0"/>
+    <waypoint x="1775.0" xsi:type="dc:Point" y="-122.0"/>
+</BPMNEdge>

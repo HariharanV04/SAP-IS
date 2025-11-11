@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn2:definitions xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" 
+                   xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" 
+                   xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" 
+                   xmlns:di="http://www.omg.org/spec/DD/20100524/DI" 
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+                                       xmlns:ifl="http:///com.sap.ifl.model/Ifl.xsd" 
+                   id="Definitions_1" 
+                   targetNamespace="http://bpmn.io/schema/bpmn" 
+                   exporter="bpmn-js (https://demo.bpmn.io)" 
+                   exporterVersion="9.0.3">
+  <bpmn2:collaboration id="Collaboration_1" name="Simple Test Integration">
+    <bpmn2:participant id="Process_Participant" ifl:type="IntegrationProcess" name="Integration Process" processRef="Process_1">
+      <bpmn2:extensionElements/>
+    </bpmn2:participant>
+    <bpmn2:extensionElements>
+      <ifl:property>
+        <key>namespaceMapping</key>
+        <value></value>
+      </ifl:property>
+      <ifl:property>
+        <key>httpSessionHandling</key>
+        <value>None</value>
+      </ifl:property>
+      <ifl:property>
+        <key>accessControlMaxAge</key>
+        <value></value>
+      </ifl:property>
+      <ifl:property>
+        <key>returnExceptionToSender</key>
+        <value>false</value>
+      </ifl:property>
+      <ifl:property>
+        <key>log</key>
+        <value>All events</value>
+      </ifl:property>
+      <ifl:property>
+        <key>corsEnabled</key>
+        <value></value>
+      </ifl:property>
+      <ifl:property>
+        <key>exposedHeaders</key>
+        <value></value>
+      </ifl:property>
+      <ifl:property>
+        <key>allowedHeaderList</key>
+        <value></value>
+      </ifl:property>
+      <ifl:property>
+        <key>ServerTrace</key>
+        <value>false</value>
+      </ifl:property>
+      <ifl:property>
+        <key>allowedOrigins</key>
+        <value></value>
+      </ifl:property>
+      <ifl:property>
+        <key>accessControlAllowCredentials</key>
+        <value></value>
+      </ifl:property>
+      <ifl:property>
+        <key>allowedHeaders</key>
+        <value></value>
+      </ifl:property>
+      <ifl:property>
+        <key>allowedMethods</key>
+        <value></value>
+      </ifl:property>
+      <ifl:property>
+        <key>componentVersion</key>
+        <value>1.0</value>
+      </ifl:property>
+      <ifl:property>
+        <key>cmdVariantUri</key>
+        <value>ctype::IFlowVariant/cname::IFlowConfiguration/version::1.0.0</value>
+      </ifl:property>
+    </bpmn2:extensionElements>
+  </bpmn2:collaboration>
+  <bpmn2:process id="Process_1" name="Integration Process" isExecutable="true">
+    <bpmn2:extensionElements>
+      <ifl:property>
+        <key>transactionTimeout</key>
+        <value>30</value>
+      </ifl:property>
+      <ifl:property>
+        <key>componentVersion</key>
+        <value>1.2</value>
+      </ifl:property>
+      <ifl:property>
+        <key>cmdVariantUri</key>
+        <value>ctype::FlowElementVariant/cname::IntegrationProcess/version::1.2.1</value>
+      </ifl:property>
+      <ifl:property>
+        <key>transactionalHandling</key>
+        <value>Not Required</value>
+      </ifl:property>
+    </bpmn2:extensionElements>
+    <bpmn2:startEvent id="StartEvent_2" name="Start">
+      <bpmn2:extensionElements>
+        <ifl:property>
+          <key>componentType</key>
+          <value>StartEvent</value>
+        </ifl:property>
+        <ifl:property>
+          <key>componentVersion</key>
+          <value>1.0</value>
+        </ifl:property>
+      </bpmn2:extensionElements>
+      <bpmn2:outgoing>flow_001</bpmn2:outgoing>
+      <bpmn2:messageEventDefinition/>
+    </bpmn2:startEvent>
+    <bpmn2:endEvent id="EndEvent_2" name="End">
+      <bpmn2:extensionElements>
+        <ifl:property>
+          <key>componentType</key>
+          <value>EndEvent</value>
+        </ifl:property>
+        <ifl:property>
+          <key>componentVersion</key>
+          <value>1.0</value>
+        </ifl:property>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>flow_003</bpmn2:incoming>
+      <bpmn2:messageEventDefinition/>
+    </bpmn2:endEvent>
+    <!-- Endpoint: Main Integration Flow -->
+<bpmn2:callActivity id="content_modifier_001" name="Content_Modifier_1">
+            <bpmn2:extensionElements>
+                <ifl:property>
+                    <key>bodyType</key>
+                    <value>constant</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>propertyTable</key>
+                    <value><![CDATA[<row><cell id="Action">Create</cell><cell id="Type">constant</cell><cell id="Name">CustomerStatus</cell><cell id="Value">Active</cell><cell id="Default"></cell><cell id="Datatype"></cell><cell id="Enabled">true</cell></row>]]></value>
+                </ifl:property>
+                <ifl:property>
+                    <key>headerTable</key>
+                    <value><![CDATA[<row><cell id="Action">Create</cell><cell id="Type">constant</cell><cell id="Name">RecordType</cell><cell id="Value">CustomerData</cell><cell id="Default"></cell><cell id="Datatype"></cell><cell id="Enabled">true</cell></row>]]></value>
+                </ifl:property>
+                <ifl:property>
+                    <key>wrapContent</key>
+                    <value></value>
+                </ifl:property>
+                <ifl:property>
+                    <key>componentVersion</key>
+                    <value>1.6</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>activityType</key>
+                    <value>Enricher</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>cmdVariantUri</key>
+                    <value>ctype::FlowstepVariant/cname::Enricher/version::1.6.1</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>bodyContent</key>
+                    <value></value>
+                </ifl:property>
+                <ifl:property>
+                    <key>bodyEncoding</key>
+                    <value>UTF-8</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>componentVersion</key>
+                    <value>1.0</value>
+                </ifl:property>
+            </bpmn2:extensionElements>
+                <bpmn2:incoming>flow_001</bpmn2:incoming>
+                <bpmn2:outgoing>flow_002</bpmn2:outgoing>
+        </bpmn2:callActivity>
+    <bpmn2:serviceTask id="filter_001" name="Filter_1">
+      <bpmn2:extensionElements>
+          <ifl:property>
+              <key>componentType</key>
+              <value>ServiceTask</value>
+          </ifl:property>
+          <ifl:property>
+              <key>componentVersion</key>
+              <value>1.0</value>
+          </ifl:property>
+          <ifl:property>
+              <key>activityType</key>
+              <value>Filter</value>
+          </ifl:property>
+      </bpmn2:extensionElements>
+    </bpmn2:serviceTask>
+    <bpmn2:sequenceFlow id="flow_001" sourceRef="StartEvent_2" targetRef="content_modifier_001"/>
+    <bpmn2:sequenceFlow id="flow_002" sourceRef="content_modifier_001" targetRef="filter_001"/>
+    <bpmn2:sequenceFlow id="flow_003" sourceRef="filter_001" targetRef="EndEvent_2"/>
+  </bpmn2:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane bpmnElement="Collaboration_1" id="BPMNPlane_1">
+      <bpmndi:BPMNShape bpmnElement="Process_Participant" id="BPMNShape_Process_Participant">
+        <dc:Bounds height="300.0" width="1200.0" x="50" y="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds height="14.0" width="200.0" x="50" y="30"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="StartEvent_2" id="BPMNShape_StartEvent_2">
+        <dc:Bounds height="32.0" width="32.0" x="100" y="100"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds height="14.0" width="32.0" x="100" y="140"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="EndEvent_2" id="BPMNShape_EndEvent_2">
+        <dc:Bounds height="32.0" width="32.0" x="1200" y="100"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds height="14.0" width="32.0" x="1200" y="140"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="content_modifier_001" id="BPMNShape_content_modifier_001">
+        <dc:Bounds height="80.0" width="100.0" x="300" y="150"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds height="14.0" width="100.0" x="300" y="240"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="filter_001" id="BPMNShape_filter_001">
+        <dc:Bounds height="80.0" width="100.0" x="500" y="150"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds height="14.0" width="100.0" x="500" y="240"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge bpmnElement="flow_001" id="BPMNEdge_flow_001" sourceElement="BPMNShape_StartEvent_2" targetElement="BPMNShape_content_modifier_001">
+        <di:waypoint x="132" xsi:type="dc:Point" y="116"/>
+        <di:waypoint x="300" xsi:type="dc:Point" y="190"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow_002" id="BPMNEdge_flow_002" sourceElement="BPMNShape_content_modifier_001" targetElement="BPMNShape_filter_001">
+        <di:waypoint x="400" xsi:type="dc:Point" y="190"/>
+        <di:waypoint x="500" xsi:type="dc:Point" y="190"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow_003" id="BPMNEdge_flow_003" sourceElement="BPMNShape_filter_001" targetElement="BPMNShape_EndEvent_2">
+        <di:waypoint x="600" xsi:type="dc:Point" y="190"/>
+        <di:waypoint x="1200" xsi:type="dc:Point" y="116"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn2:definitions>

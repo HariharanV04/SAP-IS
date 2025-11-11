@@ -35,8 +35,8 @@ class EnhancedGenAIIFlowGenerator:
             use_converter (bool): If True, use JSON-to-iFlow converter; if False, use template-based approach
         """
         # Initialize the original generator
-        print(f"🔍 DEBUG: EnhancedGenAIIFlowGenerator.__init__ called with use_converter={use_converter}")
-        print(f"🔍 DEBUG: EnhancedGenAIIFlowGenerator.__init__: type(use_converter)={type(use_converter)}")
+        print(f"DEBUG: EnhancedGenAIIFlowGenerator.__init__ called with use_converter={use_converter}")
+        print(f"DEBUG: EnhancedGenAIIFlowGenerator.__init__: type(use_converter)={type(use_converter)}")
         print(f"🆔 VERSION: {self.VERSION_ID}")
         print(f"🆔 FILE: {self.FILE_PATH}")
         
@@ -676,7 +676,6 @@ class EnhancedGenAIIFlowGenerator:
 
         # Combine error context with the full detailed prompt
         return error_context + base_prompt
-
     def _create_detailed_analysis_prompt(self, markdown_content):
         """
         Create a detailed prompt for analyzing the markdown content
@@ -1344,7 +1343,6 @@ class EnhancedGenAIIFlowGenerator:
                 ],
                 "parameters": []
             }
-
     def _create_intelligent_connections(self, components):
         """
         Create intelligent connections between components based on their purpose and position in the flow
@@ -1660,7 +1658,6 @@ def Message {transformation_name}(Message message) {{
         )
         
         return script_name
-
     def _create_endpoint_components(self, endpoint, templates):
         """
         Create components for an endpoint with enhanced support for various component types
@@ -1911,11 +1908,12 @@ def Message {transformation_name}(Message message) {{
             # Place OData participants directly in the collaboration section
             # Use a unique ID for the participant to avoid conflicts
             participant_id = f"Participant_OData_{clean_path}"
+            sanitized_path = self._sanitize_receiver_name(clean_path) if clean_path else "OData"
             endpoint_components["collaboration_participants"].append({
                 "type": "participant",
-                "name": f"InboundProduct_{clean_path}",
+                "name": f"InboundProduct_{sanitized_path}",
                 "id": participant_id,
-                "xml_content": f'''<bpmn2:participant id="{participant_id}" ifl:type="EndpointRecevier" name="InboundProduct_{clean_path}">
+                "xml_content": f'''<bpmn2:participant id="{participant_id}" ifl:type="EndpointRecevier" name="InboundProduct_{sanitized_path}">
                     <bpmn2:extensionElements>
                         <ifl:property>
                             <key>ifl:type</key>
@@ -2131,11 +2129,13 @@ def Message {transformation_name}(Message message) {{
                     if comp.get("type") == "request_reply" and comp.get("sap_component_type") == "SuccessFactors":
                         # Create SuccessFactors participant
                         participant_id = f"Participant_{comp['id']}"
+                        comp_name = comp.get("name", "SuccessFactors")
+                        sanitized_comp_name = self._sanitize_receiver_name(comp_name)
                         endpoint_components["collaboration_participants"].append({
                             "type": "participant",
-                            "name": comp.get("name", "SuccessFactors"),
+                            "name": sanitized_comp_name,
                             "id": participant_id,
-                            "xml_content": f'''<bpmn2:participant id="{participant_id}" ifl:type="EndpointRecevier" name="{comp.get('name', 'SuccessFactors')}">
+                            "xml_content": f'''<bpmn2:participant id="{participant_id}" ifl:type="EndpointRecevier" name="{sanitized_comp_name}">
                                 <bpmn2:extensionElements>
                                     <ifl:property>
                                         <key>ifl:type</key>
@@ -2344,7 +2344,7 @@ def Message {transformation_name}(Message message) {{
                             </ifl:property>
                             <ifl:property>
                                 <key>httpAddressWithoutQuery</key>
-                                <value>https://example.com/api{path}</value>
+                                <value define="true">{address}</value>
                             </ifl:property>
                             <ifl:property>
                                 <key>scc_location_id</key>
@@ -2775,9 +2775,10 @@ def Message processError(Message message) {{
             elif component_type == "http_receiver" or component_type == "https_receiver":
                 # Add a participant for the receiver
                 receiver_participant_id = templates.generate_unique_id("Participant")
+                sanitized_name = self._sanitize_receiver_name(component_name)
                 endpoint_components["participants"].append(templates.participant_template(
                     id=receiver_participant_id,
-                    name=f"Receiver_{component_name}",
+                    name=f"Receiver_{sanitized_name}",
                     type="EndpointRecevier"
                 ))
 
@@ -2909,34 +2910,125 @@ def Message processError(Message message) {{
                 used_ids.add(odata_message_flow_id)
 
             elif component_type == "router" or component_type == "exclusive_gateway":
-                # Add a router to the process - make sure it's an exclusiveGateway, not a callActivity
-                endpoint_components["process_components"].append(templates.router_template(
-                    id=component["id"],
-                    name=component_name,
-                    # Make sure there are no default routes with broken IDs
-                    conditions=component_config.get("conditions", [])
-                ))
-                # Emit router branch sequence flows if provided
-                try:
-                    conditions = component_config.get("conditions", []) or []
-                    for idx, cond in enumerate(conditions):
-                        target = (cond.get("target") or "").strip()
-                        if not target:
-                            continue
-                        flow_id = cond.get("id") or f"flow_{component['id']}_to_{target}_{idx}"
-                        expr = cond.get("expression", "")
-                        expr_type = cond.get("expression_type", "NonXML")
-                        seq_xml = templates.router_condition_template(
-                            id=flow_id,
-                            name=cond.get("name", flow_id),
-                            source_ref=component["id"],
-                            target_ref=target,
-                            expression=expr,
-                            expression_type=expr_type,
-                        )
-                        endpoint_components["sequence_flows"].append(seq_xml)
-                except Exception:
-                    pass
+                # Use enhanced router template that generates gateway + routes together
+                if hasattr(templates, 'router_template_enhanced'):
+                    # Get the previous flow ID if available (for incoming reference)
+                    prev_flow_id = None
+                    # Try to find the incoming flow by checking the flow array
+                    flow_list = endpoint.get("flow", [])
+                    router_index = None
+                    for i, comp_id in enumerate(flow_list):
+                        if comp_id == component["id"]:
+                            router_index = i
+                            break
+                    if router_index and router_index > 0:
+                        prev_component_id = flow_list[router_index - 1]
+                        # Match the linear flow-array ID pattern
+                        prev_flow_id = f"SequenceFlow_{prev_component_id}_to_{component['id']}"
+                    
+                    # Generate router with enhanced template
+                    router_result = templates.router_template_enhanced(component, prev_flow_id)
+                    
+                    # Add gateway to process components
+                    endpoint_components["process_components"].append(router_result["gateway"])
+                    
+                    # Store BPMNEdge specs for diagram generation
+                    if "bpmn_edge_specs" not in endpoint_components:
+                        endpoint_components["bpmn_edge_specs"] = []
+                    bpmn_edge_specs = router_result.get("bpmn_edge_specs", [])
+                    endpoint_components["bpmn_edge_specs"].extend(bpmn_edge_specs)
+                    
+                    # Prefer emitting flows via router_condition_template to ensure correct GatewayRoute metadata
+                    route_specs = router_result.get("route_specs") or []
+                    if route_specs:
+                        for spec in route_specs:
+                            seq_xml = templates.router_condition_template(
+                                id=spec.get('id'),
+                                name=spec.get('name', spec.get('id')),
+                                source_ref=spec.get('source_ref'),
+                                target_ref=spec.get('target_ref'),
+                                expression=spec.get('expression', ''),
+                                expression_type=spec.get('expression_type', 'XML'),
+                            )
+                            endpoint_components["sequence_flows"].append(seq_xml)
+                    else:
+                        # Fallback to inline sequence flows if specs not provided
+                        for seq_flow in router_result.get("sequence_flows", []):
+                            endpoint_components["sequence_flows"].append(seq_flow)
+                    
+                    route_count = len(route_specs) or len(router_result.get("sequence_flows", []))
+                    print(f"        ✅ Router '{component_name}' with {route_count} routes generated (default: {router_result.get('default_flow_id', 'none')})")
+                else:
+                    # Fallback to original method if enhanced template not available
+                    default_flow_id = (
+                        component_config.get("default_flow_id")
+                        or component_config.get("defaultRoute")
+                        or component_config.get("default_route_id")
+                    )
+                    # Normalize route conditions from either "conditions" or "routing_conditions"
+                    raw_conditions = component_config.get("conditions")
+                    if raw_conditions is None:
+                        raw_conditions = component_config.get("routing_conditions", [])
+
+                    # If default not explicitly provided, infer from a condition marked default=true
+                    if not default_flow_id:
+                        for idx, cond in enumerate(raw_conditions or []):
+                            if cond.get("default") is True:
+                                tgt = (cond.get("target") or "").strip()
+                                if tgt:
+                                    default_flow_id = cond.get("id") or f"flow_{component['id']}_to_{tgt}_{idx}"
+                                    break
+
+                    # If there's only one route and no default, set that single route as default
+                    if not default_flow_id and raw_conditions and len(raw_conditions) == 1:
+                        only = raw_conditions[0]
+                        tgt = (only.get("target") or "").strip()
+                        if tgt:
+                            default_flow_id = only.get("id") or f"flow_{component['id']}_to_{tgt}_0"
+
+                    endpoint_components["process_components"].append(templates.router_template(
+                        id=component["id"],
+                        name=component_name,
+                        default_flow_id=default_flow_id,
+                    ))
+                    # Emit router branch sequence flows if provided
+                    try:
+                        conditions = raw_conditions or []
+                        print(f"        [ROUTER] Processing {len(conditions)} routing conditions for router '{component_name}'")
+                        if conditions:
+                            print(f"        [ROUTER] Raw conditions: {conditions}")
+                        for idx, cond in enumerate(conditions):
+                            target = (cond.get("target") or "").strip()
+                            if not target:
+                                print(f"        [ROUTER] Skipping condition {idx}: no target")
+                                continue
+                            flow_id = cond.get("id") or f"flow_{component['id']}_to_{target}_{idx}"
+                            # Allow either "expression" or legacy "condition" key
+                            expr = cond.get("expression")
+                            if expr is None:
+                                expr = cond.get("condition", "")
+                            expr_type = cond.get("expression_type", "XML")
+                            route_name = cond.get("name") or f"Route {idx + 1}"
+                            # Optional raw conditionExpression XML support from metadata
+                            raw_condition_xml = cond.get("condition_xml") or cond.get("conditionExpression")
+                            print(f"        [ROUTER] Generating route {idx + 1}: {flow_id} from {component['id']} to {target} (expr: {expr[:50] if expr else 'default'})")
+                            seq_xml = templates.router_condition_template(
+                                id=flow_id,
+                                name=route_name,
+                                source_ref=component["id"],
+                                target_ref=target,
+                                expression=expr or "",
+                                expression_type=expr_type,
+                                raw_condition_xml=raw_condition_xml or None,
+                            )
+                            endpoint_components["sequence_flows"].append(seq_xml)
+                            print(f"        [ROUTER] Added router route: {flow_id}")
+                        print(f"        [ROUTER] Total router routes added: {len([c for c in conditions if (c.get('target') or '').strip()])}")
+                    except Exception as e:
+                        print(f"        ⚠️  Error generating router routes: {e}")
+                        import traceback
+                        traceback.print_exc()
+                        pass
 
             elif component_type in ("groovy_script", "script"):
                 # Add a Groovy Script step using the groovy_script_template
@@ -3329,9 +3421,10 @@ def Message processError(Message message) {{
                     endpoint_components["process_components"].append(sftp_component["definition"])
                     
                     # Create SFTP receiver participant and message flow
+                    sanitized_name = self._sanitize_receiver_name(component_name)
                     sftp_participant = templates.sftp_receiver_participant_template(
                         id=f"Participant_{component['id']}",
-                        name=f"{component_name}_SFTP"
+                        name=f"{sanitized_name}_SFTP"
                     )
                     endpoint_components["participants"].append(sftp_participant["definition"])
                     
@@ -3486,9 +3579,10 @@ def Message processError(Message message) {{
                     else:
                         auth_type = str(auth_config)
 
+                    sanitized_name = self._sanitize_receiver_name(component_name)
                     sftp_participant = templates.sftp_receiver_participant_template(
                         id=participant_id,
-                        name=f"{component_name}_SFTP"
+                        name=f"{sanitized_name}_SFTP"
                     )
 
                     sftp_message_flow = templates.sftp_receiver_message_flow_template(
@@ -3520,9 +3614,10 @@ def Message processError(Message message) {{
                     if isinstance(auth_method, dict):
                         auth_method = auth_method.get("type", "OAuth")
 
+                    sanitized_name = self._sanitize_receiver_name(component_name)
                     sf_participant = templates.successfactors_receiver_participant_template(
                         id=participant_id,
-                        name=f"{component_name}_SuccessFactors"
+                        name=f"{sanitized_name}_SuccessFactors"
                     )
 
                     sf_message_flow = templates.successfactors_receiver_message_flow_template(
@@ -3541,7 +3636,8 @@ def Message processError(Message message) {{
 
                 else:
                     # Generic HTTP receiver - Use EXACT template from working All Artifacts.iflw (with typo!)
-                    generic_participant = f'''<bpmn2:participant id="{participant_id}" ifl:type="EndpointRecevier" name="{component_name}_Receiver">
+                    sanitized_name = self._sanitize_receiver_name(component_name)
+                    generic_participant = f'''<bpmn2:participant id="{participant_id}" ifl:type="EndpointRecevier" name="{sanitized_name}_Receiver">
             <bpmn2:extensionElements>
                 <ifl:property>
                     <key>ifl:type</key>
@@ -3715,7 +3811,7 @@ def Message processError(Message message) {{
                 </ifl:property>
                 <ifl:property>
                     <key>httpAddressWithoutQuery</key>
-                    <value>{address}</value>
+                    <value define="true">{address}</value>
                 </ifl:property>
                 <ifl:property>
                     <key>providerRelativeUrl</key>
@@ -3968,10 +4064,32 @@ def Message processMessage(Message message) {{
         if flow_array:
             print(f"Processing {len(flow_array)} components from flow array to create sequence flows")
             
-            # Clear ALL automatically generated sequence flows when flow array is present
-            if endpoint_components["sequence_flows"]:
-                print("Clearing ALL auto-generated sequence flows in favor of flow array")
-                endpoint_components["sequence_flows"] = []
+            # Identify router/gateway component IDs to preserve their routes
+            router_ids = set()
+            for comp in endpoint.get("components", []):
+                if comp.get("type") in ("router", "exclusive_gateway", "gateway"):
+                    router_ids.add(comp.get("id"))
+            
+            # Preserve router routes - these are GatewayRoute flows, not regular sequence flows
+            preserved_router_routes = []
+            flows_to_clear = []
+            for flow in endpoint_components["sequence_flows"]:
+                # Check if this is a router route (has GatewayRoute cmdVariantUri)
+                if 'cname::GatewayRoute' in flow:
+                    preserved_router_routes.append(flow)
+                    # Extract router ID from sourceRef to know which router this belongs to
+                    source_match = re.search(r'sourceRef="([^"]+)"', flow)
+                    if source_match:
+                        router_ids.add(source_match.group(1))
+                else:
+                    flows_to_clear.append(flow)
+            
+            # Clear non-router flows when flow array is present
+            if flows_to_clear:
+                print(f"Clearing {len(flows_to_clear)} auto-generated sequence flows (preserving {len(preserved_router_routes)} router routes)")
+                endpoint_components["sequence_flows"] = preserved_router_routes
+            else:
+                endpoint_components["sequence_flows"] = preserved_router_routes
             
             # Set a flag to indicate that flow array processing has been done
             endpoint_components["flow_array_processed"] = True
@@ -3995,9 +4113,15 @@ def Message processMessage(Message message) {{
                 print(f"Created start sequence flow {start_flow_id} from StartEvent_2 to {first_component_id}")
             
             # Create sequence flows from the flow array
+            # Skip flows that involve routers - router routes are already preserved above
             for i in range(len(flow_array) - 1):
                 source_id = flow_array[i]
                 target_id = flow_array[i + 1]
+                
+                # Skip if source is a router - router routes are handled separately
+                if source_id in router_ids:
+                    print(f"Skipping linear flow from router {source_id} - router routes already generated")
+                    continue
                 
                 # Create a sequence flow ID
                 flow_id = f"SequenceFlow_{source_id}_to_{target_id}"
@@ -4013,21 +4137,50 @@ def Message processMessage(Message message) {{
                 )
                 print(f"Created sequence flow {flow_id} from {source_id} to {target_id}")
             
-            # Create final flow from last component to end event
+            # Create final flows from router route targets to end event
+            # Router routes already exist, so we need to connect their targets to end event
             if flow_array:
-                last_component_id = flow_array[-1]
-                end_flow_id = f"flow_{last_component_id}_to_EndEvent_2_end"
+                # For routers, connect their route targets to end event
+                # But only if the target isn't already in the flow array (handled above)
+                router_route_targets = set()
+                for flow in preserved_router_routes:
+                    target_match = re.search(r'targetRef="([^"]+)"', flow)
+                    if target_match:
+                        router_route_targets.add(target_match.group(1))
                 
-                # Create the final sequence flow to end event
-                endpoint_components["sequence_flows"].append(
-                    templates.sequence_flow_template(
-                        id=end_flow_id,
-                        source_ref=last_component_id,
-                        target_ref="EndEvent_2",
-                        is_immediate="true"
+                # For non-router last component, connect to end event
+                last_component_id = flow_array[-1]
+                if last_component_id not in router_ids:
+                    # Align with EndEvent incoming placeholder used later
+                    end_flow_id = "SequenceFlow_End"
+                    
+                    # Create the final sequence flow to end event
+                    endpoint_components["sequence_flows"].append(
+                        templates.sequence_flow_template(
+                            id=end_flow_id,
+                            source_ref=last_component_id,
+                            target_ref="EndEvent_2",
+                            is_immediate="true"
+                        )
                     )
-                )
-                print(f"Created final sequence flow {end_flow_id} from {last_component_id} to EndEvent_2")
+                    print(f"Created final sequence flow {end_flow_id} from {last_component_id} to EndEvent_2")
+                
+                # Also connect router route targets to end event if they're not in the flow array
+                for route_target in router_route_targets:
+                    if route_target not in flow_array:
+                        end_flow_id = f"flow_{route_target}_to_EndEvent_2_router_end"
+                        # Check if this flow already exists
+                        flow_exists = any(f'id="{end_flow_id}"' in flow for flow in endpoint_components["sequence_flows"])
+                        if not flow_exists:
+                            endpoint_components["sequence_flows"].append(
+                                templates.sequence_flow_template(
+                                    id=end_flow_id,
+                                    source_ref=route_target,
+                                    target_ref="EndEvent_2",
+                                    is_immediate="true"
+                                )
+                            )
+                            print(f"Created router route target flow {end_flow_id} from {route_target} to EndEvent_2")
 
         # For backward compatibility, also process connections if they exist
         connections = endpoint.get("connections", [])
@@ -4713,7 +4866,6 @@ def Message processMessage(Message message) {{
         print(f"✅ Saved final components to {final_file}")
         
         return fixed_components
-
     def _generate_iflw_content(self, components, iflow_name):
         """
         Generate the iFlow content using template-based generation with GenAI enhancements
@@ -5191,14 +5343,25 @@ def Message processMessage(Message message) {{
                 else:
                     actual_flow_id = None
 
-        # Update the StartEvent outgoing reference if we have a flow ID
+        # Update the StartEvent outgoing reference if we have a flow ID (generic placeholder replacement)
         if actual_flow_id:
             for i, component in enumerate(process_components):
                 if 'id="StartEvent_2"' in component:
-                    # Replace the hardcoded SequenceFlow_Start with the actual flow ID
-                    updated_component = component.replace(
+                    # Use generic placeholder replacement function
+                    updated_component = self._replace_placeholders_in_component(
+                        component,
+                        {"outgoing_flow": actual_flow_id}
+                    )
+                    # Also handle direct replacement of hardcoded values
+                    updated_component = updated_component.replace(
                         "<bpmn2:outgoing>SequenceFlow_Start</bpmn2:outgoing>",
                         f"<bpmn2:outgoing>{actual_flow_id}</bpmn2:outgoing>"
+                    )
+                    # Replace any remaining placeholder patterns
+                    updated_component = re.sub(
+                        r'<bpmn2:outgoing>\{+\{?outgoing_flow\}\}?</bpmn2:outgoing>',
+                        f'<bpmn2:outgoing>{actual_flow_id}</bpmn2:outgoing>',
+                        updated_component
                     )
                     process_components[i] = updated_component
                     print(f"✅ Updated StartEvent_2 outgoing reference to {actual_flow_id}")
@@ -5428,8 +5591,6 @@ def Message processMessage(Message message) {{
         final_iflow_xml = self._add_bpmn_diagram_layout(template_xml, participants, message_flows, process_components)
 
         return final_iflow_xml
-
-
     def _clean_xml_response(self, xml_response, iflow_name=None):
         """
         Clean up the XML response from the LLM and validate it
@@ -6036,6 +6197,211 @@ def Message processMessage(Message message) {{
 
         return {"definition": definition, "edge": edge}
 
+    def _sanitize_receiver_name(self, component_name):
+        """
+        Sanitize component name for receiver participant to remove whitespace and special characters.
+        
+        SAP Integration Suite does not allow whitespace in receiver participant names.
+        
+        Args:
+            component_name (str): Original component name (may contain spaces/special chars)
+            
+        Returns:
+            str: Sanitized name with spaces replaced by underscores, special chars removed
+        """
+        if not component_name:
+            return "Receiver"
+        # Replace spaces with underscores
+        sanitized = component_name.replace(" ", "_")
+        # Remove special characters that SAP doesn't allow (keep alphanumeric, underscore, hyphen)
+        import re
+        sanitized = re.sub(r'[^a-zA-Z0-9_-]', '', sanitized)
+        # Ensure it doesn't start with a number
+        if sanitized and sanitized[0].isdigit():
+            sanitized = "R_" + sanitized
+        # Ensure it's not empty
+        if not sanitized:
+            sanitized = "Receiver"
+        return sanitized
+
+    def _build_component_flow_references(self, sequence_flows):
+        """
+        Build comprehensive flow reference maps from all sequence flows (generic).
+        
+        Args:
+            sequence_flows (list): List of sequence flow XML strings
+            
+        Returns:
+            tuple: (component_incoming, component_outgoing) dictionaries
+        """
+        component_incoming = {}  # {comp_id: [flow_id1, flow_id2, ...]}
+        component_outgoing = {}   # {comp_id: [flow_id1, flow_id2, ...]}
+        
+        for flow in sequence_flows:
+            # Extract sourceRef, targetRef, flow_id generically
+            source_match = re.search(r'sourceRef="([^"]+)"', flow)
+            target_match = re.search(r'targetRef="([^"]+)"', flow)
+            flow_id_match = re.search(r'id="([^"]+)"', flow)
+            
+            if source_match and target_match and flow_id_match:
+                source_id = source_match.group(1)
+                target_id = target_match.group(1)
+                flow_id = flow_id_match.group(1)
+                
+                # Build outgoing map
+                if source_id not in component_outgoing:
+                    component_outgoing[source_id] = []
+                component_outgoing[source_id].append(flow_id)
+                
+                # Build incoming map
+                if target_id not in component_incoming:
+                    component_incoming[target_id] = []
+                component_incoming[target_id].append(flow_id)
+        
+        return component_incoming, component_outgoing
+    
+    def _replace_placeholders_in_component(self, component_xml, placeholders_dict):
+        """
+        Replace placeholders in component XML generically.
+        
+        Args:
+            component_xml (str): Component XML with placeholders
+            placeholders_dict (dict): Mapping of placeholder name -> actual value
+            
+        Returns:
+            str: Updated component XML with placeholders replaced
+        """
+        result = component_xml
+        # Handle both {{placeholder}} and {placeholder} patterns
+        for placeholder, value in placeholders_dict.items():
+            # Replace {{placeholder}} (double braces - template format)
+            result = result.replace(f"{{{{{placeholder}}}}}", value)
+            # Replace {placeholder} (single braces - escaped format)
+            result = result.replace(f"{{{placeholder}}}", value)
+        return result
+    
+    def _update_component_flow_references(self, component_xml, comp_id, incoming_flows, outgoing_flows):
+        """
+        Update incoming/outgoing flow references in component XML generically.
+        
+        Args:
+            component_xml (str): Component XML
+            comp_id (str): Component ID
+            incoming_flows (list): List of incoming flow IDs
+            outgoing_flows (list): List of outgoing flow IDs
+            
+        Returns:
+            str: Updated component XML with correct incoming/outgoing references
+        """
+        # Remove ALL existing incoming/outgoing elements (they may be wrong)
+        # Pattern matches any content between tags, including whitespace and newlines
+        result = re.sub(r'<bpmn2:incoming>[^<]*</bpmn2:incoming>', '', component_xml, flags=re.DOTALL)
+        result = re.sub(r'<bpmn2:outgoing>[^<]*</bpmn2:outgoing>', '', result, flags=re.DOTALL)
+        
+        # Also remove placeholder patterns
+        result = re.sub(r'<bpmn2:outgoing>\{+\{?outgoing_flow\}\}?</bpmn2:outgoing>', '', result)
+        result = re.sub(r'<bpmn2:incoming>\{+\{?incoming_flow\}\}?</bpmn2:incoming>', '', result)
+        
+        # Build new incoming/outgoing elements
+        new_elements = ""
+        for flow_id in incoming_flows:
+            new_elements += f"\n            <bpmn2:incoming>{flow_id}</bpmn2:incoming>"
+        for flow_id in outgoing_flows:
+            new_elements += f"\n            <bpmn2:outgoing>{flow_id}</bpmn2:outgoing>"
+        
+        if not new_elements:
+            # No flows to add, just return cleaned XML
+            return result
+        
+        # Always insert after extensionElements closes, not before closing tag
+        # Pattern: find </bpmn2:extensionElements> and insert after it
+        extension_elements_pattern = r'(</bpmn2:extensionElements>)'
+        match = re.search(extension_elements_pattern, result)
+        
+        if match:
+            # Insert incoming and outgoing elements AFTER extensionElements closes
+            insert_position = match.end()
+            # Match the indentation of the closing extensionElements tag
+            indent_match = re.search(r'(\s*)</bpmn2:extensionElements>', component_xml)
+            indent = indent_match.group(1) if indent_match else "            "
+            # Build new elements with proper indentation
+            new_elements_indented = ""
+            for flow_id in incoming_flows:
+                new_elements_indented += f"\n{indent}<bpmn2:incoming>{flow_id}</bpmn2:incoming>"
+            for flow_id in outgoing_flows:
+                new_elements_indented += f"\n{indent}<bpmn2:outgoing>{flow_id}</bpmn2:outgoing>"
+            result = result[:insert_position] + new_elements_indented + result[insert_position:]
+        else:
+            # Last resort: append before any closing tag
+            # Find last > before closing tag
+            last_tag_match = re.search(r'(>[\s]*)$', result)
+            if last_tag_match:
+                insert_position = last_tag_match.start()
+                result = result[:insert_position] + new_elements + "\n        " + result[insert_position:]
+            else:
+                # If all else fails, append at end
+                result = result.rstrip() + new_elements + "\n        "
+        
+        return result
+
+    def _fix_all_component_flow_references_in_xml(self, xml_content):
+        """
+        Comprehensive fixer: Update all component incoming/outgoing references in final XML.
+        
+        Args:
+            xml_content (str): The XML content to fix
+            
+        Returns:
+            str: The fixed XML content
+        """
+        try:
+            # Extract all sequence flows from XML
+            sequence_flow_pattern = r'<bpmn2:sequenceFlow[^>]*id="([^"]+)"[^>]*sourceRef="([^"]+)"[^>]*targetRef="([^"]+)"'
+            sequence_flows_xml = []
+            for match in re.finditer(sequence_flow_pattern, xml_content):
+                flow_id = match.group(1)
+                source_id = match.group(2)
+                target_id = match.group(3)
+                # Reconstruct flow XML for flow map builder
+                flow_xml = f'<bpmn2:sequenceFlow id="{flow_id}" sourceRef="{source_id}" targetRef="{target_id}">'
+                sequence_flows_xml.append(flow_xml)
+            
+            if not sequence_flows_xml:
+                return xml_content
+            
+            # Build flow reference maps
+            component_incoming, component_outgoing = self._build_component_flow_references(sequence_flows_xml)
+            
+            # Fix each component in the XML
+            for comp_id in component_incoming.keys() | component_outgoing.keys():
+                incoming_list = component_incoming.get(comp_id, [])
+                outgoing_list = component_outgoing.get(comp_id, [])
+                
+                # Find component in XML using regex
+                # Match component opening tag through closing tag
+                comp_pattern = rf'(<bpmn2:(?:callActivity|serviceTask|exclusiveGateway|startEvent|endEvent)[^>]*id="{re.escape(comp_id)}"[^>]*>.*?</bpmn2:(?:callActivity|serviceTask|exclusiveGateway|startEvent|endEvent)>)'
+                comp_match = re.search(comp_pattern, xml_content, re.DOTALL)
+                
+                if comp_match:
+                    component_xml = comp_match.group(1)
+                    updated_xml = self._update_component_flow_references(
+                        component_xml,
+                        comp_id,
+                        incoming_list,
+                        outgoing_list
+                    )
+                    # Replace in full XML
+                    xml_content = xml_content[:comp_match.start()] + updated_xml + xml_content[comp_match.end():]
+                    print(f"Fixed {comp_id}: {len(incoming_list)} incoming, {len(outgoing_list)} outgoing")
+            
+            return xml_content
+            
+        except Exception as e:
+            print(f"Error in _fix_all_component_flow_references_in_xml: {e}")
+            import traceback
+            traceback.print_exc()
+            return xml_content
+
     def _fix_iflow_xml_issues(self, xml_content):
         """
         Fix common issues in iFlow XML generated by GenAI
@@ -6047,6 +6413,9 @@ def Message processMessage(Message message) {{
             str: The fixed XML content, or empty string if unfixable
         """
         try:
+            # First, comprehensively fix all component flow references
+            xml_content = self._fix_all_component_flow_references_in_xml(xml_content)
+            
             import xml.etree.ElementTree as ET
             root = ET.fromstring(xml_content)
 
@@ -6058,7 +6427,7 @@ def Message processMessage(Message message) {{
 
             if not process_elem:
                 print("No process element found in the XML")
-                return ""
+                return xml_content
 
             # Find all sequence flows
             sequence_flows = []
@@ -6089,7 +6458,7 @@ def Message processMessage(Message message) {{
             # If there are missing components, we can't fix the XML
             if missing_components:
                 print(f"Missing component definitions: {', '.join(missing_components)}")
-                return ""
+                return xml_content
 
             # Check for generic sequence flow IDs
             generic_flow_ids = []
@@ -6101,7 +6470,7 @@ def Message processMessage(Message message) {{
             # If there are generic sequence flow IDs, we can't fix the XML
             if len(generic_flow_ids) > 3:  # Allow a few generic IDs
                 print(f"Too many generic sequence flow IDs: {', '.join(generic_flow_ids)}")
-                return ""
+                return xml_content
 
             # Check for BPMN diagram issues
             bpmn_diagram = root.find('.//{http://www.omg.org/spec/BPMN/20100524/DI}BPMNDiagram')
@@ -6119,7 +6488,9 @@ def Message processMessage(Message message) {{
 
         except Exception as e:
             print(f"Error fixing iFlow XML: {e}")
-            return ""
+            import traceback
+            traceback.print_exc()
+            return xml_content
 
     def _add_bpmn_diagram_layout(self, iflow_xml, participants, message_flows, process_components):
         """
@@ -6149,8 +6520,9 @@ def Message processMessage(Message message) {{
         # Create a mapping to track all sequence flows in the XML
         sequence_flows_map = {}
 
-        # Extract all sequence flows from the XML
-        sequence_flow_pattern = r'<bpmn2:sequenceFlow\s+id="([^"]+)"\s+sourceRef="([^"]+)"\s+targetRef="([^"]+)"'
+        # Extract all sequence flows from the XML (including router routes)
+        # Use more flexible pattern to match any attribute order
+        sequence_flow_pattern = r'<bpmn2:sequenceFlow[^>]*id="([^"]+)"[^>]*sourceRef="([^"]+)"[^>]*targetRef="([^"]+)"'
         for match in re.finditer(sequence_flow_pattern, iflow_xml):
             flow_id = match.group(1)
             source_id = match.group(2)
@@ -6486,6 +6858,7 @@ def Message processMessage(Message message) {{
                 continue
 
             # Skip duplicate flows with the same source and target
+            # Router routes from same gateway have different targets, so connection_key is unique
             connection_key = f"{source_id}->{target_id}"
             if connection_key in flow_connections:
                 print(f"Skipping duplicate flow {flow_id} for connection {connection_key}")
@@ -6516,9 +6889,20 @@ def Message processMessage(Message message) {{
             if 'height' not in target_position:
                 target_position['height'] = 60 if "Event" not in target_id else 32
 
+            # Check if this is a router route (GatewayRoute) - needs special branching waypoints
+            is_router_route = False
+            # Check in the iflow_xml for this sequence flow to see if it's a GatewayRoute
+            flow_pattern = rf'<bpmn2:sequenceFlow[^>]*id="{re.escape(flow_id)}"[^>]*>.*?cname::GatewayRoute'
+            if re.search(flow_pattern, iflow_xml, re.DOTALL):
+                is_router_route = True
+            
             # Calculate waypoints based on component positions
             if "Event" in source_id:
                 # For events (circles), connect from the right edge
+                source_x = source_position['x'] + source_position['width']
+                source_y = source_position['y'] + (source_position['height'] / 2)
+            elif "exclusiveGateway" in source_id or "gateway" in source_id.lower():
+                # For gateways (diamonds), connect from the right edge
                 source_x = source_position['x'] + source_position['width']
                 source_y = source_position['y'] + (source_position['height'] / 2)
             else:
@@ -6534,6 +6918,52 @@ def Message processMessage(Message message) {{
                 # For activities (rectangles), connect to the left edge
                 target_x = target_position['x']
                 target_y = target_position['y'] + (target_position['height'] / 2)
+            
+            # Special handling for router routes: create branching waypoints
+            if is_router_route:
+                # Router routes branch vertically or at angles from gateway
+                # If multiple routes from same gateway, branch them vertically
+                # Find all routes from this gateway
+                gateway_routes = [fid for fid, f in sequence_flows_map.items() 
+                                if f['sourceRef'] == source_id]
+                route_index = gateway_routes.index(flow_id) if flow_id in gateway_routes else 0
+                
+                # Branch vertically: first route goes straight, others branch down
+                if route_index == 0:
+                    # Default/first route goes straight horizontally
+                    mid_x = source_x + (target_x - source_x) / 2
+                    mid_y = source_y
+                    # Create edge with branching waypoint
+                    edge_id = f"BPMNEdge_{flow_id}"
+                    source_element = f"BPMNShape_{source_id}"
+                    target_element = f"BPMNShape_{target_id}"
+                    edge = f'''
+                    <bpmndi:BPMNEdge bpmnElement="{flow_id}" id="{edge_id}" sourceElement="{source_element}" targetElement="{target_element}">
+                        <di:waypoint x="{source_x}" xsi:type="dc:Point" y="{source_y}"/>
+                        <di:waypoint x="{mid_x}" xsi:type="dc:Point" y="{mid_y}"/>
+                        <di:waypoint x="{target_x}" xsi:type="dc:Point" y="{target_y}"/>
+                    </bpmndi:BPMNEdge>'''
+                    component_edges.append(edge)
+                    print(f"Created router route edge {flow_id}: branching at ({mid_x}, {mid_y})")
+                    continue  # Skip normal edge creation for router routes
+                else:
+                    # Other routes branch down then right
+                    branch_offset_y = 40 * route_index  # Branch 40px down per route
+                    mid_x = source_x + 20
+                    mid_y = source_y + branch_offset_y
+                    # Create edge with branching waypoint
+                    edge_id = f"BPMNEdge_{flow_id}"
+                    source_element = f"BPMNShape_{source_id}"
+                    target_element = f"BPMNShape_{target_id}"
+                    edge = f'''
+                    <bpmndi:BPMNEdge bpmnElement="{flow_id}" id="{edge_id}" sourceElement="{source_element}" targetElement="{target_element}">
+                        <di:waypoint x="{source_x}" xsi:type="dc:Point" y="{source_y}"/>
+                        <di:waypoint x="{mid_x}" xsi:type="dc:Point" y="{mid_y}"/>
+                        <di:waypoint x="{target_x}" xsi:type="dc:Point" y="{target_y}"/>
+                    </bpmndi:BPMNEdge>'''
+                    component_edges.append(edge)
+                    print(f"Created router route edge {flow_id}: branching at ({mid_x}, {mid_y})")
+                    continue  # Skip normal edge creation for router routes
 
             # Check if this is a standard flow with predefined waypoints
             is_standard_flow = False
@@ -6639,7 +7069,6 @@ def Message processMessage(Message message) {{
                 print(f"Removed duplicate flow: {flow_id}")
 
         return iflow_xml
-
     def _generate_iflw_content_with_templates(self, components, iflow_name):
         """
         Generate the content of the .iflw file using templates (fallback method)
@@ -7011,52 +7440,64 @@ def Message processMessage(Message message) {{
                 component_id = id_match.group(1)
                 component_map[component_id] = component
 
-        # Extract sequence flow connections
+        # Build comprehensive flow reference maps using generic function
+        component_incoming, component_outgoing = self._build_component_flow_references(sequence_flows)
+        
+        # Debug: Print flow maps for troubleshooting
+        print(f"DEBUG: Built flow reference maps from {len(sequence_flows)} sequence flows")
+        print(f"DEBUG: Components with incoming flows: {list(component_incoming.keys())}")
+        print(f"DEBUG: Components with outgoing flows: {list(component_outgoing.keys())}")
+        for comp_id in ['enricher_1', 'script_1', 'gateway_1', 'script_2']:
+            if comp_id in component_incoming:
+                print(f"DEBUG: {comp_id} incoming: {component_incoming[comp_id]}")
+            if comp_id in component_outgoing:
+                print(f"DEBUG: {comp_id} outgoing: {component_outgoing[comp_id]}")
+        
+        # Track connections for flow validation (for backward compatibility)
         flow_connections = {}
         incoming_flows = {}
-        for flow in sequence_flows:
-            source_match = re.search(r'sourceRef="([^"]+)"', flow)
-            target_match = re.search(r'targetRef="([^"]+)"', flow)
-            flow_id_match = re.search(r'id="([^"]+)"', flow)
-
-            if source_match and target_match and flow_id_match:
-                source_id = source_match.group(1)
-                target_id = target_match.group(1)
-                flow_id = flow_id_match.group(1)
-
-                # Add outgoing flow to source component
-                if source_id in component_map:
-                    source_comp = component_map[source_id]
-                    if "<bpmn2:outgoing>" not in source_comp:
-                        # Add outgoing flow reference
-                        source_comp = re.sub(
-                            r'(</bpmn2:extensionElements>)',
-                            r'\1\n                <bpmn2:outgoing>' + flow_id + '</bpmn2:outgoing>',
-                            source_comp
-                        )
-                        component_map[source_id] = source_comp
-
-                # Add incoming flow to target component
-                if target_id in component_map:
-                    target_comp = component_map[target_id]
-                    if "<bpmn2:incoming>" not in target_comp:
-                        # Add incoming flow reference
-                        target_comp = re.sub(
-                            r'(</bpmn2:extensionElements>)',
-                            r'\1\n                <bpmn2:incoming>' + flow_id + '</bpmn2:incoming>',
-                            target_comp
-                        )
-                        component_map[target_id] = target_comp
-
-                # Track connections for flow validation
-                if source_id not in flow_connections:
-                    flow_connections[source_id] = []
-                flow_connections[source_id].append((target_id, flow_id))
-
-                # Track incoming flows
-                if target_id not in incoming_flows:
-                    incoming_flows[target_id] = []
-                incoming_flows[target_id].append((source_id, flow_id))
+        for comp_id, flow_ids in component_outgoing.items():
+            if comp_id not in flow_connections:
+                flow_connections[comp_id] = []
+            for flow_id in flow_ids:
+                # Find target from sequence flow
+                for flow in sequence_flows:
+                    if flow_id in flow:
+                        target_match = re.search(r'targetRef="([^"]+)"', flow)
+                        if target_match:
+                            flow_connections[comp_id].append((target_match.group(1), flow_id))
+                            break
+        
+        for comp_id, flow_ids in component_incoming.items():
+            incoming_flows[comp_id] = []
+            for flow_id in flow_ids:
+                # Find source from sequence flow
+                for flow in sequence_flows:
+                    if flow_id in flow:
+                        source_match = re.search(r'sourceRef="([^"]+)"', flow)
+                        if source_match:
+                            incoming_flows[comp_id].append((source_match.group(1), flow_id))
+                            break
+        
+        # Update ALL components with correct incoming/outgoing using generic function
+        # This removes wrong references and adds correct ones for every component
+        for comp_id in component_map:
+            incoming_list = component_incoming.get(comp_id, [])
+            outgoing_list = component_outgoing.get(comp_id, [])
+            
+            component_xml = component_map[comp_id]
+            updated_xml = self._update_component_flow_references(
+                component_xml,
+                comp_id,
+                incoming_list,
+                outgoing_list
+            )
+            component_map[comp_id] = updated_xml
+            if incoming_list or outgoing_list:
+                print(f"✅ Updated {comp_id}: {len(incoming_list)} incoming, {len(outgoing_list)} outgoing")
+            else:
+                # Even if no flows, still remove wrong references
+                print(f"✅ Cleaned {comp_id}: removed wrong references (no flows mapped)")
 
         # Update process_components with the modified components
         process_components = list(component_map.values())
@@ -7389,7 +7830,6 @@ def Message processMessage(Message message) {{
             # 🚫 DO NOT FALL BACK TO TEMPLATE APPROACH
             # Instead, raise the error to fail fast
             raise RuntimeError(f"Converter failed: {e}")
-
     def _normalize_components_for_converter(self, components: dict) -> dict:
         """
         Normalize LLM JSON to the converter's expected schema:
@@ -7578,8 +8018,12 @@ def Message processMessage(Message message) {{
             f.write(iflw_content)
         print(f"Saved raw iFlow XML to {raw_iflow_path}")
 
-        # Fix the iFlow XML using the iflow_fixer
+        # Fix the iFlow XML using comprehensive fixer first, then iflow_fixer
         try:
+            # First, use comprehensive fixer to fix all component flow references
+            print("Fixing all component flow references in iFlow XML...")
+            iflw_content = self._fix_all_component_flow_references_in_xml(iflw_content)
+            
             from iflow_fixer import preprocess_xml, fix_iflow_xml
             print("Fixing iFlow XML to ensure compatibility with SAP Integration Suite...")
 

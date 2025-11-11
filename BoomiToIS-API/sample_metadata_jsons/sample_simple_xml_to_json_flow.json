@@ -1,0 +1,111 @@
+{
+  "_comment": "✅ VERIFIED FORMAT - This file has been tested and confirmed working with EnhancedJSONToIFlowConverter. Use as reference for correct metadata structure. Key features: (1) NO start_event/end_event in components, (2) sequence_flows reference auto-generated StartEvent_2/EndEvent_2, (3) content_modifier and xml_to_json_converter tested working.",
+  "metadata_version": "1.0.0",
+  "iflow_info": {
+    "id": "simple_xml_to_json_flow",
+    "name": "Simple XML to JSON Conversion Flow",
+    "description": "A basic integration flow demonstrating XML to JSON conversion with content modification",
+    "version": "1.0.0",
+    "vendor": "Sample Vendor",
+    "release": "2024.Q4"
+  },
+  "endpoints": [
+    {
+      "id": "main_flow",
+      "name": "Main Integration Flow",
+      "description": "Primary flow for XML to JSON conversion",
+      "components": [
+        {
+          "type": "content_modifier",
+          "id": "content_modifier_001",
+          "name": "Set XML Content",
+          "sap_activity_type": "Enricher",
+          "config": {
+            "componentVersion": "1.6",
+            "cmdVariantUri": "ctype::FlowstepVariant/cname::Enricher/version::1.6.0",
+            "activityType": "Enricher",
+            "useBody": "true",
+            "setBody": "true",
+            "setHeaders": "true",
+            "setProperties": "false",
+            "bodyType": "constant",
+            "bodyContent": "<Products><Product><Id>1001</Id><Name>Laptop</Name><Price>1200.00</Price><Category>Electronics</Category></Product><Product><Id>1002</Id><Name>Mouse</Name><Price>25.00</Price><Category>Accessories</Category></Product></Products>",
+            "bodyEncoding": "UTF-8",
+            "expressionLanguage": "constant",
+            "headers": [
+              {
+                "Action": "Create",
+                "Type": "constant",
+                "Name": "Content-Type",
+                "Value": "application/xml",
+                "Default": "",
+                "DataType": "java.lang.String",
+                "ExpressionLanguage": "Simple",
+                "Enabled": "true"
+              },
+              {
+                "Action": "Create",
+                "Type": "constant",
+                "Name": "Accept",
+                "Value": "application/json",
+                "Default": "",
+                "DataType": "java.lang.String",
+                "ExpressionLanguage": "Simple",
+                "Enabled": "true"
+              }
+            ],
+            "properties": [],
+            "addMessageAttachments": "false",
+            "attachmentHandling": "Preserve",
+            "enabled": "true"
+          }
+        },
+        {
+          "type": "xml_to_json_converter",
+          "id": "xml_to_json_001",
+          "name": "Convert to JSON",
+          "sap_activity_type": "XmlToJsonConverter",
+          "config": {
+            "componentVersion": "1.0",
+            "cmdVariantUri": "ctype::FlowstepVariant/cname::XmlToJsonConverter/version::1.0.8",
+            "activityType": "XmlToJsonConverter",
+            "xmlJsonUseStreaming": "true",
+            "xmlJsonSuppressRootElement": "false",
+            "xmlJsonConvertAllElements": "specific",
+            "xmlJsonPathTable": [
+              "/Products/Product/Id",
+              "/Products/Product/Name",
+              "/Products/Product/Price",
+              "/Products/Product"
+            ],
+            "jsonOutputEncoding": "UTF-8",
+            "jsonNamespaceMapping": "",
+            "useNamespaces": "false",
+            "jsonNamespaceSeparator": ":"
+          }
+        }
+      ],
+      "flow": [
+        "content_modifier_001",
+        "xml_to_json_001"
+      ],
+      "sequence_flows": [
+        {
+          "id": "flow_001",
+          "source": "StartEvent_2",
+          "target": "content_modifier_001"
+        },
+        {
+          "id": "flow_002",
+          "source": "content_modifier_001",
+          "target": "xml_to_json_001"
+        },
+        {
+          "id": "flow_003",
+          "source": "xml_to_json_001",
+          "target": "EndEvent_2"
+        }
+      ]
+    }
+  ]
+}

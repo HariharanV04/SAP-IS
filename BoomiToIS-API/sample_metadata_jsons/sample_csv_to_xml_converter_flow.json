@@ -1,0 +1,54 @@
+{
+  "_comment": "REFERENCE FORMAT - CSV to XML converter flow metadata. Matches sample_simple_xml_to_json_flow.json structure.",
+  "metadata_version": "1.0.0",
+  "iflow_info": {
+    "id": "sample_csv_to_xml_converter_flow",
+    "name": "Sample CSV to XML Conversion Flow",
+    "description": "Minimal flow demonstrating CSV to XML conversion using an XSD schema",
+    "version": "1.0.0",
+    "vendor": "Sample Vendor",
+    "release": "2025.Q4"
+  },
+  "endpoints": [
+    {
+      "id": "main_flow",
+      "name": "Main Integration Flow",
+      "description": "Primary flow for CSV to XML conversion",
+      "components": [
+        {
+          "type": "csv_to_xml_converter",
+          "id": "csv_to_xml_001",
+          "name": "Convert CSV to XML",
+          "sap_activity_type": "CsvToXmlConverter",
+          "config": {
+            "componentVersion": "1.4",
+            "cmdVariantUri": "ctype::FlowstepVariant/cname::CsvToXmlConverter/version::1.4.0",
+            "activityType": "CsvToXmlConverter",
+            "Field_Separator_in_CSV": ",",
+            "ignoreFirstLineAsHeader": "false",
+            "XML_Schema_File_Path": "/xsd/Products.xsd",
+            "XPath_Field_Location": "/Products/Product",
+            "headerMapping": "mapHeadersToXSD",
+            "Record_Identifier_in_CSV": ""
+          }
+        }
+      ],
+      "flow": [
+        "csv_to_xml_001"
+      ],
+      "sequence_flows": [
+        {
+          "id": "flow_001",
+          "source": "StartEvent_2",
+          "target": "csv_to_xml_001"
+        },
+        {
+          "id": "flow_002",
+          "source": "csv_to_xml_001",
+          "target": "EndEvent_2"
+        }
+      ]
+    }
+  ]
+}
+

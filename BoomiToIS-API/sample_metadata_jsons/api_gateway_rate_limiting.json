@@ -1,0 +1,90 @@
+{
+  "process_name": "API Gateway with Rate Limiting",
+  "description": "API gateway that handles authentication, rate limiting, and routing",
+  "endpoints": [
+    {
+      "id": "api_gateway",
+      "name": "APIGateway",
+      "method": "ANY",
+      "path": "/api/*",
+      "purpose": "Route API requests with authentication and rate limiting",
+      "components": [
+        {
+          "type": "enricher",
+          "name": "Set Request Context",
+          "id": "enricher_1",
+          "config": {
+            "headers": {
+              "X-Request-Id": "{{uuid}}",
+              "X-Timestamp": "{{now}}",
+              "X-Client-IP": "${header.X-Forwarded-For}",
+              "User-Agent": "${header.User-Agent}"
+            }
+          }
+        },
+        {
+          "type": "script",
+          "name": "ValidateAPIKey",
+          "id": "script_1",
+          "config": {
+            "script_content": "// API key validation\nimport com.sap.gateway.ip.core.customdev.util.Message;\nMessage processData(Message message) {\n    def headers = message.getHeaders();\n    def apiKey = headers.get('X-API-Key');\n\n    if (!apiKey) {\n        throw new Exception('Missing API key');\n    }\n\n    if (!apiKey.matches('[a-zA-Z0-9]{32}')) {\n        throw new Exception('Invalid API key format');\n    }\n\n    message.setProperty('validated_api_key', apiKey);\n    return message;\n}"
+          }
+        },
+        {
+          "type": "request_reply",
+          "name": "CheckRateLimit",
+          "id": "request_reply_1",
+          "config": {
+            "url": "https://{{RATE_LIMIT_SERVICE_HOST}}/api/rate-limit/check",
+            "method": "POST",
+            "headers": {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer {{RATE_LIMIT_TOKEN}}"
+            }
+          }
+        },
+        {
+          "type": "router",
+          "name": "RateLimitExceeded",
+          "id": "gateway_1",
+          "config": {
+            "gateway_type": "exclusive",
+            "routing_conditions": [
+              { "condition": "${property.rate_limit_exceeded == false}", "target": "script_2" },
+              { "default": true, "target": "request_reply_2" }
+            ]
+          }
+        },
+        {
+          "type": "script",
+          "name": "RouteRequest",
+          "id": "script_2",
+          "config": {
+            "script_content": "// Request routing logic\nimport com.sap.gateway.ip.core.customdev.util.Message;\nMessage processData(Message message) {\n    def path = message.getProperty('path');\n    def method = message.getProperty('method');\n\n    def targetUrl = '';\n\n    if (path.startsWith('/api/users')) {\n        targetUrl = 'https://{{USER_SERVICE_BASE}}' + path;\n    } else if (path.startsWith('/api/orders')) {\n        targetUrl = 'https://{{ORDER_SERVICE_BASE}}' + path;\n    } else if (path.startsWith('/api/products')) {\n        targetUrl = 'https://{{PRODUCT_SERVICE_BASE}}' + path;\n    } else {\n        throw new Exception('Unknown API endpoint');\n    }\n\n    message.setProperty('target_url', targetUrl);\n    message.setProperty('method', method ?: 'GET');\n    return message;\n}"
+          }
+        },
+        {
+          "type": "request_reply",
+          "name": "ForwardRequest",
+          "id": "request_reply_2",
+          "config": {
+            "url": "https://{{FORWARD_BASE}}",
+            "method": "POST",
+            "headers": {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer {{SERVICE_TOKEN}}"
+            }
+          }
+        }
+      ],
+      "flow": [
+        "enricher_1",
+        "script_1",
+        "request_reply_1",
+        "gateway_1",
+        "script_2",
+        "request_reply_2"
+      ]
+    }
+  ]
+}

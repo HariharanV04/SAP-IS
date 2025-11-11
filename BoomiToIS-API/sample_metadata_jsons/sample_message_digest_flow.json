@@ -1,0 +1,74 @@
+{
+  "_comment": "Message Digest Flow - Demonstrates MessageDigest component followed by Content Modifier displaying the computed hash. Based on message_digest.iflw structure.",
+  "metadata_version": "1.0.0",
+  "iflow_info": {
+    "id": "message_digest_flow",
+    "name": "Message Digest Flow",
+    "description": "Integration flow computing a SHA-512 digest and exposing it via header/body",
+    "version": "1.0.0",
+    "vendor": "Sample Vendor",
+    "release": "2024.Q4"
+  },
+  "endpoints": [
+    {
+      "id": "main_flow",
+      "name": "Main Integration Flow",
+      "description": "Compute digest then display it in message body",
+      "components": [
+        {
+          "type": "message_digest",
+          "id": "message_digest_001",
+          "name": "Message Digest 1",
+          "sap_activity_type": "MessageDigest",
+          "config": {
+            "filter": "",
+            "canonicalizationMethod": "xml-c14n",
+            "targetHeader": "SAPMessageDigest",
+            "digestAlgorithm": "SHA-512",
+            "componentVersion": "1.1",
+            "activityType": "MessageDigest",
+            "cmdVariantUri": "ctype::FlowstepVariant/cname::MessageDigest/version::1.1.1"
+          }
+        },
+        {
+          "type": "content_modifier",
+          "id": "content_modifier_001",
+          "name": "Content Modifier 1",
+          "sap_activity_type": "Enricher",
+          "config": {
+            "bodyType": "expression",
+            "propertyTable": "",
+            "headerTable": "",
+            "wrapContent": "Generated SHA-512 Hash:\n${header.SAPMessageDigest}",
+            "componentVersion": "1.6",
+            "activityType": "Enricher",
+            "cmdVariantUri": "ctype::FlowstepVariant/cname::Enricher/version::1.6.1"
+          }
+        }
+      ],
+      "flow": [
+        "message_digest_001",
+        "content_modifier_001"
+      ],
+      "sequence_flows": [
+        {
+          "id": "flow_001",
+          "source": "StartEvent_2",
+          "target": "message_digest_001"
+        },
+        {
+          "id": "flow_002",
+          "source": "message_digest_001",
+          "target": "content_modifier_001"
+        },
+        {
+          "id": "flow_003",
+          "source": "content_modifier_001",
+          "target": "EndEvent_2"
+        }
+      ]
+    }
+  ]
+}
+
+

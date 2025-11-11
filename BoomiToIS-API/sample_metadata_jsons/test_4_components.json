@@ -1,0 +1,140 @@
+{
+  "metadata_version": "1.0.0",
+  "iflow_info": {
+    "id": "test_iflow_4_components",
+    "name": "Test iFlow - 4 Components Validation",
+    "description": "Test iFlow to validate that all component properties from metadata are correctly generated in XML",
+    "version": "1.0.0",
+    "vendor": "Test Vendor",
+    "release": "2024.Q4"
+  },
+  "endpoints": [
+    {
+      "id": "main_flow",
+      "name": "Main Test Flow",
+      "description": "Testing 4 components with various property types",
+      "components": [
+        {
+          "type": "content_modifier",
+          "id": "content_modifier_001",
+          "name": "Content Modifier with Headers and Properties",
+          "sap_activity_type": "Enricher",
+          "config": {
+            "componentVersion": "1.6",
+            "cmdVariantUri": "ctype::FlowstepVariant/cname::Enricher/version::1.6.0",
+            "activityType": "Enricher",
+            "useBody": "true",
+            "setBody": "false",
+            "setHeaders": "true",
+            "setProperties": "true",
+            "bodyType": "expression",
+            "bodyContent": "/root/data",
+            "bodyEncoding": "UTF-8",
+            "expressionLanguage": "XPath",
+            "headers": [
+              {
+                "Action": "Create",
+                "Type": "constant",
+                "Name": "Content-Type",
+                "Value": "application/json",
+                "Default": "",
+                "DataType": "java.lang.String",
+                "ExpressionLanguage": "XPath",
+                "Enabled": "true"
+              },
+              {
+                "Action": "Modify",
+                "Type": "expression",
+                "Name": "Authorization",
+                "Value": "$header.token",
+                "Default": "",
+                "DataType": "java.lang.String",
+                "ExpressionLanguage": "Simple",
+                "Enabled": "true"
+              }
+            ],
+            "properties": [
+              {
+                "Action": "Create",
+                "Type": "constant",
+                "Name": "testProperty",
+                "Value": "testValue",
+                "Default": "",
+                "DataType": "java.lang.String",
+                "ExpressionLanguage": "Simple",
+                "Enabled": "true"
+              }
+            ],
+            "addMessageAttachments": "false",
+            "attachmentHandling": "Preserve",
+            "enabled": "true"
+          }
+        },
+        {
+          "type": "filter",
+          "id": "filter_001",
+          "name": "Filter Component - XPath Expression",
+          "sap_activity_type": "Filter",
+          "config": {
+            "componentVersion": "1.0",
+            "cmdVariantUri": "ctype::FlowstepVariant/cname::Filter/version::1.0",
+            "expressionType": "XPath",
+            "expression": "/root/status = 'active'",
+            "valueType": "boolean",
+            "description": "Filter active records only",
+            "throwExceptionOnFail": "true",
+            "enabled": "true",
+            "namespaceContext": "",
+            "logEvaluation": "true"
+          }
+        },
+        {
+          "type": "base64_encoder",
+          "id": "base64_encoder_001",
+          "name": "Base64 Encoder - Complex Config",
+          "sap_activity_type": "Base64Encoder",
+          "config": {
+            "componentVersion": "1.0",
+            "cmdVariantUri": "ctype::FlowstepVariant/cname::Base64Encoder/version::1.0",
+            "contentEncoding": "UTF-8",
+            "encodeSource": "Body",
+            "encodeAttachments": "false",
+            "lineSeparator": "CRLF",
+            "lineLength": "76",
+            "attachmentName": "encoded_attachment.bin",
+            "targetHeaderName": "X-Encoded-Data",
+            "targetPropertyName": "encodedData",
+            "overwriteExisting": "true",
+            "enabled": "true"
+          }
+        },
+        {
+          "type": "xml_to_json_converter",
+          "id": "xml_to_json_001",
+          "name": "XML to JSON Converter",
+          "sap_activity_type": "XmlToJsonConverter",
+          "config": {
+            "componentVersion": "1.2",
+            "cmdVariantUri": "ctype::FlowstepVariant/cname::XmlToJsonConverter/version::1.2.0",
+            "jsonOutputEncoding": "UTF-8",
+            "suppressJsonRootElement": "true",
+            "arrayName": "items",
+            "streamJsonOutput": "false",
+            "xmlNamespaceMapping": "ns1=http://example.com/ns1",
+            "useNamespaces": "true",
+            "skipRootElement": "false",
+            "jsonPrefix": "json",
+            "includeXmlDeclaration": "false",
+            "ignoreNullValues": "true"
+          }
+        }
+      ],
+      "flow": [],
+      "sequence_flows": []
+    }
+  ]
+}
+
+
+
+

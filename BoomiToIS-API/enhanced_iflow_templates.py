@@ -349,7 +349,7 @@ class EnhancedIFlowTemplates:
                 </ifl:property>
                 <ifl:property>
                     <key>httpAddressWithoutQuery</key>
-                    <value>{address}</value>
+                    <value define="true">{address}</value>
                 </ifl:property>
                 <ifl:property>
                     <key>direction</key>
@@ -810,366 +810,30 @@ class EnhancedIFlowTemplates:
             <bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>
         </bpmn2:callActivity>'''
 
-    def router_template(self, id, name, conditions=[]):
+    def filter_template(self, id, name, xpath_type="Integer", wrap_content="", incoming_flow="{{incoming_flow}}", outgoing_flow="{{outgoing_flow}}"):
         """
-        Template for Router (Exclusive Gateway)
+        Template for Filter component
 
         Args:
             id (str): Component ID
             name (str): Component name
-            conditions (list): List of routing conditions
+            xpath_type (str): XPath type (e.g., "Integer"), defaults to "Integer"
+            wrap_content (str): XPath filter expression (e.g., "//Customers[Status = '${property.CustomerStatus}']")
+            incoming_flow (str): Incoming sequence flow ID, defaults to placeholder
+            outgoing_flow (str): Outgoing sequence flow ID, defaults to placeholder
 
         Returns:
-            str: XML template for Router
-        """
-        return f'''<bpmn2:exclusiveGateway id="{id}" name="{name}">
-            <bpmn2:extensionElements>
-                <ifl:property>
-                    <key>componentVersion</key>
-                    <value>1.3</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>activityType</key>
-                    <value>ExclusiveGateway</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>cmdVariantUri</key>
-                    <value>ctype::FlowstepVariant/cname::ExclusiveGateway/version::1.3.0</value>
-                </ifl:property>
-            </bpmn2:extensionElements>
-            <bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>
-            <bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>
-        </bpmn2:exclusiveGateway>'''
-
-    def call_activity_template(self, id, name, activity_type):
-        """
-        Template for Call Activity (used for various component types)
-
-        Args:
-            id (str): Component ID
-            name (str): Component name
-            activity_type (str): Type of activity (e.g., "OData", "Router")
-
-        Returns:
-            str: XML template for Call Activity
+            str: XML template for Filter
         """
         return f'''<bpmn2:callActivity id="{id}" name="{name}">
             <bpmn2:extensionElements>
                 <ifl:property>
-                    <key>componentType</key>
-                    <value>{activity_type}</value>
+                    <key>xpathType</key>
+                    <value>{xpath_type}</value>
                 </ifl:property>
                 <ifl:property>
-                    <key>componentVersion</key>
-                    <value>1.0</value>
-                </ifl:property>
-            </bpmn2:extensionElements>
-            <bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>
-            <bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>
-        </bpmn2:callActivity>'''
-
-    def local_integration_process_template(self, id, name):
-        """
-        Template for Local Integration Process (represented as a callActivity).
-
-        Args:
-            id (str): Component ID
-            name (str): Component name
-
-        Returns:
-            str: XML template for a Local Integration Process call
-        """
-        return f'''<bpmn2:callActivity id="{id}" name="{name}">
-            <bpmn2:extensionElements>
-                <ifl:property>
-                    <key>activityType</key>
-                    <value>ProcessCallElement</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>componentVersion</key>
-                    <value>1.0</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>cmdVariantUri</key>
-                    <value>ctype::FlowstepVariant/cname::NonLoopingProcess/version::1.0.3</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>subActivityType</key>
-                    <value>NonLoopingProcess</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>processId</key>
-                    <value></value>
-                </ifl:property>
-            </bpmn2:extensionElements>
-            <bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>
-            <bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>
-        </bpmn2:callActivity>'''
-
-    def exception_subprocess_template(self, id, name, error_type="All"):
-        """
-        Template for Exception Subprocess
-
-        Args:
-            id (str): Component ID
-            name (str): Component name
-            error_type (str): Type of error to handle
-
-        Returns:
-            str: XML template for Exception Subprocess
-        """
-        start_id = f"StartEvent_{id}"
-        end_id = f"EndEvent_{id}"
-        flow_id = f"SequenceFlow_{id}"
-        return f'''<bpmn2:subProcess id="{id}" name="{name}">
-            <bpmn2:extensionElements>
-                <ifl:property>
-                    <key>componentVersion</key>
-                    <value>1.1</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>activityType</key>
-                    <value>ErrorEventSubProcessTemplate</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>cmdVariantUri</key>
-                    <value>ctype::FlowstepVariant/cname::ErrorEventSubProcessTemplate/version::1.1.0</value>
-                </ifl:property>
-            </bpmn2:extensionElements>
-            <bpmn2:endEvent id="{end_id}" name="End 1">
-                <bpmn2:extensionElements>
-                    <ifl:property>
-                        <key>componentVersion</key>
-                        <value>1.1</value>
-                    </ifl:property>
-                    <ifl:property>
-                        <key>cmdVariantUri</key>
-                        <value>ctype::FlowstepVariant/cname::MessageEndEvent/version::1.1.0</value>
-                    </ifl:property>
-                </bpmn2:extensionElements>
-                <bpmn2:incoming>{flow_id}</bpmn2:incoming>
-                <bpmn2:messageEventDefinition/>
-            </bpmn2:endEvent>
-            <bpmn2:startEvent id="{start_id}" name="Error Start 1">
-                <bpmn2:outgoing>{flow_id}</bpmn2:outgoing>
-                <bpmn2:errorEventDefinition>
-                    <bpmn2:extensionElements>
-                        <ifl:property><key>cmdVariantUri</key><value>ctype::FlowstepVariant/cname::ErrorStartEvent</value></ifl:property>
-                        <ifl:property><key>activityType</key><value>StartErrorEvent</value></ifl:property>
-                    </bpmn2:extensionElements>
-                </bpmn2:errorEventDefinition>
-            </bpmn2:startEvent>
-            <bpmn2:sequenceFlow id="{flow_id}" sourceRef="{start_id}" targetRef="{end_id}"/>
-        </bpmn2:subProcess>'''
-
-    # ===== Additional Activity Templates from reference iFlow =====
-    def filter_template(self, id, name, expression=""):
-        return f'''<bpmn2:callActivity id="{id}" name="{name}">
-            <bpmn2:extensionElements>
-                <ifl:property><key>activityType</key><value>Filter</value></ifl:property>
-                <ifl:property><key>componentVersion</key><value>1.0</value></ifl:property>
-                <ifl:property><key>filterExpression</key><value>{expression}</value></ifl:property>
-            </bpmn2:extensionElements>
-            <bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>
-            <bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>
-        </bpmn2:callActivity>'''
-
-    def multicast_template(self, id, name):
-        return f'''<bpmn2:callActivity id="{id}" name="{name}">
-            <bpmn2:extensionElements>
-                <ifl:property><key>activityType</key><value>Multicast</value></ifl:property>
-                <ifl:property><key>componentVersion</key><value>1.0</value></ifl:property>
-            </bpmn2:extensionElements>
-            <bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>
-            <bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>
-        </bpmn2:callActivity>'''
-
-    def sequential_multicast_template(self, id, name):
-        return f'''<bpmn2:callActivity id="{id}" name="{name}">
-            <bpmn2:extensionElements>
-                <ifl:property><key>activityType</key><value>SequentialMulticast</value></ifl:property>
-                <ifl:property><key>componentVersion</key><value>1.0</value></ifl:property>
-            </bpmn2:extensionElements>
-            <bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>
-            <bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>
-        </bpmn2:callActivity>'''
-
-    def process_call_element_template(self, id, name):
-        return f'''<bpmn2:callActivity id="{id}" name="{name}">
-            <bpmn2:extensionElements>
-                <ifl:property><key>activityType</key><value>ProcessCallElement</value></ifl:property>
-                <ifl:property><key>componentVersion</key><value>1.0</value></ifl:property>
-            </bpmn2:extensionElements>
-            <bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>
-            <bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>
-        </bpmn2:callActivity>'''
-
-    def send_template(self, id, name):
-        return f'''<bpmn2:callActivity id="{id}" name="{name}">
-            <bpmn2:extensionElements>
-                <ifl:property><key>activityType</key><value>Send</value></ifl:property>
-                <ifl:property><key>componentVersion</key><value>1.0</value></ifl:property>
-            </bpmn2:extensionElements>
-            <bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>
-            <bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>
-        </bpmn2:callActivity>'''
-
-    def xml_to_csv_converter_template(self, id, name):
-        return f'''<bpmn2:callActivity id="{id}" name="{name}">
-            <bpmn2:extensionElements>
-                <ifl:property><key>activityType</key><value>XmlToCsvConverter</value></ifl:property>
-                <ifl:property><key>componentVersion</key><value>1.0</value></ifl:property>
-            </bpmn2:extensionElements>
-            <bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>
-            <bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>
-        </bpmn2:callActivity>'''
-
-    def xml_to_json_converter_template(self, id, name):
-        return f'''<bpmn2:callActivity id="{id}" name="{name}">
-            <bpmn2:extensionElements>
-                <ifl:property><key>activityType</key><value>XmlToJsonConverter</value></ifl:property>
-                <ifl:property><key>componentVersion</key><value>1.0</value></ifl:property>
-            </bpmn2:extensionElements>
-            <bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>
-            <bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>
-        </bpmn2:callActivity>'''
-
-    def json_to_xml_converter_template(self, id, name):
-        return f'''<bpmn2:callActivity id="{id}" name="{name}">
-            <bpmn2:extensionElements>
-                <ifl:property><key>activityType</key><value>JsonToXmlConverter</value></ifl:property>
-                <ifl:property><key>componentVersion</key><value>1.0</value></ifl:property>
-            </bpmn2:extensionElements>
-            <bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>
-            <bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>
-        </bpmn2:callActivity>'''
-
-    def parallel_gateway_template(self, id, name, gateway_type="parallel"):
-        """
-        Template for Parallel Gateway
-
-        Args:
-            id (str): Component ID
-            name (str): Component name
-            gateway_type (str): Gateway type (parallel, exclusive)
-
-        Returns:
-            str: XML template for Parallel Gateway
-        """
-        return f'''<bpmn2:parallelGateway id="{id}" name="{name}">
-            <bpmn2:extensionElements>
-                <ifl:property>
-                    <key>activityType</key>
-                    <value>ParallelGateway</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>componentVersion</key>
-                    <value>1.0</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>cmdVariantUri</key>
-                    <value>ctype::FlowstepVariant/cname::ParallelGateway/version::1.0.0</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>gatewayType</key>
-                    <value>{gateway_type}</value>
-                </ifl:property>
-            </bpmn2:extensionElements>
-        </bpmn2:parallelGateway>'''
-
-    def join_gateway_template(self, id, name, join_type="parallel"):
-        """
-        Template for Join Gateway (Parallel Gateway)
-
-        Args:
-            id (str): Component ID
-            name (str): Component name
-            join_type (str): Join type (parallel, exclusive)
-
-        Returns:
-            str: XML template for Join Gateway
-        """
-        return f'''<bpmn2:parallelGateway id="{id}" name="{name}">
-            <bpmn2:extensionElements>
-                <ifl:property>
-                    <key>activityType</key>
-                    <value>ParallelGateway</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>componentVersion</key>
-                    <value>1.0</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>cmdVariantUri</key>
-                    <value>ctype::FlowstepVariant/cname::ParallelGateway/version::1.0.0</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>joinType</key>
-                    <value>{join_type}</value>
-                </ifl:property>
-            </bpmn2:extensionElements>
-        </bpmn2:parallelGateway>'''
-
-    def write_to_log_template(self, id, name, log_level="Info", message="Log message"):
-        """
-        Template for Write to Log
-
-        Args:
-            id (str): Component ID
-            name (str): Component name
-            log_level (str): Log level (Info, Warning, Error)
-            message (str): Log message
-
-        Returns:
-            str: XML template for Write to Log
-        """
-        return f'''<bpmn2:callActivity id="{id}" name="{name}">
-            <bpmn2:extensionElements>
-                <ifl:property>
-                    <key>logLevel</key>
-                    <value>{log_level}</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>componentVersion</key>
-                    <value>1.0</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>activityType</key>
-                    <value>Logger</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>cmdVariantUri</key>
-                    <value>ctype::FlowstepVariant/cname::WriteToLog/version::1.0.0</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>logMessage</key>
-                    <value>{message}</value>
-                </ifl:property>
-            </bpmn2:extensionElements>
-        </bpmn2:callActivity>'''
-
-    def message_mapping_template(self, id, name, source_type="XML", target_type="XML"):
-        """
-        Template for Message Mapping
-
-        Args:
-            id (str): Component ID
-            name (str): Component name
-            source_type (str): Source message type
-            target_type (str): Target message type
-
-        Returns:
-            str: XML template for Message Mapping
-        """
-        return f'''<bpmn2:task id="{id}" name="{name}">
-            <bpmn2:extensionElements>
-                <ifl:property>
-                    <key>mappinguri</key>
-                    <value/>
-                </ifl:property>
-                <ifl:property>
-                    <key>mappingname</key>
-                    <value>{name}</value>
+                    <key>wrapContent</key>
+                    <value>{wrap_content}</value>
                 </ifl:property>
                 <ifl:property>
                     <key>componentVersion</key>
@@ -1177,1075 +841,91 @@ class EnhancedIFlowTemplates:
                 </ifl:property>
                 <ifl:property>
                     <key>activityType</key>
-                    <value>Message Mapping</value>
+                    <value>Filter</value>
                 </ifl:property>
                 <ifl:property>
                     <key>cmdVariantUri</key>
-                    <value>ctype::FlowstepVariant/cname::MessageMapping/version::1.1.0</value>
+                    <value>ctype::FlowstepVariant/cname::Filter/version::1.1.0</value>
                 </ifl:property>
             </bpmn2:extensionElements>
-            <bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>
-            <bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>
-        </bpmn2:task>'''
+            <bpmn2:incoming>{incoming_flow}</bpmn2:incoming>
+            <bpmn2:outgoing>{outgoing_flow}</bpmn2:outgoing>
+        </bpmn2:callActivity>'''
 
-    def enhanced_message_mapping_template(self, id, name, mapping_name="DataMapping", source_schema="Source.xsd", target_schema="Target.xsd"):
+    def message_digest_template(self, id, name, filter_value="", canonicalization_method="xml-c14n", target_header="SAPMessageDigest", digest_algorithm="SHA-512", incoming_flow="{{incoming_flow}}", outgoing_flow="{{outgoing_flow}}"):
         """
-        Enhanced Message Mapping template based on real SAP iFlow structure
+        Template for Message Digest component
+
+        Args:
+            id (str): Component ID
+            name (str): Component name
+            filter_value (str): Optional filter expression to select content for digest
+            canonicalization_method (str): Canonicalization method (e.g., "xml-c14n")
+            target_header (str): Header to store digest (e.g., "SAPMessageDigest")
+            digest_algorithm (str): Digest algorithm (e.g., "SHA-512")
+            incoming_flow (str): Incoming sequence flow ID, defaults to placeholder
+            outgoing_flow (str): Outgoing sequence flow ID, defaults to placeholder
+
+        Returns:
+            str: XML template for Message Digest
+        """
+        return f'''<bpmn2:callActivity id="{id}" name="{name}">
+            <bpmn2:extensionElements>
+                <ifl:property>
+                    <key>filter</key>
+                    <value>{filter_value}</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>canonicalizationMethod</key>
+                    <value>{canonicalization_method}</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>targetHeader</key>
+                    <value>{target_header}</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>digestAlgorithm</key>
+                    <value>{digest_algorithm}</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>componentVersion</key>
+                    <value>1.1</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>activityType</key>
+                    <value>MessageDigest</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>cmdVariantUri</key>
+                    <value>ctype::FlowstepVariant/cname::MessageDigest/version::1.1.1</value>
+                </ifl:property>
+            </bpmn2:extensionElements>
+            <bpmn2:incoming>{incoming_flow}</bpmn2:incoming>
+            <bpmn2:outgoing>{outgoing_flow}</bpmn2:outgoing>
+        </bpmn2:callActivity>'''
+
+    def router_template(self, id, name, default_flow_id=None):
+        """
+        Template for Router (Exclusive Gateway) component.
+        
+        Generates BPMN2 ExclusiveGateway XML with SAP Integration Suite properties.
+        Supports default route specification for exclusive gateways.
         
         Args:
-            id (str): Component ID
-            name (str): Component name
-            mapping_name (str): Name of the mapping bundle
-            source_schema (str): Source XSD file name
-            target_schema (str): Target XSD file name
+            id (str): Component ID (e.g., "gateway_1")
+            name (str): Component name (e.g., "RateLimitExceeded")
+            default_flow_id (str, optional): Sequence flow ID for default route when default=true in routing_conditions
             
         Returns:
-            str: XML template for enhanced Message Mapping
+            str: XML template for Exclusive Gateway
         """
-        return f'''<bpmn2:callActivity id="{id}" name="{name}">
-            <bpmn2:extensionElements>
-                <ifl:property>
-                    <key>componentVersion</key>
-                    <value>1.3</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>activityType</key>
-                    <value>Mapping</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>cmdVariantUri</key>
-                    <value>ctype::FlowstepVariant/cname::MessageMapping/version::1.3.1</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>mappinguri</key>
-                    <value>dir://mapping/{mapping_name}.mmap</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>mappingType</key>
-                    <value>MessageMapping</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>messageMappingBundleId</key>
-                    <value>{mapping_name}</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>sourceSchema</key>
-                    <value>src/main/resources/xsd/{source_schema}</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>targetSchema</key>
-                    <value>src/main/resources/xsd/{target_schema}</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>customFunctions</key>
-                    <value>src/main/resources/script</value>
-                </ifl:property>
-            </bpmn2:extensionElements>
-            <bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>
-            <bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>
-        </bpmn2:callActivity>'''
-
-    # ===== Event Templates =====
-
-    def message_start_event_template(self, id, name):
-        """
-        Template for Message Start Event with proper messageEventDefinition
-        """
-        return f'''<bpmn2:startEvent id="{id}" name="{name}">
-                <bpmn2:extensionElements>
-                    <ifl:property>
-                        <key>componentVersion</key>
-                        <value>1.0</value>
-                    </ifl:property>
-                    <ifl:property>
-                        <key>cmdVariantUri</key>
-                        <value>ctype::FlowstepVariant/cname::MessageStartEvent/version::1.0</value>
-                    </ifl:property>
-                </bpmn2:extensionElements>
-                <bpmn2:outgoing>{{{{outgoing_flow}}}}</bpmn2:outgoing>
-                <bpmn2:messageEventDefinition id="MessageEventDefinition_{id}"/>
-            </bpmn2:startEvent>'''
-
-    def message_end_event_template(self, id, name):
-        """
-        Template for Message End Event with proper messageEventDefinition
-        """
-        return f'''<bpmn2:endEvent id="{id}" name="{name}">
-                <bpmn2:extensionElements>
-                    <ifl:property>
-                        <key>componentVersion</key>
-                        <value>1.1</value>
-                    </ifl:property>
-                    <ifl:property>
-                        <key>cmdVariantUri</key>
-                        <value>ctype::FlowstepVariant/cname::MessageEndEvent/version::1.1.0</value>
-                    </ifl:property>
-                </bpmn2:extensionElements>
-                <bpmn2:incoming>{{{{incoming_flow}}}}</bpmn2:incoming>
-                <bpmn2:messageEventDefinition id="MessageEventDefinition_{id}"/>
-            </bpmn2:endEvent>'''
-
-    def timer_start_event_template(self, id, name, schedule_key):
-        """
-        Template for Timer Start Event
-
-        Args:
-            id (str): Component ID
-            name (str): Component name
-            schedule_key (str): Timer schedule expression (e.g., "0 0 * * * ?")
-
-        Returns:
-            str: XML template for Timer Start Event
-        """
-        return f'''<bpmn2:startEvent id="{id}" name="{name}">
-            <bpmn2:extensionElements>
-                <ifl:property>
-                    <key>scheduleKey</key>
-                    <value>{schedule_key}</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>componentVersion</key>
-                    <value>1.2</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>cmdVariantUri</key>
-                    <value>ctype::FlowstepVariant/cname::intermediatetimer/version::1.2.0</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>activityType</key>
-                    <value>StartTimerEvent</value>
-                </ifl:property>
-            </bpmn2:extensionElements>
-            <bpmn2:outgoing>{{{{outgoing_flow}}}}</bpmn2:outgoing>
-            <bpmn2:timerEventDefinition id="TimerEventDefinition_{id}"/>
-        </bpmn2:startEvent>'''
-
-    # ===== Processing Components =====
-
-
-
-    def create_property_table(self, properties):
-        """
-        Create XML representation of property table
-
-        Args:
-            properties (list): List of property entries in format [{"action": "Create/Delete", "type": "constant/expression", "name": "propName", "value": "propValue"}]
-
-        Returns:
-            str: XML representation of property table
-        """
-        property_table = ""
-        if properties:
-            for prop in properties:
-                property_table += f'<row><cell id="Action">{prop.get("action", "Create")}</cell><cell id="Type">{prop.get("type", "constant")}</cell><cell id="Value">{prop.get("value", "")}</cell><cell id="Default"></cell><cell id="Name">{prop.get("name", "")}</cell><cell id="Datatype"></cell></row>'
-        return property_table
-
-    def create_header_table(self, headers):
-        """
-        Create XML representation of header table
-
-        Args:
-            headers (list): List of header entries in format [{"action": "Create/Delete", "type": "constant/expression", "name": "headerName", "value": "headerValue"}]
-
-        Returns:
-            str: XML representation of header table
-        """
-        header_table = ""
-        if headers:
-            for header in headers:
-                header_table += f'<row><cell id="Action">{header.get("action", "Create")}</cell><cell id="Type">{header.get("type", "constant")}</cell><cell id="Value">{header.get("value", "")}</cell><cell id="Default"></cell><cell id="Name">{header.get("name", "")}</cell><cell id="Datatype"></cell></row>'
-        return header_table
-
-    def request_reply_template(self, id, name):
-        """
-        Template for Request-Reply component (External Call)
-
-        Args:
-            id (str): Component ID
-            name (str): Component name
-
-        Returns:
-            str: XML template for Request-Reply
-        """
-        return f'''<bpmn2:serviceTask id="{id}" name="{name}">
-            <bpmn2:extensionElements>
-                <ifl:property>
-                    <key>componentVersion</key>
-                    <value>1.0</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>activityType</key>
-                    <value>ExternalCall</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>cmdVariantUri</key>
-                    <value>ctype::FlowstepVariant/cname::ExternalCall/version::1.0.4</value>
-                </ifl:property>
-            </bpmn2:extensionElements>
-            <bpmn2:incoming>{{{{incoming_flow}}}}</bpmn2:incoming>
-            <bpmn2:outgoing>{{{{outgoing_flow}}}}</bpmn2:outgoing>
-        </bpmn2:serviceTask>'''
-
-    # ===== Generic Embedded Subprocess (Safe Addition) =====
-
-    def subprocess_template(self, id, name):
-        """Create a generic embedded subprocess container (non-breaking)."""
-        return f'''<bpmn2:subProcess id="{id}" name="{name}">
-    <bpmn2:extensionElements>
-        <ifl:property><key>componentVersion</key><value>1.0</value></ifl:property>
-        <ifl:property><key>activityType</key><value>EmbeddedSubprocess</value></ifl:property>
-        <ifl:property><key>cmdVariantUri</key><value>ctype::FlowstepVariant/cname::Subprocess/version::1.0.0</value></ifl:property>
-    </bpmn2:extensionElements>
-    <!-- Add internal flow elements here (start, tasks, end) as needed by generator -->
-</bpmn2:subProcess>'''
-
-    def odata_request_reply_pattern(self, service_task_id, participant_id, message_flow_id, name, service_url="https://example.com/odata/service", operation="Query(GET)", resource_path=""):
-        """
-        Template for a complete OData request-reply pattern with all required components
-
-        Args:
-            service_task_id (str): ID for the service task
-            participant_id (str): ID for the participant
-            message_flow_id (str): ID for the message flow
-            name (str): Name for the components
-            service_url (str): URL for the OData service
-
-        Returns:
-            dict: Dictionary containing all components for the OData pattern
-        """
-        # 1. Create the service task (ExternalCall) with proper sequence flow placeholders
-        service_task = f'''<bpmn2:serviceTask id="{service_task_id}" name="Call_{name}">
-            <bpmn2:extensionElements>
-                <ifl:property>
-                    <key>componentVersion</key>
-                    <value>1.0</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>activityType</key>
-                    <value>ExternalCall</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>cmdVariantUri</key>
-                    <value>ctype::FlowstepVariant/cname::ExternalCall/version::1.0.4</value>
-                </ifl:property>
-            </bpmn2:extensionElements>
-            <bpmn2:incoming>{{{{incoming_flow}}}}</bpmn2:incoming>
-            <bpmn2:outgoing>{{{{outgoing_flow}}}}</bpmn2:outgoing>
-        </bpmn2:serviceTask>'''
-
-        # 2. Create the participant (Use typo from working iFlow: EndpointRecevier)
-        participant = f'''<bpmn2:participant id="{participant_id}" ifl:type="EndpointRecevier" name="OData_{name}">
-            <bpmn2:extensionElements>
-                <ifl:property>
-                    <key>ifl:type</key>
-                    <value>EndpointRecevier</value>
-                </ifl:property>
-            </bpmn2:extensionElements>
-        </bpmn2:participant>'''
-
-        # 3. Create the message flow with detailed OData properties
-        message_flow = f'''<bpmn2:messageFlow id="{message_flow_id}" name="OData" sourceRef="{service_task_id}" targetRef="{participant_id}">
-            <bpmn2:extensionElements>
-                <ifl:property>
-                    <key>Description</key>
-                    <value/>
-                </ifl:property>
-                <ifl:property>
-                    <key>pagination</key>
-                    <value/>
-                </ifl:property>
-                <ifl:property>
-                    <key>ComponentNS</key>
-                    <value>sap</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>odataCertAuthPrivateKeyAlias</key>
-                    <value/>
-                </ifl:property>
-                <ifl:property>
-                    <key>apiArtifactType</key>
-                    <value/>
-                </ifl:property>
-                <ifl:property>
-                    <key>providerAuth</key>
-                    <value/>
-                </ifl:property>
-                <ifl:property>
-                    <key>ComponentNS</key>
-                    <value>sap</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>resourcePath</key>
-                    <value>{resource_path}</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>customQueryOptions</key>
-                    <value/>
-                </ifl:property>
-                <ifl:property>
-                    <key>metadataAllowedURIParams</key>
-                    <value/>
-                </ifl:property>
-                <ifl:property>
-                    <key>Name</key>
-                    <value>OData</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>internetProxyType</key>
-                    <value/>
-                </ifl:property>
-                <ifl:property>
-                    <key>TransportProtocolVersion</key>
-                    <value>1.25.1</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>proxyPort</key>
-                    <value/>
-                </ifl:property>
-                <ifl:property>
-                    <key>ComponentSWCVName</key>
-                    <value>external</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>enableMPLAttachments</key>
-                    <value>true</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>receiveTimeOut</key>
-                    <value>1</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>alias</key>
-                    <value/>
-                </ifl:property>
-                <ifl:property>
-                    <key>contentType</key>
-                    <value>application/atom+xml</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>ComponentSWCVId</key>
-                    <value>1.25.1</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>providerName</key>
-                    <value/>
-                </ifl:property>
-                <ifl:property>
-                    <key>MessageProtocol</key>
-                    <value>OData V2</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>direction</key>
-                    <value>Receiver</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>scc_location_id</key>
-                    <value/>
-                </ifl:property>
-                <ifl:property>
-                    <key>metadataAllowedHeaders</key>
-                    <value/>
-                </ifl:property>
-                <ifl:property>
-                    <key>ComponentType</key>
-                    <value>HCIOData</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>address</key>
-                    <value>{service_url}</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>queryOptions</key>
-                    <value/>
-                </ifl:property>
-                <ifl:property>
-                    <key>proxyType</key>
-                    <value>default</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>isCSRFEnabled</key>
-                    <value>true</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>componentVersion</key>
-                    <value>1.25</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>proxyHost</key>
-                    <value/>
-                </ifl:property>
-                <ifl:property>
-                    <key>edmxFilePath</key>
-                    <value/>
-                </ifl:property>
-                <ifl:property>
-                    <key>providerUrl</key>
-                    <value/>
-                </ifl:property>
-                <ifl:property>
-                    <key>enableTLSSessionReuse</key>
-                    <value>true</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>odatapagesize</key>
-                    <value/>
-                </ifl:property>
-                <ifl:property>
-                    <key>system</key>
-                    <value>Receiver3</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>authenticationMethod</key>
-                    <value>None</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>whitelistResponseHeaders</key>
-                    <value/>
-                </ifl:property>
-                <ifl:property>
-                    <key>enableBatchProcessing</key>
-                    <value/>
-                </ifl:property>
-                <ifl:property>
-                    <key>TransportProtocol</key>
-                    <value>HTTP</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>characterEncoding</key>
-                    <value>none</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>fields</key>
-                    <value/>
-                </ifl:property>
-                <ifl:property>
-                    <key>cmdVariantUri</key>
-                    <value>ctype::AdapterVariant/cname::sap:HCIOData/tp::HTTP/mp::OData V2/direction::Receiver/version::1.25.1</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>whitelistRequestHeaders</key>
-                    <value/>
-                </ifl:property>
-
-                <ifl:property>
-                    <key>MessageProtocolVersion</key>
-                    <value>1.25.1</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>providerRelativeUrl</key>
-                    <value/>
-                </ifl:property>
-            </bpmn2:extensionElements>
-        </bpmn2:messageFlow>'''
-
-        return {
-            "service_task": service_task,
-            "participant": participant,
-            "message_flow": message_flow,
-            "service_task_id": service_task_id,
-            "participant_id": participant_id,
-            "message_flow_id": message_flow_id
-        }
-
-    def http_request_reply_pattern(self, service_task_id, participant_id, message_flow_id, name, service_url, http_method="POST"):
-        """Template for a complete HTTP request-reply pattern matching corrected .iflw structure"""
-
-        # Service Task
-        service_task = f'''<bpmn2:serviceTask id="{service_task_id}" name="{name}">
-            <bpmn2:extensionElements>
-                <ifl:property>
-                    <key>componentVersion</key>
-                    <value>1.0</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>activityType</key>
-                    <value>ExternalCall</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>cmdVariantUri</key>
-                    <value>ctype::FlowstepVariant/cname::ExternalCall/version::1.0.4</value>
-                </ifl:property>
-            </bpmn2:extensionElements>
-            <bpmn2:incoming>{{{{incoming_flow}}}}</bpmn2:incoming>
-            <bpmn2:outgoing>{{{{outgoing_flow}}}}</bpmn2:outgoing>
-        </bpmn2:serviceTask>'''
-
-        # Participant (Use typo from working iFlow: EndpointRecevier not EndpointReceiver)
-        participant = f'''<bpmn2:participant id="{participant_id}" ifl:type="EndpointRecevier" name="{name}_Receiver">
-            <bpmn2:extensionElements>
-                <ifl:property>
-                    <key>ifl:type</key>
-                    <value>EndpointRecevier</value>
-                </ifl:property>
-            </bpmn2:extensionElements>
-        </bpmn2:participant>'''
-
-        # HTTP Message Flow (matching corrected .iflw structure)
-        message_flow = f'''<bpmn2:messageFlow id="{message_flow_id}" name="HTTP" sourceRef="{service_task_id}" targetRef="{participant_id}">
-            <bpmn2:extensionElements>
-                <ifl:property>
-                    <key>Description</key>
-                    <value/>
-                </ifl:property>
-                <ifl:property>
-                    <key>methodSourceExpression</key>
-                    <value/>
-                </ifl:property>
-                <ifl:property>
-                    <key>allowedRequestHeaders</key>
-                    <value>*</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>httpMethod</key>
-                    <value>{http_method}</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>allowedResponseHeaders</key>
-                    <value>*</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>Name</key>
-                    <value>HTTP</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>internetProxyType</key>
-                    <value/>
-                </ifl:property>
-                <ifl:property>
-                    <key>TransportProtocolVersion</key>
-                    <value>1.16.2</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>ComponentSWCVName</key>
-                    <value>external</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>enableMPLAttachments</key>
-                    <value>true</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>httpAddressQuery</key>
-                    <value/>
-                </ifl:property>
-                <ifl:property>
-                    <key>httpRequestTimeout</key>
-                    <value>60000</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>MessageProtocol</key>
-                    <value>None</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>ComponentSWCVId</key>
-                    <value>1.16.2</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>direction</key>
-                    <value>Receiver</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>ComponentType</key>
-                    <value>HTTP</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>httpShouldSendBody</key>
-                    <value>false</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>throwExceptionOnFailure</key>
-                    <value>true</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>proxyType</key>
-                    <value>default</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>address</key>
-                    <value>{service_url}</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>TransportProtocol</key>
-                    <value>HTTP</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>cmdVariantUri</key>
-                    <value>ctype::AdapterVariant/cname::sap:HTTP/tp::HTTP/mp::None/direction::Receiver/version::1.16.2</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>credentialName</key>
-                    <value/>
-                </ifl:property>
-                <ifl:property>
-                    <key>httpErrorResponseCodes</key>
-                    <value/>
-                </ifl:property>
-                <ifl:property>
-                    <key>MessageProtocolVersion</key>
-                    <value>1.16.2</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>httpAddressWithoutQuery</key>
-                    <value/>
-                </ifl:property>
-                <ifl:property>
-                    <key>providerRelativeUrl</key>
-                    <value/>
-                </ifl:property>
-            </bpmn2:extensionElements>
-        </bpmn2:messageFlow>'''
-
-        return {
-            "service_task": service_task,
-            "participant": participant,
-            "message_flow": message_flow,
-            "service_task_id": service_task_id,
-            "participant_id": participant_id,
-            "message_flow_id": message_flow_id
-        }
-
-    def comprehensive_request_reply_template(self, id, name, endpoint_path="", log_level="Information"):
-        """
-        Template for a comprehensive Request-Reply pattern with logging and error handling
-
-        This template creates a complete request-reply flow with:
-        1. API Endpoint (Enricher)
-        2. Request Logger
-        3. Request Validation
-        4. Parameter Extraction
-        5. Parameter Logger
-        6. External Service Call
-        7. Response Logger
-        8. Error Logger
-        9. Error Response Handler
-
-        Args:
-            id (str): Base Component ID (will be used as prefix)
-            name (str): Base Component name
-            endpoint_path (str): API endpoint path
-            log_level (str): Logging level
-
-        Returns:
-            dict: Dictionary containing all components for the request-reply pattern
-        """
-        # Generate unique IDs for all components
-        api_endpoint_id = f"{id}_Endpoint"
-        request_logger_id = f"{id}_ReqLogger"
-        request_validator_id = f"{id}_Validator"
-        param_extractor_id = f"{id}_ParamExtractor"
-        param_logger_id = f"{id}_ParamLogger"
-        service_call_id = f"{id}_ServiceCall"
-        response_logger_id = f"{id}_RespLogger"
-        error_logger_id = f"{id}_ErrorLogger"
-        error_response_id = f"{id}_ErrorResponse"
-        end_event_id = f"{id}_End"
-
-        # Generate sequence flow IDs
-        seq_flow_1_id = f"SequenceFlow_{id}_1"
-        seq_flow_2_id = f"SequenceFlow_{id}_2"
-        seq_flow_3_id = f"SequenceFlow_{id}_3"
-        seq_flow_4_id = f"SequenceFlow_{id}_4"
-        seq_flow_5_id = f"SequenceFlow_{id}_5"
-        seq_flow_6_id = f"SequenceFlow_{id}_6"
-        seq_flow_7_id = f"SequenceFlow_{id}_7"
-        seq_flow_8_id = f"SequenceFlow_{id}_8"
-        seq_flow_last_id = f"SequenceFlow_{id}_Last"
-
-        # Create components
-        api_endpoint = f'''<bpmn2:callActivity id="{api_endpoint_id}" name="{name} API Endpoint">
-            <bpmn2:extensionElements>
-                <ifl:property>
-                    <key>bodyType</key>
-                    <value>constant</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>propertyTable</key>
-                    <value>[]</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>headerTable</key>
-                    <value>[]</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>wrapContent</key>
-                    <value></value>
-                </ifl:property>
-                <ifl:property>
-                    <key>componentVersion</key>
-                    <value>1.5</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>activityType</key>
-                    <value>Enricher</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>cmdVariantUri</key>
-                    <value>ctype::FlowstepVariant/cname::Enricher/version::1.5.1</value>
-                </ifl:property>
-            </bpmn2:extensionElements>
-            <bpmn2:incoming>SequenceFlow_Start</bpmn2:incoming>
-            <bpmn2:outgoing>{seq_flow_1_id}</bpmn2:outgoing>
-        </bpmn2:callActivity>'''
-
-        request_logger = f'''<bpmn2:callActivity id="{request_logger_id}" name="Logger - Request Received">
-            <bpmn2:extensionElements>
-                <ifl:property>
-                    <key>logLevel</key>
-                    <value>{log_level}</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>logText</key>
-                    <value>Request Received for {name}</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>componentVersion</key>
-                    <value>1.2</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>activityType</key>
-                    <value>WriteLog</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>cmdVariantUri</key>
-                    <value>ctype::FlowstepVariant/cname::WriteLog/version::1.2.0</value>
-                </ifl:property>
-            </bpmn2:extensionElements>
-            <bpmn2:incoming>{seq_flow_1_id}</bpmn2:incoming>
-            <bpmn2:outgoing>{seq_flow_2_id}</bpmn2:outgoing>
-        </bpmn2:callActivity>'''
-
-        request_validator = f'''<bpmn2:callActivity id="{request_validator_id}" name="Validate Request">
-            <bpmn2:extensionElements>
-                <ifl:property>
-                    <key>componentType</key>
-                    <value>content_modifier</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>componentVersion</key>
-                    <value>1.0</value>
-                </ifl:property>
-            </bpmn2:extensionElements>
-            <bpmn2:incoming>{seq_flow_2_id}</bpmn2:incoming>
-            <bpmn2:outgoing>{seq_flow_3_id}</bpmn2:outgoing>
-        </bpmn2:callActivity>'''
-
-        param_extractor = f'''<bpmn2:callActivity id="{param_extractor_id}" name="Extract Parameters">
-            <bpmn2:extensionElements>
-                <ifl:property>
-                    <key>componentType</key>
-                    <value>content_modifier_header</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>componentVersion</key>
-                    <value>1.0</value>
-                </ifl:property>
-            </bpmn2:extensionElements>
-            <bpmn2:incoming>{seq_flow_3_id}</bpmn2:incoming>
-            <bpmn2:outgoing>{seq_flow_4_id}</bpmn2:outgoing>
-        </bpmn2:callActivity>'''
-
-        param_logger = f'''<bpmn2:callActivity id="{param_logger_id}" name="Log Parameters">
-            <bpmn2:extensionElements>
-                <ifl:property>
-                    <key>logLevel</key>
-                    <value>{log_level}</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>logText</key>
-                    <value>Parameters for {name}</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>componentVersion</key>
-                    <value>1.2</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>activityType</key>
-                    <value>WriteLog</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>cmdVariantUri</key>
-                    <value>ctype::FlowstepVariant/cname::WriteLog/version::1.2.0</value>
-                </ifl:property>
-            </bpmn2:extensionElements>
-            <bpmn2:incoming>{seq_flow_4_id}</bpmn2:incoming>
-            <bpmn2:outgoing>{seq_flow_5_id}</bpmn2:outgoing>
-        </bpmn2:callActivity>'''
-
-        service_call = f'''<bpmn2:callActivity id="{service_call_id}" name="Call External Service">
-            <bpmn2:extensionElements>
-                <ifl:property>
-                    <key>componentType</key>
-                    <value>router</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>componentVersion</key>
-                    <value>1.0</value>
-                </ifl:property>
-            </bpmn2:extensionElements>
-            <bpmn2:incoming>{seq_flow_5_id}</bpmn2:incoming>
-            <bpmn2:outgoing>{seq_flow_6_id}</bpmn2:outgoing>
-        </bpmn2:callActivity>'''
-
-        response_logger = f'''<bpmn2:callActivity id="{response_logger_id}" name="Response Logger">
-            <bpmn2:extensionElements>
-                <ifl:property>
-                    <key>logLevel</key>
-                    <value>{log_level}</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>logText</key>
-                    <value>Response from External Service</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>componentVersion</key>
-                    <value>1.2</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>activityType</key>
-                    <value>WriteLog</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>cmdVariantUri</key>
-                    <value>ctype::FlowstepVariant/cname::WriteLog/version::1.2.0</value>
-                </ifl:property>
-            </bpmn2:extensionElements>
-            <bpmn2:incoming>{seq_flow_6_id}</bpmn2:incoming>
-            <bpmn2:outgoing>{seq_flow_7_id}</bpmn2:outgoing>
-        </bpmn2:callActivity>'''
-
-        error_logger = f'''<bpmn2:callActivity id="{error_logger_id}" name="Error Logger">
-            <bpmn2:extensionElements>
-                <ifl:property>
-                    <key>logLevel</key>
-                    <value>{log_level}</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>logText</key>
-                    <value>Error Logger</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>componentVersion</key>
-                    <value>1.2</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>activityType</key>
-                    <value>WriteLog</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>cmdVariantUri</key>
-                    <value>ctype::FlowstepVariant/cname::WriteLog/version::1.2.0</value>
-                </ifl:property>
-            </bpmn2:extensionElements>
-            <bpmn2:incoming>{seq_flow_7_id}</bpmn2:incoming>
-            <bpmn2:outgoing>{seq_flow_8_id}</bpmn2:outgoing>
-        </bpmn2:callActivity>'''
-
-        error_response = f'''<bpmn2:callActivity id="{error_response_id}" name="Error Response">
-            <bpmn2:extensionElements>
-                <ifl:property>
-                    <key>bodyType</key>
-                    <value>constant</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>propertyTable</key>
-                    <value>[]</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>headerTable</key>
-                    <value>[]</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>wrapContent</key>
-                    <value></value>
-                </ifl:property>
-                <ifl:property>
-                    <key>componentVersion</key>
-                    <value>1.5</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>activityType</key>
-                    <value>Enricher</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>cmdVariantUri</key>
-                    <value>ctype::FlowstepVariant/cname::Enricher/version::1.5.1</value>
-                </ifl:property>
-            </bpmn2:extensionElements>
-            <bpmn2:incoming>{seq_flow_8_id}</bpmn2:incoming>
-            <bpmn2:outgoing>{seq_flow_last_id}</bpmn2:outgoing>
-        </bpmn2:callActivity>'''
-
-        end_event = f'''<bpmn2:endEvent id="{end_event_id}" name="End">
-            <bpmn2:extensionElements>
-                <ifl:property>
-                    <key>componentVersion</key>
-                    <value>1.1</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>cmdVariantUri</key>
-                    <value>ctype::FlowstepVariant/cname::MessageEndEvent/version::1.1.0</value>
-                </ifl:property>
-            </bpmn2:extensionElements>
-            <bpmn2:incoming>{seq_flow_last_id}</bpmn2:incoming>
-            <bpmn2:messageEventDefinition/>
-        </bpmn2:endEvent>'''
-
-        # Create sequence flows
-        seq_flow_1 = f'''<bpmn2:sequenceFlow id="{seq_flow_1_id}" sourceRef="{api_endpoint_id}" targetRef="{request_logger_id}" isImmediate="true"/>'''
-        seq_flow_2 = f'''<bpmn2:sequenceFlow id="{seq_flow_2_id}" sourceRef="{request_logger_id}" targetRef="{request_validator_id}" isImmediate="true"/>'''
-        seq_flow_3 = f'''<bpmn2:sequenceFlow id="{seq_flow_3_id}" sourceRef="{request_validator_id}" targetRef="{param_extractor_id}" isImmediate="true"/>'''
-        seq_flow_4 = f'''<bpmn2:sequenceFlow id="{seq_flow_4_id}" sourceRef="{param_extractor_id}" targetRef="{param_logger_id}" isImmediate="true"/>'''
-        seq_flow_5 = f'''<bpmn2:sequenceFlow id="{seq_flow_5_id}" sourceRef="{param_logger_id}" targetRef="{service_call_id}" isImmediate="true"/>'''
-        seq_flow_6 = f'''<bpmn2:sequenceFlow id="{seq_flow_6_id}" sourceRef="{service_call_id}" targetRef="{response_logger_id}" isImmediate="true"/>'''
-        seq_flow_7 = f'''<bpmn2:sequenceFlow id="{seq_flow_7_id}" sourceRef="{response_logger_id}" targetRef="{error_logger_id}" isImmediate="true"/>'''
-        seq_flow_8 = f'''<bpmn2:sequenceFlow id="{seq_flow_8_id}" sourceRef="{error_logger_id}" targetRef="{error_response_id}" isImmediate="true"/>'''
-        seq_flow_last = f'''<bpmn2:sequenceFlow id="{seq_flow_last_id}" sourceRef="{error_response_id}" targetRef="{end_event_id}" isImmediate="true"/>'''
-
-        # Return all components and flows
-        return {
-            "components": [
-                api_endpoint,
-                request_logger,
-                request_validator,
-                param_extractor,
-                param_logger,
-                service_call,
-                response_logger,
-                error_logger,
-                error_response,
-                end_event
-            ],
-            "sequence_flows": [
-                seq_flow_1,
-                seq_flow_2,
-                seq_flow_3,
-                seq_flow_4,
-                seq_flow_5,
-                seq_flow_6,
-                seq_flow_7,
-                seq_flow_8,
-                seq_flow_last
-            ],
-            "start_component_id": api_endpoint_id,
-            "end_component_id": end_event_id
-        }
-
-    def groovy_script_template(self, id, name, script_name="", script_function="", script_content=""):
-        """
-        Template for Groovy Script (SAP Integration Suite compatible)
-
-        Args:
-            id (str): Component ID
-            name (str): Component name
-            script_name (str): Name of the Groovy script file (e.g., "validation.groovy")
-            script_function (str): Name of the function to call in the script
-            script_content (str): Inline script content (fallback if no file reference)
-
-        Returns:
-            str: XML template for Groovy Script
-        """
-        # Always use script file name if provided, otherwise use inline content
-        script_value = script_name if script_name and script_name != "GroovyScript.groovy" else script_content
+        default_attr = f' default="{default_flow_id}"' if default_flow_id else ""
         
-        return f'''<bpmn2:callActivity id="{id}" name="{name}">
+        return f'''<bpmn2:exclusiveGateway{default_attr} id="{id}" name="{name}">
             <bpmn2:extensionElements>
-                <ifl:property>
-                    <key>scriptFunction</key>
-                    <value>{script_function}</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>scriptBundleId</key>
-                    <value/>
-                </ifl:property>
                 <ifl:property>
                     <key>componentVersion</key>
                     <value>1.1</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>activityType</key>
-                    <value>Script</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>cmdVariantUri</key>
-                    <value>ctype::FlowstepVariant/cname::GroovyScript/version::1.1.2</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>subActivityType</key>
-                    <value>GroovyScript</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>script</key>
-                    <value>{script_value}</value>
-                </ifl:property>
-
-            </bpmn2:extensionElements>
-        </bpmn2:callActivity>'''
-
-    def mapping_template(self, id, name, mapping_name, mapping_path):
-        """
-        Template for Message Mapping
-
-        Args:
-            id (str): Component ID
-            name (str): Component name
-            mapping_name (str): Name of the mapping
-            mapping_path (str): Path to the mapping file
-
-        Returns:
-            str: XML template for Message Mapping
-        """
-        return f'''<bpmn2:callActivity id="{id}" name="{name}">
-            <bpmn2:extensionElements>
-                <ifl:property>
-                    <key>mappinguri</key>
-                    <value>dir://{mapping_path}.mmap</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>mappingname</key>
-                    <value>{mapping_name}</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>mappingType</key>
-                    <value>MessageMapping</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>mappingReference</key>
-                    <value>static</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>mappingpath</key>
-                    <value>{mapping_path}</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>componentVersion</key>
-                    <value>1.3</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>activityType</key>
-                    <value>Mapping</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>cmdVariantUri</key>
-                    <value>ctype::FlowstepVariant/cname::MessageMapping/version::1.3.1</value>
-                </ifl:property>
-                <ifl:property>
-                    <key>messageMappingBundleId</key>
-                    <value/>
-                </ifl:property>
-            </bpmn2:extensionElements>
-            <bpmn2:incoming>SequenceFlow_In</bpmn2:incoming>
-            <bpmn2:outgoing>SequenceFlow_Out</bpmn2:outgoing>
-        </bpmn2:callActivity>'''
-
-    def router_template(self, id, name, conditions=[]):
-        """
-        Template for Router (Exclusive Gateway) with fixed ID
-        """
-        # Make sure this is an exclusive gateway, not a callActivity
-        return f'''<bpmn2:exclusiveGateway id="{id}" name="{name}">
-            <bpmn2:extensionElements>
-                <ifl:property>
-                    <key>componentVersion</key>
-                    <value>1.3</value>
                 </ifl:property>
                 <ifl:property>
                     <key>activityType</key>
@@ -2253,33 +933,58 @@ class EnhancedIFlowTemplates:
                 </ifl:property>
                 <ifl:property>
                     <key>cmdVariantUri</key>
-                    <value>ctype::FlowstepVariant/cname::ExclusiveGateway/version::1.3.0</value>
+                    <value>ctype::FlowstepVariant/cname::ExclusiveGateway/version::1.1.2</value>
+                </ifl:property>
+                <ifl:property>
+                    <key>throwException</key>
+                    <value>false</value>
                 </ifl:property>
             </bpmn2:extensionElements>
-            <bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>
-            <bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>
         </bpmn2:exclusiveGateway>'''
 
-    def router_condition_template(self, id, name, source_ref, target_ref, expression="", expression_type="NonXML"):
+    def router_condition_template(self, id, name, source_ref, target_ref, expression="", expression_type="XML", raw_condition_xml: str = None):
         """
-        Template for Router Condition (Gateway Route)
-
+        Template for Router Condition (Gateway Route sequence flow).
+        
+        Generates BPMN2 sequence flow XML with GatewayRoute metadata for router branching.
+        Supports explicit XPath expressions from JSON metadata routing_conditions.
+        
         Args:
-            id (str): Sequence flow ID
-            name (str): Route name
-            source_ref (str): Source component ID (router ID)
-            target_ref (str): Target component ID
-            expression (str): Condition expression
-            expression_type (str): Expression type (NonXML/XML)
-
+            id (str): Sequence flow ID (e.g., "flow_gateway_1_to_script_2_0")
+            name (str): Route name (e.g., "Route 1")
+            source_ref (str): Router component ID (e.g., "gateway_1")
+            target_ref (str): Target component ID (e.g., "script_2")
+            expression (str): XPath expression from JSON condition field (e.g., "${property.rate_limit_exceeded == false}")
+            expression_type (str): Expression type, defaults to "XML"
+            raw_condition_xml (str): Optional raw <bpmn2:conditionExpression .../> XML to embed verbatim
+            
         Returns:
-            str: XML template for Router Condition
+            str: XML template for Gateway Route sequence flow
         """
-        condition_element = ""
-        if expression:
-            condition_element = f'<bpmn2:conditionExpression id="FormalExpression_{id}" xsi:type="bpmn2:tFormalExpression">{expression}</bpmn2:conditionExpression>'
-
-        return f'''<bpmn2:sequenceFlow id="{id}" name="{name}" sourceRef="{source_ref}" targetRef="{target_ref}">
+        import time
+        
+        # Build conditionExpression element:
+        # Priority 1: If raw_condition_xml provided by metadata, embed verbatim
+        # Priority 2: If expression provided (conditional), include EMPTY conditionExpression element (match reference)
+        # Priority 3: Default route (no expression) → omit conditionExpression entirely
+        condition_expr = ""
+        if raw_condition_xml and raw_condition_xml.strip():
+            # Insert raw XML as-is, ensuring it appears on a new line with proper indentation
+            condition_expr = f"\n            {raw_condition_xml.strip()}"
+        elif expression and expression.strip():
+            # Conditional route with expression from metadata → include expression content inside conditionExpression
+            # Escape XML special characters in expression (only &, <, > as XPath expressions may contain these)
+            expression_content = expression.strip()
+            # Escape XML special characters: & < >
+            expression_content = expression_content.replace("&", "&amp;")
+            expression_content = expression_content.replace("<", "&lt;")
+            expression_content = expression_content.replace(">", "&gt;")
+            expression_id = f"FormalExpression_{id}_{int(time.time() * 1000)}"
+            condition_expr = f"\n            <bpmn2:conditionExpression id=\"{expression_id}\" xsi:type=\"bpmn2:tFormalExpression\">{expression_content}</bpmn2:conditionExpression>"
+        # else: Default route → no conditionExpression
+        
+        # Build sequence flow XML
+        xml_content = f'''<bpmn2:sequenceFlow id="{id}" name="{name}" sourceRef="{source_ref}" targetRef="{target_ref}">
             <bpmn2:extensionElements>
                 <ifl:property>
                     <key>expressionType</key>
@@ -2293,9 +998,10 @@ class EnhancedIFlowTemplates:
                     <key>cmdVariantUri</key>
                     <value>ctype::FlowstepVariant/cname::GatewayRoute/version::1.0.0</value>
                 </ifl:property>
-            </bpmn2:extensionElements>
-            {condition_element}
+            </bpmn2:extensionElements>{condition_expr}
         </bpmn2:sequenceFlow>'''
+        
+        return xml_content
 
     # ===== Flow Control =====
 
@@ -2344,6 +1050,10 @@ class EnhancedIFlowTemplates:
             <ifl:property>
                 <key>transactionalHandling</key>
                 <value>{transactional_handling}</value>
+            </ifl:property>
+            <ifl:property>
+                <key>isTransactional</key>
+                <value>false</value>
             </ifl:property>
         </bpmn2:extensionElements>
         {{process_content}}
@@ -2878,6 +1588,21 @@ class EnhancedIFlowTemplates:
 
         return definition
 
+    def message_start_event_template(self, id="StartEvent_1", name="Start 1"):
+        """Generate a message start event template for Integration Process with message event definition."""
+        definition = f'''<bpmn2:startEvent id="{id}" name="{name}">
+    <bpmn2:extensionElements>
+        <ifl:property>
+            <key>cmdVariantUri</key>
+            <value>ctype::FlowstepVariant/cname::MessageStartEvent</value>
+        </ifl:property>
+    </bpmn2:extensionElements>
+    <bpmn2:outgoing>{{outgoing_flow}}</bpmn2:outgoing>
+    <bpmn2:messageEventDefinition/>
+</bpmn2:startEvent>'''
+
+        return definition
+
     # ===== Enhanced End Event Components =====
 
     def enhanced_end_event_template(self, id="EndEvent_1", name="End 1", incoming_flow="{{incoming_flow}}"):
@@ -2897,3 +1622,85 @@ class EnhancedIFlowTemplates:
 </bpmn2:endEvent>'''
 
         return definition
+
+    def message_end_event_template(self, id="EndEvent_1", name="End 1", incoming_flow="{{incoming_flow}}"):
+        """Generate a message end event template for Integration Process with message event definition."""
+        definition = f'''<bpmn2:endEvent id="{id}" name="{name}">
+    <bpmn2:extensionElements>
+        <ifl:property>
+            <key>cmdVariantUri</key>
+            <value>ctype::FlowstepVariant/cname::MessageEndEvent/version::1.1.0</value>
+        </ifl:property>
+    </bpmn2:extensionElements>
+    <bpmn2:incoming>{incoming_flow}</bpmn2:incoming>
+    <bpmn2:messageEventDefinition/>
+</bpmn2:endEvent>'''
+
+        return definition
+
+    # ===== Additional Templates from Supabase Activity Types =====
+
+    def variables_template(self, id, name):
+        return f'''<bpmn2:callActivity id="{id}" name="{name}">
+    <bpmn2:extensionElements>
+        <ifl:property><key>activityType</key><value>Variables</value></ifl:property>
+        <ifl:property><key>componentVersion</key><value>1.0</value></ifl:property>
+        <ifl:property><key>cmdVariantUri</key><value>ctype::FlowstepVariant/cname::Variables/version::1.0.0</value></ifl:property>
+    </bpmn2:extensionElements>
+</bpmn2:callActivity>'''
+
+    def gather_template(self, id, name):
+        return f'''<bpmn2:callActivity id="{id}" name="{name}">
+    <bpmn2:extensionElements>
+        <ifl:property><key>activityType</key><value>Gather</value></ifl:property>
+        <ifl:property><key>componentVersion</key><value>1.0</value></ifl:property>
+        <ifl:property><key>cmdVariantUri</key><value>ctype::FlowstepVariant/cname::Gather/version::1.0.0</value></ifl:property>
+    </bpmn2:extensionElements>
+</bpmn2:callActivity>'''
+
+    def dbstorage_template(self, id, name):
+        return f'''<bpmn2:callActivity id="{id}" name="{name}">
+    <bpmn2:extensionElements>
+        <ifl:property><key>activityType</key><value>DBstorage</value></ifl:property>
+        <ifl:property><key>componentVersion</key><value>1.0</value></ifl:property>
+        <ifl:property><key>cmdVariantUri</key><value>ctype::FlowstepVariant/cname::DBstorage/version::1.0.0</value></ifl:property>
+    </bpmn2:extensionElements>
+</bpmn2:callActivity>'''
+
+    def xml_modifier_template(self, id, name):
+        return f'''<bpmn2:callActivity id="{id}" name="{name}">
+    <bpmn2:extensionElements>
+        <ifl:property><key>activityType</key><value>XmlModifier</value></ifl:property>
+        <ifl:property><key>componentVersion</key><value>1.0</value></ifl:property>
+        <ifl:property><key>cmdVariantUri</key><value>ctype::FlowstepVariant/cname::XmlModifier/version::1.0.0</value></ifl:property>
+    </bpmn2:extensionElements>
+</bpmn2:callActivity>'''
+
+    def start_error_event_template(self, id="StartEvent_Error_1", name="Error Start 1"):
+        return f'''<bpmn2:startEvent id="{id}" name="{name}">
+    <bpmn2:extensionElements>
+        <ifl:property><key>cmdVariantUri</key><value>ctype::FlowstepVariant/cname::ErrorStartEvent</value></ifl:property>
+        <ifl:property><key>activityType</key><value>StartErrorEvent</value></ifl:property>
+    </bpmn2:extensionElements>
+    <bpmn2:errorEventDefinition/>
+</bpmn2:startEvent>'''
+
+    def end_error_event_template(self, id="EndEvent_Error_1", name="Error End 1", incoming_flow="{{incoming_flow}}"):
+        return f'''<bpmn2:endEvent id="{id}" name="{name}">
+    <bpmn2:extensionElements>
+        <ifl:property><key>cmdVariantUri</key><value>ctype::FlowstepVariant/cname::MessageEndEvent/version::1.1.0</value></ifl:property>
+        <ifl:property><key>activityType</key><value>EndErrorEvent</value></ifl:property>
+    </bpmn2:extensionElements>
+    <bpmn2:incoming>{incoming_flow}</bpmn2:incoming>
+    <bpmn2:messageEventDefinition/>
+</bpmn2:endEvent>'''
+
+    def direct_call_process_template(self, id="Process_Direct", name="Direct Call Process"):
+        return f'''<bpmn2:process id="{id}" name="{name}">
+    <bpmn2:extensionElements>
+        <ifl:property><key>transactionTimeout</key><value>30</value></ifl:property>
+        <ifl:property><key>processType</key><value>directCall</value></ifl:property>
+        <ifl:property><key>componentVersion</key><value>1.1</value></ifl:property>
+        <ifl:property><key>cmdVariantUri</key><value>ctype::FlowElementVariant/cname::LocalIntegrationProcess/version::1.1.3</value></ifl:property>
+    </bpmn2:extensionElements>
+</bpmn2:process>'''

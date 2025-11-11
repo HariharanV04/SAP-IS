@@ -1,0 +1,89 @@
+{
+  "_comment": "Filter Customer Data Flow - Demonstrates Filter component usage with Content Modifier for property-based filtering. Based on test307.iflw structure.",
+  "metadata_version": "1.0.0",
+  "iflow_info": {
+    "id": "filter_customer_data_flow",
+    "name": "Filter Customer Data Flow",
+    "description": "Integration flow demonstrating Filter component usage with Content Modifier for property-based filtering",
+    "version": "1.0.0",
+    "vendor": "Sample Vendor",
+    "release": "2024.Q4"
+  },
+  "endpoints": [
+    {
+      "id": "main_flow",
+      "name": "Main Integration Flow",
+      "description": "Primary flow for filtering customer data based on status property",
+      "components": [
+        {
+          "type": "content_modifier",
+          "id": "content_modifier_001",
+          "name": "Content_Modifier_1",
+          "sap_activity_type": "Enricher",
+          "config": {
+            "componentVersion": "1.6",
+            "cmdVariantUri": "ctype::FlowstepVariant/cname::Enricher/version::1.6.1",
+            "activityType": "Enricher",
+            "bodyType": "constant",
+            "wrapContent": "",
+            "properties": [
+              {
+                "Action": "Create",
+                "Type": "constant",
+                "Name": "CustomerStatus",
+                "Value": "Active",
+                "Default": "",
+                "DataType": ""
+              }
+            ],
+            "headers": [
+              {
+                "Action": "Create",
+                "Type": "constant",
+                "Name": "RecordType",
+                "Value": "CustomerData",
+                "Default": "",
+                "DataType": ""
+              }
+            ]
+          }
+        },
+        {
+          "type": "filter",
+          "id": "filter_001",
+          "name": "Filter_1",
+          "sap_activity_type": "Filter",
+          "config": {
+            "xpathType": "Integer",
+            "wrapContent": "//Customers[Status = '${property.CustomerStatus}']",
+            "componentVersion": "1.1",
+            "activityType": "Filter",
+            "cmdVariantUri": "ctype::FlowstepVariant/cname::Filter/version::1.1.0"
+          }
+        }
+      ],
+      "flow": [
+        "content_modifier_001",
+        "filter_001"
+      ],
+      "sequence_flows": [
+        {
+          "id": "flow_001",
+          "source": "StartEvent_2",
+          "target": "content_modifier_001"
+        },
+        {
+          "id": "flow_002",
+          "source": "content_modifier_001",
+          "target": "filter_001"
+        },
+        {
+          "id": "flow_003",
+          "source": "filter_001",
+          "target": "EndEvent_2"
+        }
+      ]
+    }
+  ]
+}
+

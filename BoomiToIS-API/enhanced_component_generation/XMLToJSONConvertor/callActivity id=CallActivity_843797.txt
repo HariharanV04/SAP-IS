@@ -1,0 +1,102 @@
+<callActivity id="CallActivity_84379706" name="XMLToJSON_DataConvert">
+    <extensionElements>
+        <property>
+            <key>
+                xmlJsonUseStreaming
+            </key>
+            <value>
+                true
+            </value>
+        </property>
+        <property>
+            <key>
+                xmlJsonSuppressRootElement
+            </key>
+            <value>
+                false
+            </value>
+        </property>
+        <property>
+            <key>
+                xmlJsonPathTable
+            </key>
+            <value>
+                &lt;row&gt;&lt;cell&gt;/EmpDetails&lt;/cell&gt;&lt;cell&gt;&lt;/cell&gt;&lt;/row&gt;
+            </value>
+        </property>
+        <property>
+            <key>
+                jsonOutputEncoding
+            </key>
+            <value/>
+        </property>
+        <property>
+            <key>
+                jsonNamespaceMapping
+            </key>
+            <value/>
+        </property>
+        <property>
+            <key>
+                componentVersion
+            </key>
+            <value>
+                1.0
+            </value>
+        </property>
+        <property>
+            <key>
+                xmlJsonConvertAllElements
+            </key>
+            <value>
+                specific
+            </value>
+        </property>
+        <property>
+            <key>
+                activityType
+            </key>
+            <value>
+                XmlToJsonConverter
+            </value>
+        </property>
+        <property>
+            <key>
+                cmdVariantUri
+            </key>
+            <value>
+                ctype::FlowstepVariant/cname::XmlToJsonConverter/version::1.0.8
+            </value>
+        </property>
+        <property>
+            <key>
+                useNamespaces
+            </key>
+            <value>
+                false
+            </value>
+        </property>
+        <property>
+            <key>
+                jsonNamespaceSeparator
+            </key>
+            <value>
+                :
+            </value>
+        </property>
+    </extensionElements>
+    <incoming>
+        SequenceFlow_84379700
+    </incoming>
+    <outgoing>
+        SequenceFlow_84379762
+    </outgoing>
+</callActivity>
+<sequenceFlow id="SequenceFlow_84379762" sourceRef="CallActivity_84379706" targetRef="EndEvent_84379755"/>
+<BPMNShape bpmnElement="CallActivity_84379706" id="BPMNShape_CallActivity_84379706">
+    <Bounds height="60.0" width="100.0" x="2378.0" y="365.0"/>
+</BPMNShape>
+<BPMNEdge bpmnElement="SequenceFlow_84379762" id="BPMNEdge_SequenceFlow_84379762" sourceElement="BPMNShape_CallActivity_84379706" targetElement="BPMNShape_EndEvent_84379755">
+    <waypoint x="2479.3941927429423" xsi:type="dc:Point" y="395.0"/>
+    <waypoint x="2539.3941927429423" xsi:type="dc:Point" y="395.0"/>
+</BPMNEdge>

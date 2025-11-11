@@ -341,6 +341,8 @@ class EnhancedJSONToIFlowConverter:
             return self._create_script(component_id, component_name, config, position)
         elif component_type == "gateway":
             return self._create_gateway(component_id, component_name, position)
+        elif component_type in ["join", "parallel_join", "parallelGateway"]:
+            return self._create_join_gateway(component_id, component_name, position)
         elif component_type == "message_mapping":
             return self._create_message_mapping(component_id, component_name, config, position)
         elif component_type == "subprocess":
@@ -515,6 +517,29 @@ class EnhancedJSONToIFlowConverter:
           </ifl:property>
       </bpmn2:extensionElements>
     </bpmn2:exclusiveGateway>'''
+
+    def _create_join_gateway(self, id: str, name: str, position: Dict[str, int]) -> str:
+        """Create a Join (Parallel Gateway) component per SAP IS."""
+        return f'''    <bpmn2:parallelGateway id="{id}" name="{name}">
+      <bpmn2:extensionElements>
+          <ifl:property>
+              <key>activityType</key>
+              <value>Join</value>
+          </ifl:property>
+          <ifl:property>
+              <key>componentVersion</key>
+              <value>1.0</value>
+          </ifl:property>
+          <ifl:property>
+              <key>cmdVariantUri</key>
+              <value>ctype::FlowstepVariant/cname::Join/version::1.0.0</value>
+          </ifl:property>
+          <ifl:property>
+              <key>subActivityType</key>
+              <value>parallel</value>
+          </ifl:property>
+      </bpmn2:extensionElements>
+    </bpmn2:parallelGateway>'''
 
     def _create_message_mapping(self, id: str, name: str, config: Dict[str, Any], position: Dict[str, int]) -> str:
         """Create a message mapping component"""
@@ -718,11 +743,12 @@ class EnhancedJSONToIFlowConverter:
         
         for flow in sequence_flows:
             flow_id = flow.get("id", f"flow_{len(flows_xml)}")
-            source_ref = flow.get("source_ref", "")
-            target_ref = flow.get("target_ref", "")
-            
+            # accept both source/target and source_ref/target_ref
+            source_ref = flow.get("source_ref", flow.get("source", ""))
+            target_ref = flow.get("target_ref", flow.get("target", ""))
+            condition = flow.get("condition")
             # Create sequence flow
-            flow_xml = self._create_sequence_flow(flow_id, source_ref, target_ref)
+            flow_xml = self._create_sequence_flow(flow_id, source_ref, target_ref, condition)
             flows_xml.append(flow_xml)
             
             # Store for flow references
